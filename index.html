@@ -117,29 +117,36 @@
       margin: 1rem 0;
     }
 
-    .btn {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 100%;
-      min-height: 50px;
-      margin: 0.5rem 0;
-      border-radius: 16px;
-      border: 6px solid transparent;
-      color: white;
-      font-weight: bold;
-      font-size: 12px;
-      cursor: pointer;
-      transition: 0.2s;
-      text-align: center;
-      white-space: nowrap;
-      flex-shrink: 0;
-    }
+    /* Update the active state to include a white stroke */
+.btn.active {
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.5); /* Enhanced glow */
+  border-color: #FFFFFF !important; /* Forces the stroke to white */
+  transform: scale(1.02); /* Optional: slight pop effect when selected */
+}
+
+/* Ensure smooth transition for the border color */
+.btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 50px;
+  margin: 0.5rem 0;
+  border-radius: 16px;
+  border: 6px solid transparent; /* This stays as the base */
+  color: white;
+  font-weight: bold;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out; /* Smooths the transition for border and glow */
+  text-align: center;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
 
     .btn.shop { background: #2093DD; border-color: #1B67AD; }
     .btn.control { background: #E16CF0; border-color: #BA1DB8; }
     .btn.account { background: #1E6CE2; border-color: #1D52BA; }
-    .btn.active { box-shadow: 0 0 10px white; }
 
     .footer {
       margin-top: auto;
