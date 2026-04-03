@@ -116,21 +116,28 @@
 }
 
     .section-title {
-      text-align: center;
-      font-weight: bold;
-      margin: 1rem 0;
-      opacity: 1;
-      font-size: 1.1rem;
-      white-space: nowrap;
-      overflow: hidden;
-      text-shadow: 2px 2px 4px #1800AD;
-      display: block; /* Ensures it takes up the line */
-      text-decoration: underline !important; 
-      text-decoration-color: #FFFFFF !important; /* Forces the line to be white */
-      text-underline-offset: 6px; 
-      text-decoration-thickness: 2px;
-    }
-    
+  /* Change from 'center' to 'left' */
+  text-align: left; 
+  
+  /* Add padding-left so it's not touching the edge of the sidebar */
+  padding-left: 10px; 
+  
+  /* Keep your existing styles */
+  font-weight: 800;
+  margin: 1.2rem 0 0.5rem 0; /* Slightly tighter bottom margin for the buttons */
+  font-size: 1.1rem;
+  color: #FFFFFF !important;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  text-shadow: 2px 2px 4px #1800AD;
+
+  /* Underline styles */
+  display: block; 
+  text-decoration: underline !important; 
+  text-decoration-color: #FFFFFF !important;
+  text-underline-offset: 6px; 
+  text-decoration-thickness: 2px;
+}
 
     .divider {
       height: 4px; 
