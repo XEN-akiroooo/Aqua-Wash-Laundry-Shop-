@@ -37,13 +37,35 @@
       padding: 2rem 0.5rem;
     }
 
-    /* Hide text and dividers when collapsed */
-    .sidebar.collapsed .section-title,
-    .sidebar.collapsed .divider,
-    .sidebar.collapsed .header,
-    .sidebar.collapsed .btn,
-    .sidebar.collapsed .footer,
-    .sidebar.collapsed .toggle-btn{
+    /* Apply transition to all collapsible elements */
+.sidebar .header,
+.sidebar .section-title,
+.sidebar .divider,
+.sidebar .btn,
+.sidebar .footer {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* When collapsed: move text out and fade out */
+.sidebar.collapsed .header,
+.sidebar.collapsed .section-title,
+.sidebar.collapsed .divider,
+.sidebar.collapsed .btn:not(.collapsed-btn),
+.sidebar.collapsed .footer {
+  opacity: 0;
+  transform: translateX(-20px); /* slide left */
+  pointer-events: none; /* optional, prevent clicking when hidden */
+}
+
+/* Optional: add a class to buttons only when collapsed to shrink properly */
+.sidebar.collapsed .btn {
+  width: 40px;
+  height: 40px;
+  font-size: 0;
+  border-radius: 50%;
+  margin: 0.5rem auto;
+}
+   .sidebar.collapsed .toggle-btn{
       display: none;
     }
 
@@ -82,9 +104,20 @@
   margin-top: 20px;
 }
 
+.sidebar .three-dots {
+  display: none;
+  position: absolute;
+  top: 100px; /* adjust this value to move up/down */
+  left: 50%;
+  transform: translateX(-50%);
+  flex-direction: column;
+  gap: 4px;
+  align-items: center;
+  cursor: pointer;
+}
+
 .sidebar.collapsed .three-dots {
   display: flex;
-  margin-top: 50px;
 }
 
 .dot {
