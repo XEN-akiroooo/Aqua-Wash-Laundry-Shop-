@@ -36,13 +36,16 @@
       padding: 2rem 0.5rem;
     }
 
-    .sidebar .header,
     .sidebar .section-title,
     .sidebar .divider,
     .sidebar .divider-smallspace,
     .sidebar .btn,
     .sidebar .footer {
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .sidebar .header {
+     transition: all 0.7s ease-out 0.2s; /* Longer duration and more delay */
     }
 
     .sidebar.collapsed .header,
