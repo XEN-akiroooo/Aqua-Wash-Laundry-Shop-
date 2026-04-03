@@ -87,30 +87,6 @@
       right: 18px;
     }
 
-    .three-dots {
-      display: none;
-      flex-direction: column;
-      gap: 4px;
-      align-items: center;
-      cursor: pointer;
-      position: absolute;
-      top: 50px;
-      left: 50%;
-      transform: translateX(-50%);
-    }
-
-    .sidebar.collapsed .three-dots {
-      display: flex;
-    }
-
-    .dot {
-      width: 6px;
-      height: 6px;
-      background: white;
-      border-radius: 50%;
-      opacity: 0.7;
-    }
-
     /* DASHBOARD TEXT WITH STROKE */
     .header {
       font-size: 2rem;
@@ -276,12 +252,6 @@
   <div class="sidebar" id="sidebar">
     <div class="toggle-btn" onclick="toggleSidebar()">&#10094;</div>
 
-    <div class="three-dots" onclick="toggleSidebar()">
-      <div class="dot"></div>
-      <div class="dot"></div>
-      <div class="dot"></div>
-    </div>
-
     <div class="header">DASHBOARD</div>
 
     <div class="section-title">SHOP'S OVERVIEW</div>
@@ -343,4 +313,4 @@
     function closeModal() { document.getElementById('modal').classList.remove('show'); }
   </script>
 </body>
-  </html>
+</html>
