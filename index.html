@@ -22,7 +22,7 @@
     .sidebar {
       width: 260px;
       min-width: 60px;
-      background: linear-gradient(to bottom, #1DDDE3 0%, #1DDDE3 50%, #58005D 100%);
+      background: linear-gradient(to bottom, #0BB7BD 0%, #0BB7BD 50%, #58005D 100%);
       color: white;
       padding: 2rem 1rem;
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -89,17 +89,23 @@
 
     /* DASHBOARD TEXT WITH STROKE */
     .header {
-      font-size: 2rem;
-      font-weight: 900;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      margin-bottom: 2rem;
-      margin-top: 10px;
-      -webkit-text-stroke: 1px #1800AD;
-      color: white;
-      letter-spacing: 1px;
-    }
+  font-size: 2rem;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+  margin-top: 10px;
+  color: white; /* The main fill color */
+  letter-spacing: 2px;
+  
+  /* The "Secret Sauce" for a clean stroke */
+  -webkit-text-stroke: 4px #1800AD; /* Thickness + Dark Blue */
+  paint-order: stroke fill; /* Forces the stroke behind the white fill */
+  
+  /* Optional: Soft shadow to stop it from looking flat */
+  text-shadow: 2px 2px 0px rgba(0,0,0,0.1);
+}
 
     .section-title {
       text-align: center;
