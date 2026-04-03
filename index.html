@@ -49,26 +49,27 @@
 
     .toggle-btn {
      position: absolute;
-     right: -15px; /* Offset to sit on the edge */
-     top: 30px;
+     right: -18px; /* Perfectly straddles the edge */
+     top: 50px;    /* You can use 50% if you want it vertically centered */
      background: #7B2BCC;
      color: white;
-     border: 2px solid white;
+     border: 2px solid #DDFFFF; /* Matches body background for a 'cut-out' look */
      border-radius: 50%;
-     width: 25px;
-     height: 25px;
+     width: 35px;  /* Bigger size */
+     height: 35px; /* Bigger size */
      display: flex;
      align-items: center;
      justify-content: center;
      cursor: pointer;
-     z-index: 100;
-     font-size: 14px;
-     transition: transform 0.3s;
-    }
+     z-index: 1000;
+     font-size: 18px; /* Bigger arrow */
+     font-weight: bold;
+     box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+     transition: right 0.3s;
+   }
 
 .sidebar.collapsed .toggle-btn {
   right: 18px; /* Move inside when collapsed */
-  transform: rotate(180deg);
 }
 
 /* The Three-Dot Handle (Visible only when collapsed) */
@@ -96,14 +97,16 @@
 
     /* DASHBOARD TEXT WITH STROKE */
     .header {
-      font-size: 1.5rem;
-      font-weight: bold;
+      font-size: 2rem;
+      font-weight: 900;
       display: flex;
       align-items: center;
       gap: 0.5rem;
-      margin-bottom: 1.5rem;
+      margin-bottom: 2rem;
+      margin-top: 10px;
       -webkit-text-stroke: 1px #1800AD;
       color: white; /* text color fixed */
+      letter-spacing: 1px;
     }
 
 
