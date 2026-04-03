@@ -189,12 +189,53 @@
     .main {
       flex: 1;
       background: #d9faff;
-      padding: 1rem;
+      padding: 2rem;
       transition: 0.3s;
       display: flex;
       flex-direction: column;
       align-items: center;
+      height: 100vh;
+      overflow: hidden; /* Prevents the whole page from scrolling */
     }
+
+    /* The actual white scrolling frame from your photo */
+.scrolling-frame {
+  background: white;
+  flex: 1;
+  border-radius: 3rem; /* Very rounded corners as seen in your photo */
+  box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+  padding: 2rem;
+  overflow-y: auto; /* This makes only the frame scrollable */
+  width: 100%;
+  max-width: 1200px; /* Optional: keeps it from getting too wide on huge monitors */
+  margin: 0 auto;
+}
+
+/* Hide sections by default */
+.content-section {
+  display: none;
+  animation: fadeIn 0.4s ease;
+}
+
+/* Show active section */
+.content-section.active-content {
+  display: block;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Custom scrollbar to match your screenshot */
+.scrolling-frame::-webkit-scrollbar {
+  width: 12px;
+}
+.scrolling-frame::-webkit-scrollbar-thumb {
+  background: #cccccc;
+  border-radius: 10px;
+  border: 4px solid white; /* Creates the padding around the scrollbar handle */
+}
 
     .top-title {
       text-align: center;
@@ -304,19 +345,32 @@
 
   <div class="main" id="main">
     <div class="top-title">AQUA WASH LAUNDRY SHOP</div>
-
-    <div class="cards">
-      <div class="card">
-        <h3>ADD SERVICE ORDER</h3>
-        <p>Form elements here...</p>
-      </div>
-      <div class="card">
-        <h3>PREVIEW</h3>
-        <p>Live summary...</p>
-      </div>
+    
+   <div class="scrolling-frame">
+     
+    <div id="daily-ops" class="content-section active-content">
+      <div class="cards">
+        
+        <div class="card">
+          <h3>ADD SERVICE ORDER</h3>
+          <p>Form elements here...</p>
+        </div>
+        
+        <div class="card">
+          <h3>PREVIEW</h3>
+          <p>Live summary...</p>
+        </div>
+        
+     </div>
     </div>
   </div>
 
+  <div id="financial" class="content-section">
+      <h2>Financial Statements</h2>
+      <p>Reports and data will appear here.</p>
+  </div>
+  </div>
+  
   <div class="modal" id="modal">
     <div class="modal-box">
       <p>Do you really want to log out? 🤔</p>
@@ -326,10 +380,25 @@
   </div>
 
   <script>
-    function setActive(btn) {
-      document.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-    }
+    function setActive(btn, sectionId) {
+  // 1. Manage Button Active State
+  document.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+
+  // 2. Manage Content Switching
+  const allSections = document.querySelectorAll('.content-section');
+  allSections.forEach(section => {
+    section.classList.remove('active-content');
+    section.style.display = 'none'; // Ensure hidden
+  });
+
+  // 3. Show selected section
+  const targetSection = document.getElementById(sectionId);
+  if (targetSection) {
+    targetSection.style.display = 'block';
+    targetSection.classList.add('active-content');
+  }
+}
 
     function toggleSidebar() {
       const sidebar = document.getElementById('sidebar');
