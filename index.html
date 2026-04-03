@@ -116,14 +116,24 @@
       white-space: nowrap;
       overflow: hidden;
       text-shadow: 2px 2px 4px #1800AD;
+      text-decoration: underline;
+      text-underline-offset: 5px; /* Adds a small gap between text and line */
+      text-decoration-thickness: 2px; /* Makes the underline feel solid */
     }
+    
 
     .divider {
-      height: 4px; /* Increase this number (e.g., 4px, 6px) for more thickness */
+      height: 4px; 
       background-color: #FFFFFF;
       margin: 1.5rem 0; /* Adds more space above and below the line */
       border-radius: 2px; /* Smooths the edges of the thick line */
-      opacity: 1;
+    }
+
+    .divider-small {
+      height: 4px; 
+      background-color: #FFFFFF;
+      margin: 0.5rem auto 1rem auto; /* Very small top margin (0.5rem) */
+      border-radius: 2px;
     }
 
     /* Update the active state to include a white stroke */
