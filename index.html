@@ -209,7 +209,15 @@
   width: 100%;
   max-width: 1200px; /* Optional: keeps it from getting too wide on huge monitors */
   margin: 0 auto;
+
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
+              box-shadow 0.4s ease;
 }
+
+.frame-float {
+  transform: scale(1.01) translateY(-5px); /* Slightly bigger and lifts up */
+  box-shadow: 0 20px 40px rgba(0,0,0,0.1); /* Deeper shadow makes it look higher */
+ }
 
 /* Hide sections by default */
 .content-section {
@@ -326,8 +334,8 @@
     <div class="section-title">SHOP'S OVERVIEW</div>
     <button class="btn shop active" onclick="setActive(this, 'daily-ops')">DAILY OPERATIONS OVERVIEW</button>
     <button class="btn shop" onclick="setActive(this, 'financial')">FINANCIAL STATEMENTS</button>
-    <button class="btn shop" onclick="setActive(this)">KEY PERFORMANCE METRICS</button>
-    <button class="btn shop" onclick="setActive(this)">BUSINESS MANAGEMENT</button>
+    <button class="btn shop" onclick="setActive(this, 'metrics')">KEY PERFORMANCE METRICS</button>
+    <button class="btn shop" onclick="setActive(this, 'management')">BUSINESS MANAGEMENT</button>
 
     <div class="divider"></div>
 
@@ -369,6 +377,15 @@
       <h2>Financial Statements</h2>
       <p>Reports and data will appear here.</p>
   </div>
+
+  <div id="metrics" class="content-section">
+      <h2>Performance Data</h2>
+  </div>
+
+  <div id="management" class="content-section">
+      <h2>Business Management</h2>
+  </div>
+    
   </div>
   
   <div class="modal" id="modal">
