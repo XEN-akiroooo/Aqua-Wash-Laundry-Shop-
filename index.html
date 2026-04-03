@@ -324,8 +324,8 @@
     <div class="divider-smallspace"></div>
 
     <div class="section-title">SHOP'S OVERVIEW</div>
-    <button class="btn shop" onclick="setActive(this)">DAILY OPERATIONS</button>
-    <button class="btn shop" onclick="setActive(this)">FINANCIAL STATEMENT</button>
+    <button class="btn shop active" onclick="setActive(this, 'daily-ops')">DAILY OPERATIONS OVERVIEW</button>
+    <button class="btn shop" onclick="setActive(this, 'financial')">FINANCIAL STATEMENTS</button>
     <button class="btn shop" onclick="setActive(this)">KEY PERFORMANCE METRICS</button>
     <button class="btn shop" onclick="setActive(this)">BUSINESS MANAGEMENT</button>
 
@@ -348,7 +348,7 @@
     
    <div class="scrolling-frame">
      
-    <div id="daily-ops" class="content-section active-content">
+    <div id="daily-ops" class="content-section" style="display: block;">
       <div class="cards">
         
         <div class="card">
@@ -399,6 +399,14 @@
     targetSection.classList.add('active-content');
   }
 }
+    // This runs automatically when the page finishes loading
+window.onload = function() {
+  const defaultBtn = document.querySelector('.btn.shop.active');
+  if (defaultBtn) {
+    // This ensures the logic is synced
+    setActive(defaultBtn, 'daily-ops');
+  }
+};
 
     function toggleSidebar() {
       const sidebar = document.getElementById('sidebar');
