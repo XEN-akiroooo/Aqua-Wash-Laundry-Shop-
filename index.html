@@ -20,24 +20,75 @@
 
     /* SIDEBAR */
     .sidebar {
-      width: 240px; /* default width */
-      min-width: 200px;
-      max-width: 280px;
+      width: 260px; 
+      min-width: 60px; /* Keep this small for the thin state */
       background: linear-gradient(to bottom, #2B58CC, #7B2BCC);
       color: white;
       padding: 2rem 1rem;
-      transition: width 0.3s, padding 0.3s;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       position: relative;
       display: flex;
-      flex-direction: column;
+     flex-direction: column;
     }
 
     /* collapsed version: small width with icons only */
     .sidebar.collapsed {
       width: 60px;
-      padding: 2rem 0.3rem;
-      overflow: hidden;
+      padding: 2rem 0.5rem;
     }
+
+    /* Hide text and dividers when collapsed */
+    .sidebar.collapsed .section-title,
+    .sidebar.collapsed .divider,
+    .sidebar.collapsed .header {
+      display: none;
+    }
+
+    .toggle-btn {
+     position: absolute;
+     right: -15px; /* Offset to sit on the edge */
+     top: 30px;
+     background: #7B2BCC;
+     color: white;
+     border: 2px solid white;
+     border-radius: 50%;
+     width: 25px;
+     height: 25px;
+     display: flex;
+     align-items: center;
+     justify-content: center;
+     cursor: pointer;
+     z-index: 100;
+     font-size: 14px;
+     transition: transform 0.3s;
+    }
+
+.sidebar.collapsed .toggle-btn {
+  right: 18px; /* Move inside when collapsed */
+  transform: rotate(180deg);
+}
+
+/* The Three-Dot Handle (Visible only when collapsed) */
+.three-dots {
+  display: none;
+  flex-direction: column;
+  gap: 4px;
+  align-items: center;
+  cursor: pointer;
+  margin-top: 20px;
+}
+
+.sidebar.collapsed .three-dots {
+  display: flex;
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  background: white;
+  border-radius: 50%;
+  opacity: 0.7;
+}
 
     /* DASHBOARD TEXT WITH STROKE */
     .header {
@@ -51,11 +102,6 @@
       color: white; /* text color fixed */
     }
 
-    .back-btn {
-      cursor: pointer;
-      font-size: 1.2rem;
-      color: white; /* back button white */
-    }
 
     .section-title {
       text-align: center;
@@ -265,9 +311,16 @@
 
   <!-- SIDEBAR -->
   <div class="sidebar" id="sidebar">
-    <div class="header">
-      DASHBOARD
-      <span class="back-btn" onclick="toggleSidebar()">←</span>
+  <div class="toggle-btn" onclick="toggleSidebar()">></div>
+
+  <div class="three-dots" onclick="toggleSidebar()">
+    <div class="dot"></div>
+    <div class="dot"></div>
+    <div class="dot"></div>
+  </div>
+
+  <div class="header">
+    DASHBOARD
     </div>
 
     <div class="section-title">SHOP'S OVERVIEW</div>
@@ -322,12 +375,18 @@
     }
 
     function toggleSidebar() {
-      const sidebar = document.getElementById('sidebar');
-      const hamburger = document.querySelector('.hamburger');
-      sidebar.classList.toggle('collapsed');
-      // hamburger shows only when collapsed
-      hamburger.style.display = sidebar.classList.contains('collapsed') ? 'flex' : 'none';
-    }
+  const sidebar = document.getElementById('sidebar');
+  const toggleBtn = document.querySelector('.toggle-btn');
+  
+  sidebar.classList.toggle('collapsed');
+  
+  // Update the arrow icon based on state
+  if (sidebar.classList.contains('collapsed')) {
+    toggleBtn.innerHTML = '>'; // Points right to expand
+  } else {
+    toggleBtn.innerHTML = '<'; // Points left to collapse
+  }
+}
 
     function openModal() {
       document.getElementById('modal').classList.add('show');
