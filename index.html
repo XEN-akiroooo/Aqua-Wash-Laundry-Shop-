@@ -36,28 +36,31 @@
       padding: 2rem 0.5rem;
     }
 
-    .sidebar .section-title,
-    .sidebar .divider,
-    .sidebar .divider-smallspace,
-    .sidebar .btn,
-    .sidebar .footer {
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    }
+    /* 1. STATE WHEN OPEN: Slow, delayed appearance */
+.sidebar .header,
+.sidebar .section-title,
+.sidebar .divider,
+.sidebar .divider-smallspace,
+.sidebar .btn,
+.sidebar .footer {
+  /* 0.6s duration, 0.2s delay for a smooth entrance */
+  transition: opacity 0.6s ease-out 0.2s, transform 0.6s ease-out 0.2s;
+}
 
-    .sidebar .header {
-     transition: all 0.7s ease-out 0.2s; /* Longer duration and more delay */
-    }
-
-    .sidebar.collapsed .header,
-    .sidebar.collapsed .section-title,
-    .sidebar.collapsed .divider,
-    .sidebar.collapsed .divider-smallspace,
-    .sidebar.collapsed .btn:not(.collapsed-btn),
-    .sidebar.collapsed .footer {
-      opacity: 0;
-      transform: translateX(-20px);
-      pointer-events: none;
-    }
+/* 2. STATE WHEN COLLAPSED: Fast disappearance */
+.sidebar.collapsed .header,
+.sidebar.collapsed .section-title,
+.sidebar.collapsed .divider,
+.sidebar.collapsed .divider-smallspace,
+.sidebar.collapsed .btn,
+.sidebar.collapsed .footer {
+  /* 0.1s duration, NO delay (0s) for an instant exit */
+  transition: opacity 0.1s ease-in 0s, transform 0.1s ease-in 0s;
+  
+  opacity: 0;
+  transform: translateX(-20px);
+  pointer-events: none;
+}
 
     .sidebar.collapsed .btn {
       width: 40px;
