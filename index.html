@@ -21,134 +21,110 @@
     /* SIDEBAR */
     .sidebar {
       width: 260px; 
-      min-width: 60px; /* Keep this small for the thin state */
+      min-width: 60px;
       background: linear-gradient(to bottom, #2B58CC, #7B2BCC);
       color: white;
       padding: 2rem 1rem;
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       position: relative;
       display: flex;
-     flex-direction: column;
+      flex-direction: column;
+      flex-shrink: 0;
     }
 
-    /* collapsed version: small width with icons only */
+    /* Collapsed state */
     .sidebar.collapsed {
-      width: 60px;
+      width: 70px;
       padding: 2rem 0.5rem;
     }
 
-    /* Apply transition to all collapsible elements */
-.sidebar .header,
-.sidebar .section-title,
-.sidebar .divider,
-.sidebar .btn,
-.sidebar .footer {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* When collapsed: move text out and fade out */
-.sidebar.collapsed .header,
-.sidebar.collapsed .section-title,
-.sidebar.collapsed .divider,
-.sidebar.collapsed .btn:not(.collapsed-btn),
-.sidebar.collapsed .footer {
-  opacity: 0;
-  transform: translateX(-20px); /* slide left */
-  pointer-events: none; /* optional, prevent clicking when hidden */
-}
-
-/* Optional: add a class to buttons only when collapsed to shrink properly */
-.sidebar.collapsed .btn {
-  width: 40px;
-  height: 40px;
-  font-size: 0;
-  border-radius: 50%;
-  margin: 0.5rem auto;
-}
-   .sidebar.collapsed .toggle-btn{
-      display: none;
+    /* Transition for child elements */
+    .sidebar .header,
+    .sidebar .section-title,
+    .sidebar .divider,
+    .sidebar .btn,
+    .sidebar .footer {
+      transition: all 0.2s ease-in-out;
     }
 
+    /* Hide text elements when collapsed */
+    .sidebar.collapsed .header,
+    .sidebar.collapsed .section-title,
+    .sidebar.collapsed .divider {
+      opacity: 0;
+      visibility: hidden;
+      height: 0;
+      margin: 0;
+      pointer-events: none;
+    }
+
+    /* Toggle Button - Fixed Positioning */
     .toggle-btn {
-     position: absolute;
-     right: -18px; /* Perfectly straddles the edge */
-     top: 50px;    /* You can use 50% if you want it vertically centered */
-     background: #7B2BCC;
-     color: white;
-     border: 2px solid #DDFFFF; /* Matches body background for a 'cut-out' look */
-     border-radius: 50%;
-     width: 35px;  /* Bigger size */
-     height: 35px; /* Bigger size */
-     display: flex;
-     align-items: center;
-     justify-content: center;
-     cursor: pointer;
-     z-index: 1000;
-     font-size: 18px; /* Bigger arrow */
-     font-weight: bold;
-     box-shadow: 2px 0 5px rgba(0,0,0,0.1);
-     transition: right 0.3s;
-   }
-
-.sidebar.collapsed .toggle-btn {
-  right: 18px; /* Move inside when collapsed */
-}
-
-/* The Three-Dot Handle (Visible only when collapsed) */
-.three-dots {
-  display: none;
-  flex-direction: column;
-  gap: 4px;
-  align-items: center;
-  cursor: pointer;
-  margin-top: 20px;
-}
-
-.sidebar .three-dots {
-  display: none;
-  position: absolute;
-  top: 50px; /* adjust this value to move up/down */
-  left: 50%;
-  transform: translateX(-50%);
-  flex-direction: column;
-  gap: 4px;
-  align-items: center;
-  cursor: pointer;
-}
-
-.sidebar.collapsed .three-dots {
-  display: flex;
-}
-
-.dot {
-  width: 6px;
-  height: 6px;
-  background: white;
-  border-radius: 50%;
-  opacity: 0.7;
-}
-
-    /* DASHBOARD TEXT WITH STROKE */
-    .header {
-      font-size: 2rem;
-      font-weight: 900;
+      position: absolute;
+      right: -18px;
+      top: 50px;
+      background: #7B2BCC;
+      color: white;
+      border: 2px solid #DDFFFF;
+      border-radius: 50%;
+      width: 35px;
+      height: 35px;
       display: flex;
       align-items: center;
-      gap: 0.5rem;
-      margin-bottom: 2rem;
-      margin-top: 10px;
-      -webkit-text-stroke: 1px #1800AD;
-      color: white; /* text color fixed */
-      letter-spacing: 1px;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 1000;
+      font-size: 18px;
+      font-weight: bold;
+      box-shadow: 2px 0 5px rgba(0,0,0,0.1);
     }
 
+    .sidebar.collapsed .toggle-btn {
+      right: -18px; /* Maintain position relative to sidebar edge */
+    }
+
+    /* Three-Dot Handle for collapsed view */
+    .sidebar .three-dots {
+      display: none;
+      position: absolute;
+      top: 100px;
+      left: 50%;
+      transform: translateX(-50%);
+      flex-direction: column;
+      gap: 4px;
+      cursor: pointer;
+    }
+
+    .sidebar.collapsed .three-dots {
+      display: flex;
+    }
+
+    .dot {
+      width: 6px;
+      height: 6px;
+      background: white;
+      border-radius: 50%;
+      opacity: 0.7;
+    }
+
+    .header {
+      font-size: 1.8rem;
+      font-weight: 900;
+      text-align: center;
+      margin-bottom: 2rem;
+      -webkit-text-stroke: 1px #1800AD;
+      color: white;
+      letter-spacing: 1px;
+      overflow: hidden;
+      white-space: nowrap;
+    }
 
     .section-title {
       text-align: center;
       font-weight: bold;
       margin: 1rem 0;
       opacity: 0.9;
-      font-size: 0.9rem;
+      font-size: 0.8rem;
       white-space: nowrap;
       overflow: hidden;
     }
@@ -168,47 +144,36 @@
       min-height: 50px;
       margin: 0.5rem 0;
       border-radius: 16px;
-      border: 6px solid transparent;
+      border: 4px solid transparent;
       color: white;
       font-weight: bold;
-      font-size: 12px;
+      font-size: 11px;
       cursor: pointer;
-      transition: 0.2s;
       text-align: center;
-      white-space: nowrap;
+      white-space: normal;
       flex-shrink: 0;
+      overflow: hidden;
     }
 
-    /* collapsed sidebar: shrink buttons text */
+    /* Circular buttons when collapsed */
     .sidebar.collapsed .btn {
-      font-size: 0;
+      width: 45px;
+      height: 45px;
+      min-height: 45px;
+      font-size: 0; /* Hide text */
       border-radius: 50%;
-      width: 40px;
-      height: 40px;
       margin: 0.5rem auto;
+      border-width: 2px;
     }
 
-    /* BUTTON COLORS & STROKES */
-    /* Shop's Overview */
-    .btn.shop {
-      background: #2093DD;
-      border-color: #1B67AD;
-    }
-
-    /* Controls */
-    .btn.control {
-      background: #E16CF0;
-      border-color: #BA1DB8;
-    }
-
-    /* Account / Log out */
-    .btn.account {
-      background: #1E6CE2;
-      border-color: #1D52BA;
-    }
+    /* Colors */
+    .btn.shop { background: #2093DD; border-color: #1B67AD; }
+    .btn.control { background: #E16CF0; border-color: #BA1DB8; }
+    .btn.account { background: #1E6CE2; border-color: #1D52BA; }
 
     .btn.active {
-      box-shadow: 0 0 10px white;
+      box-shadow: 0 0 12px white;
+      transform: scale(1.02);
     }
 
     .footer {
@@ -218,32 +183,31 @@
       gap: 0.5rem;
     }
 
-    /* MAIN */
+    /* MAIN CONTENT */
     .main {
       flex: 1;
       background: radial-gradient(circle, #d9faff, #ffffff);
-      padding: 1rem;
+      padding: 2rem;
       transition: 0.3s;
       display: flex;
       flex-direction: column;
       align-items: center;
     }
 
-    /* Top title gradient */
     .top-title {
       text-align: center;
-      font-size: 2rem;
-      font-weight: 900; /* make bold */
+      font-size: 2.5rem;
+      font-weight: 900;
       background: linear-gradient(90deg, #1e90ff, #00c3ff);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
-      margin-bottom: 1.5rem;
+      margin-bottom: 2rem;
     }
 
     .cards {
       display: flex;
       flex-wrap: wrap;
-      gap: 1rem;
+      gap: 1.5rem;
       justify-content: center;
       width: 100%;
     }
@@ -251,117 +215,67 @@
     .card {
       flex: 1 1 300px;
       max-width: 400px;
-      padding: 1rem;
+      padding: 2rem;
       border-radius: 2rem;
       background: white;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.05);
     }
 
     /* MODAL */
     .modal {
       position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.4);
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.5);
       display: none;
       justify-content: center;
       align-items: center;
-      padding: 1rem;
+      z-index: 2000;
     }
+
+    .modal.show { display: flex; }
 
     .modal-box {
       background: white;
-      padding: 2rem;
+      padding: 2.5rem;
       border-radius: 2rem;
       text-align: center;
       width: 90%;
-      max-width: 400px;
+      max-width: 350px;
     }
 
     .modal button {
       margin-top: 1rem;
       width: 100%;
-      padding: 0.75rem;
-      border-radius: 1rem;
+      padding: 0.8rem;
+      border-radius: 12px;
       border: none;
       font-weight: bold;
       cursor: pointer;
     }
 
-    .green { background: linear-gradient(to right, #00c853, #00e676); color: white; }
-    .red { background: linear-gradient(to right, #d50000, #8e0000); color: white; }
+    .green { background: #00c853; color: white; }
+    .red { background: #d50000; color: white; }
 
-    /* HAMBURGER */
-    .hamburger {
-      position: absolute;
-      top: 1rem;
-      left: 1rem;
-      font-size: 1.5rem;
-      cursor: pointer;
-      display: none;
-      z-index: 10;
+    @media (max-width: 768px) {
+      .sidebar { position: fixed; height: 100%; left: -260px; }
+      .sidebar.active { left: 0; }
+      .main { padding: 1rem; }
     }
-
-    .show {
-      display: flex !important;
-    }
-
-    /* RESPONSIVE */
-    @media (max-width: 900px) {
-      body {
-        flex-direction: column;
-      }
-
-      .sidebar {
-        position: fixed;
-        height: 100%;
-        z-index: 5;
-      }
-
-      .main {
-        margin-left: 0;
-      }
-
-      .hamburger {
-        display: flex;
-      }
-    }
-
-    @media (max-width: 600px) {
-      .top-title {
-        font-size: 1.5rem;
-      }
-
-      .card {
-        flex: 1 1 90%;
-        max-width: none;
-      }
-
-      .btn {
-        font-size: 12px;
-      }
-    }
-
   </style>
 </head>
-
 <body>
 
-  <!-- SIDEBAR -->
   <div class="sidebar" id="sidebar">
-  <div class="toggle-btn" onclick="toggleSidebar()">></div>
+    <div class="toggle-btn" onclick="toggleSidebar()">&lt;</div>
 
-  <div class="three-dots" onclick="toggleSidebar()">
-    <div class="dot"></div>
-    <div class="dot"></div>
-    <div class="dot"></div>
-  </div>
-
-  <div class="header">
-    DASHBOARD
+    <div class="three-dots" onclick="toggleSidebar()">
+      <div class="dot"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
     </div>
+
+    <div class="header">DASHBOARD</div>
 
     <div class="section-title">SHOP'S OVERVIEW</div>
     <button class="btn shop" onclick="setActive(this)">Daily Operations Overview</button>
@@ -381,9 +295,7 @@
     </div>
   </div>
 
-  <!-- MAIN -->
   <div class="main" id="main">
-    <div class="hamburger" onclick="toggleSidebar()">☰</div>
     <div class="top-title">AQUA WASH LAUNDRY SHOP</div>
 
     <div class="cards">
@@ -399,7 +311,6 @@
     </div>
   </div>
 
-  <!-- MODAL -->
   <div class="modal" id="modal">
     <div class="modal-box">
       <p>Do you really want to log out? 🤔</p>
@@ -415,26 +326,20 @@
     }
 
     function toggleSidebar() {
-  const sidebar = document.getElementById('sidebar');
-  const toggleBtn = document.querySelector('.toggle-btn');
-  
-  sidebar.classList.toggle('collapsed');
-  
-  // Update the arrow icon based on state
-  if (sidebar.classList.contains('collapsed')) {
-    toggleBtn.innerHTML = '>'; // Points right to expand
-  } else {
-    toggleBtn.innerHTML = '<'; // Points left to collapse
-  }
-}
-
-    function openModal() {
-      document.getElementById('modal').classList.add('show');
+      const sidebar = document.getElementById('sidebar');
+      const toggleBtn = document.querySelector('.toggle-btn');
+      
+      sidebar.classList.toggle('collapsed');
+      
+      if (sidebar.classList.contains('collapsed')) {
+        toggleBtn.innerHTML = '>'; 
+      } else {
+        toggleBtn.innerHTML = '<'; 
+      }
     }
 
-    function closeModal() {
-      document.getElementById('modal').classList.remove('show');
-    }
+    function openModal() { document.getElementById('modal').classList.add('show'); }
+    function closeModal() { document.getElementById('modal').classList.remove('show'); }
   </script>
 
 </body>
