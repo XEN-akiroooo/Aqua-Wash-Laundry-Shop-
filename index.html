@@ -12,18 +12,23 @@
 
     body {
       display: flex;
-      height: 100vh;
-      overflow: hidden;
+      min-height: 100vh;
+      overflow-x: hidden;
+      flex-direction: row;
     }
 
     /* SIDEBAR */
     .sidebar {
-      width: 260px;
+      width: 20%;
+      min-width: 200px;
+      max-width: 280px;
       background: linear-gradient(to bottom, #2B58CC, #7B2BCC);
       color: white;
-      padding: 20px;
+      padding: 2rem 1rem;
       transition: 0.3s;
       position: relative;
+      display: flex;
+      flex-direction: column;
     }
 
     .sidebar.collapsed {
@@ -33,43 +38,45 @@
     }
 
     .header {
-      font-size: 22px;
+      font-size: 1.5rem;
       font-weight: bold;
       display: flex;
       align-items: center;
-      gap: 10px;
-      margin-bottom: 20px;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
     }
 
     .back-btn {
       cursor: pointer;
-      font-size: 20px;
+      font-size: 1.2rem;
     }
 
     .section-title {
       text-align: center;
       font-weight: bold;
-      margin: 15px 0;
+      margin: 1rem 0;
       opacity: 0.9;
+      font-size: 0.9rem;
     }
 
     .divider {
       height: 2px;
       background: rgba(255,255,255,0.4);
-      margin: 15px 0;
+      margin: 1rem 0;
     }
 
     .btn {
       display: block;
       width: 100%;
-      padding: 10px;
-      margin: 8px 0;
-      border-radius: 25px;
+      padding: 0.75rem;
+      margin: 0.5rem 0;
+      border-radius: 1.5rem;
       border: none;
       color: white;
       font-weight: bold;
       cursor: pointer;
       transition: 0.2s;
+      font-size: 0.9rem;
     }
 
     .blue { background: linear-gradient(to right, #2DA8FF, #005BFF); }
@@ -82,37 +89,43 @@
     }
 
     .footer {
-      position: absolute;
-      bottom: 20px;
-      width: 80%;
+      margin-top: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
     }
 
     /* MAIN */
     .main {
       flex: 1;
       background: radial-gradient(circle, #d9faff, #ffffff);
-      padding: 20px;
+      padding: 1rem;
       transition: 0.3s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
 
     .top-title {
       text-align: center;
-      font-size: 28px;
+      font-size: 2rem;
       color: #1e90ff;
-      margin-bottom: 20px;
+      margin-bottom: 1.5rem;
     }
 
     .cards {
       display: flex;
-      gap: 20px;
+      flex-wrap: wrap;
+      gap: 1rem;
       justify-content: center;
-      margin-top: 50px;
+      width: 100%;
     }
 
     .card {
-      width: 350px;
-      padding: 20px;
-      border-radius: 40px;
+      flex: 1 1 300px; /* flexible width, min 300px */
+      max-width: 400px;
+      padding: 1rem;
+      border-radius: 2rem;
       background: white;
       box-shadow: 0 10px 25px rgba(0,0,0,0.1);
     }
@@ -128,21 +141,23 @@
       display: none;
       justify-content: center;
       align-items: center;
+      padding: 1rem;
     }
 
     .modal-box {
       background: white;
-      padding: 30px;
-      border-radius: 30px;
+      padding: 2rem;
+      border-radius: 2rem;
       text-align: center;
-      width: 300px;
+      width: 90%;
+      max-width: 400px;
     }
 
     .modal button {
-      margin-top: 10px;
+      margin-top: 1rem;
       width: 100%;
-      padding: 10px;
-      border-radius: 20px;
+      padding: 0.75rem;
+      border-radius: 1rem;
       border: none;
       font-weight: bold;
       cursor: pointer;
@@ -154,15 +169,52 @@
     /* HAMBURGER */
     .hamburger {
       position: absolute;
-      top: 20px;
-      left: 20px;
-      font-size: 20px;
+      top: 1rem;
+      left: 1rem;
+      font-size: 1.5rem;
       cursor: pointer;
       display: none;
+      z-index: 10;
     }
 
     .show {
       display: flex !important;
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 900px) {
+      body {
+        flex-direction: column;
+      }
+
+      .sidebar {
+        position: fixed;
+        height: 100%;
+        z-index: 5;
+      }
+
+      .main {
+        margin-left: 0;
+      }
+
+      .hamburger {
+        display: flex;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .top-title {
+        font-size: 1.5rem;
+      }
+
+      .card {
+        flex: 1 1 90%;
+        max-width: none;
+      }
+
+      .btn {
+        font-size: 0.8rem;
+      }
     }
 
   </style>
@@ -233,7 +285,7 @@
       const hamburger = document.querySelector('.hamburger');
 
       sidebar.classList.toggle('collapsed');
-      hamburger.style.display = sidebar.classList.contains('collapsed') ? 'block' : 'none';
+      hamburger.style.display = sidebar.classList.contains('collapsed') ? 'flex' : 'none';
     }
 
     function openModal() {
