@@ -398,23 +398,28 @@
 
   <script>
     function setActive(btn, sectionId) {
-  // 1. Manage Button Active State
+      
+const frame = document.querySelector('.scrolling-frame');
+    frame.classList.add('frame-float');
+  
   document.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
 
-  // 2. Manage Content Switching
   const allSections = document.querySelectorAll('.content-section');
   allSections.forEach(section => {
     section.classList.remove('active-content');
     section.style.display = 'none'; // Ensure hidden
   });
 
-  // 3. Show selected section
   const targetSection = document.getElementById(sectionId);
   if (targetSection) {
     targetSection.style.display = 'block';
     targetSection.classList.add('active-content');
   }
+
+  setTimeout(() => {
+    frame.classList.remove('frame-float');
+  }, 400);
 }
     // This runs automatically when the page finishes loading
 window.onload = function() {
