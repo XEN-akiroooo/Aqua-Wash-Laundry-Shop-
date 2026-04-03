@@ -165,6 +165,64 @@
       display: flex !important;
     }
 
+    /* MOBILE RESPONSIVE FIX */
+@media (max-width: 768px) {
+
+  body {
+    flex-direction: column;
+    overflow: auto;
+  }
+
+  /* Sidebar becomes scrollable */
+  .sidebar {
+    width: 100%;
+    height: auto;
+    position: relative;
+    overflow-y: auto;
+  }
+
+  /* Footer fix (no longer fixed bottom) */
+  .footer {
+    position: relative;
+    width: 100%;
+    margin-top: 20px;
+  }
+
+  /* Main takes full width */
+  .main {
+    width: 100%;
+    padding: 10px;
+  }
+
+  /* Stack cards vertically */
+  .cards {
+    flex-direction: column;
+    align-items: center;
+    margin-top: 20px;
+  }
+
+  .card {
+    width: 95%;
+    border-radius: 25px;
+  }
+
+  /* Smaller title */
+  .top-title {
+    font-size: 20px;
+  }
+
+  /* Buttons spacing fix */
+  .btn {
+    font-size: 14px;
+    padding: 8px;
+  }
+
+  /* Show hamburger always on mobile */
+  .hamburger {
+    display: block;
+  }
+}
+
   </style>
 </head>
 
