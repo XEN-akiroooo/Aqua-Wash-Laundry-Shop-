@@ -15,28 +15,31 @@
       min-height: 100vh;
       overflow-x: hidden;
       flex-direction: row;
+      background-color: #DDFFFF;
     }
 
     /* SIDEBAR */
     .sidebar {
-      width: 20%;
+      width: 240px; /* default width */
       min-width: 200px;
       max-width: 280px;
       background: linear-gradient(to bottom, #2B58CC, #7B2BCC);
       color: white;
       padding: 2rem 1rem;
-      transition: 0.3s;
+      transition: width 0.3s, padding 0.3s;
       position: relative;
       display: flex;
       flex-direction: column;
     }
 
+    /* collapsed version: small width with icons only */
     .sidebar.collapsed {
-      width: 0;
-      padding: 0;
+      width: 60px;
+      padding: 2rem 0.3rem;
       overflow: hidden;
     }
 
+    /* DASHBOARD TEXT WITH STROKE */
     .header {
       font-size: 1.5rem;
       font-weight: bold;
@@ -44,11 +47,14 @@
       align-items: center;
       gap: 0.5rem;
       margin-bottom: 1.5rem;
+      -webkit-text-stroke: 1px #1800AD;
+      color: white; /* text color fixed */
     }
 
     .back-btn {
       cursor: pointer;
       font-size: 1.2rem;
+      color: white; /* back button white */
     }
 
     .section-title {
@@ -57,6 +63,8 @@
       margin: 1rem 0;
       opacity: 0.9;
       font-size: 0.9rem;
+      white-space: nowrap;
+      overflow: hidden;
     }
 
     .divider {
@@ -65,30 +73,55 @@
       margin: 1rem 0;
     }
 
+    /* BUTTONS */
     .btn {
-  display: flex;              /* make it flex to center content */
-  align-items: center;        /* vertically center text */
-  justify-content: center;    /* horizontally center text */
-  width: 100%;                /* fill sidebar width */
-  min-height: 50px;           /* uniform height */
-  margin: 0.5rem 0;
-  border-radius: 1.5rem;
-  border: none;
-  color: white;
-  font-weight: bold;
-  cursor: pointer;
-  transition: 0.2s;
-  font-size: 0.9rem;
-  text-align: center;
-  white-space: nowrap;        /* prevent text from wrapping */
-}
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      min-height: 50px;
+      margin: 0.5rem 0;
+      border-radius: 16px;
+      border: 6px solid transparent;
+      color: white;
+      font-weight: bold;
+      font-size: 12px;
+      cursor: pointer;
+      transition: 0.2s;
+      text-align: center;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
 
-    .blue { background: linear-gradient(to right, #2DA8FF, #005BFF); }
-    .pink { background: linear-gradient(to right, #FF4FD8, #A800FF); }
-    .solid-blue { background: #1E6DFF; }
+    /* collapsed sidebar: shrink buttons text */
+    .sidebar.collapsed .btn {
+      font-size: 0;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      margin: 0.5rem auto;
+    }
+
+    /* BUTTON COLORS & STROKES */
+    /* Shop's Overview */
+    .btn.shop {
+      background: #2093DD;
+      border-color: #1B67AD;
+    }
+
+    /* Controls */
+    .btn.control {
+      background: #E16CF0;
+      border-color: #BA1DB8;
+    }
+
+    /* Account / Log out */
+    .btn.account {
+      background: #1E6CE2;
+      border-color: #1D52BA;
+    }
 
     .btn.active {
-      border: 3px solid white;
       box-shadow: 0 0 10px white;
     }
 
@@ -110,10 +143,14 @@
       align-items: center;
     }
 
+    /* Top title gradient */
     .top-title {
       text-align: center;
       font-size: 2rem;
-      color: #1e90ff;
+      font-weight: 900; /* make bold */
+      background: linear-gradient(90deg, #1e90ff, #00c3ff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
       margin-bottom: 1.5rem;
     }
 
@@ -126,7 +163,7 @@
     }
 
     .card {
-      flex: 1 1 300px; /* flexible width, min 300px */
+      flex: 1 1 300px;
       max-width: 400px;
       padding: 1rem;
       border-radius: 2rem;
@@ -217,7 +254,7 @@
       }
 
       .btn {
-        font-size: 0.8rem;
+        font-size: 12px;
       }
     }
 
@@ -234,20 +271,20 @@
     </div>
 
     <div class="section-title">SHOP'S OVERVIEW</div>
-    <button class="btn blue" onclick="setActive(this)">Daily Operations Overview</button>
-    <button class="btn blue" onclick="setActive(this)">Financial Statements</button>
-    <button class="btn blue" onclick="setActive(this)">Key Performance Metrics</button>
-    <button class="btn blue" onclick="setActive(this)">Business Management</button>
+    <button class="btn shop" onclick="setActive(this)">Daily Operations Overview</button>
+    <button class="btn shop" onclick="setActive(this)">Financial Statements</button>
+    <button class="btn shop" onclick="setActive(this)">Key Performance Metrics</button>
+    <button class="btn shop" onclick="setActive(this)">Business Management</button>
 
     <div class="divider"></div>
 
     <div class="section-title">CONTROLS</div>
-    <button class="btn pink" onclick="setActive(this)">INPUT OR CONSOLE</button>
-    <button class="btn pink" onclick="setActive(this)">SERVICE SETTINGS</button>
+    <button class="btn control" onclick="setActive(this)">INPUT OR CONSOLE</button>
+    <button class="btn control" onclick="setActive(this)">SERVICE SETTINGS</button>
 
     <div class="footer">
-      <button class="btn solid-blue">ACCOUNT SETTINGS</button>
-      <button class="btn solid-blue" onclick="openModal()">LOG OUT</button>
+      <button class="btn account">ACCOUNT SETTINGS</button>
+      <button class="btn account" onclick="openModal()">LOG OUT</button>
     </div>
   </div>
 
@@ -287,8 +324,8 @@
     function toggleSidebar() {
       const sidebar = document.getElementById('sidebar');
       const hamburger = document.querySelector('.hamburger');
-
       sidebar.classList.toggle('collapsed');
+      // hamburger shows only when collapsed
       hamburger.style.display = sidebar.classList.contains('collapsed') ? 'flex' : 'none';
     }
 
