@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <base target="_top">
   <style>
     * {
@@ -165,63 +166,55 @@
       display: flex !important;
     }
 
-    /* MOBILE RESPONSIVE FIX */
-@media (max-width: 768px) {
-
-  body {
-    flex-direction: column;
-    overflow: auto;
-  }
-
-  /* Sidebar becomes scrollable */
-  .sidebar {
-    width: 100%;
-    height: auto;
-    position: relative;
-    overflow-y: auto;
-  }
-
-  /* Footer fix (no longer fixed bottom) */
-  .footer {
-    position: relative;
-    width: 100%;
-    margin-top: 20px;
-  }
-
-  /* Main takes full width */
-  .main {
-    width: 100%;
-    padding: 10px;
-  }
-
-  /* Stack cards vertically */
-  .cards {
-    flex-direction: column;
-    align-items: center;
-    margin-top: 20px;
-  }
-
-  .card {
-    width: 95%;
-    border-radius: 25px;
-  }
-
-  /* Smaller title */
-  .top-title {
-    font-size: 20px;
-  }
-
-  /* Buttons spacing fix */
-  .btn {
-    font-size: 14px;
-    padding: 8px;
-  }
-
-  /* Show hamburger always on mobile */
-  .hamburger {
-    display: block;
-  }
+    /* Container adjustments */
+body {
+  margin: 0;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
 }
+
+/* Make buttons fill width on small screens */
+.btn {
+  width: 100%;
+  margin-bottom: 8px;
+  box-sizing: border-box;
+}
+
+/* Layout for the cards section */
+.cards {
+  display: flex;
+  flex-wrap: wrap; /* Allows cards to drop to next line */
+  gap: 15px;
+}
+
+.card {
+  flex: 1 1 300px; /* Grow, shrink, and base width of 300px */
+  min-width: 280px;
+}
+
+/* Fix the footer/logout button visibility */
+.footer {
+  margin-top: auto; /* Pushes footer to bottom */
+  padding: 20px 0;
+  display: flex;
+  flex-direction: column; 
+  gap: 10px;
+}
+
+/* Tablet and Desktop adjustments */
+@media (min-width: 768px) {
+  .btn {
+    width: auto; /* Return to original size on desktop */
+  }
+  
+  .footer {
+    flex-direction: row; /* Side by side on desktop */
+    justify-content: space-between;
+  }
+        }
+
 
   </style>
 </head>
