@@ -4,11 +4,13 @@
   <base target="_top">
   <style>
     @import url('https://fonts.googleapis.com/css2?family=League+Spartan:wght@100..900&display=swap');
+    
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
-      font-family: 'Segoe UI', sans-serif;
+      /* Apply League Spartan globally */
+      font-family: 'League Spartan', sans-serif;
     }
 
     body {
@@ -107,86 +109,45 @@
     .divider { margin: 1.5rem 0; }
     .divider-smallspace { margin: -25px 10px 30px 0px; }
 
-    /* --- THE BASE BUTTON (League Spartan Integration) --- */
-.btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  cursor: pointer;
-  transition: all 0.2s ease-in-out;
-  text-align: center;
-  white-space: nowrap;
-  width: 100%;
-  border: none; /* Default to none for gradients */
-  box-sizing: border-box; /* Important for border calculations */
-}
-
-/* --- THE SIZES --- */
-.btn.large {
-  height: 65px;
-  border-radius: 20px;
-  font-size: 16px;
-  letter-spacing: 1px;
-}
-
-.btn.medium {
-  height: 50px;
-  border-radius: 16px;
-  font-size: 13px; /* Slightly larger for Spartan readability */
-}
-
-.btn.thin {
-  height: 35px;
-  border-radius: 10px;
-  font-size: 11px;
-}
-
-/* --- SOLID STYLES (With Borders) --- */
-.btn.shop { background: #2093DD; border: 6px solid #1B67AD; }
-.btn.control { background: #E16CF0; border: 6px solid #BA1DB8; }
-.btn.account { background: #1E6CE2; border: 6px solid #1D52BA; }
-
-/* --- GRADIENT STYLES (No Borders) --- */
-.btn.blue-gradient { background: linear-gradient(to right, #0077C2, #1DDDE3); }
-.btn.yellow-gradient { background: linear-gradient(to right, #C2A300, #E6E41E); }
-.btn.orange-gradient { background: linear-gradient(to right, #925105, #FF8A00); }
-
-/* --- HOVER & ACTIVE STATES --- */
-.btn:hover {
-  filter: brightness(1.1);
-  transform: scale(1.02);
-}
-
-.btn.active {
-  box-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
-  border-color: #FFFFFF !important; /* Forces the border white when active */
-}
-
-        /* MAIN & SCROLLING FRAME */
-    .main {
-      flex: 1;
-      background: #DDFFFF;
-      padding: 2rem;
+    /* --- THE BASE BUTTON --- */
+    .btn {
       display: flex;
-      flex-direction: column;
-      height: 100vh;
-      overflow: hidden;
-    }
-
-    .scrolling-frame {
-      background: white;
-      flex: 1;
-      border-radius: 3rem;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-      padding: 2.5rem;
-      overflow-y: auto;
+      align-items: center;
+      justify-content: center;
+      margin: 0.5rem 0; /* Adds spacing back between buttons */
+      color: white;
+      cursor: pointer;
+      transition: all 0.2s ease-in-out;
+      text-align: center;
+      white-space: nowrap;
       width: 100%;
-      max-width: 1200px;
-      margin: 0 auto;
-      transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.4s ease;
+      border: none;
+      box-sizing: border-box;
+      font-weight: 800 !important; /* Forces Bold Spartan */
+      text-transform: uppercase;
     }
 
+    /* --- THE SIZES --- */
+    .btn.large { height: 65px; border-radius: 20px; font-size: 16px; letter-spacing: 1px; }
+    .btn.medium { height: 50px; border-radius: 16px; font-size: 13px; }
+    .btn.thin { height: 35px; border-radius: 10px; font-size: 11px; }
+
+    /* --- SOLID STYLES --- */
+    .btn.shop { background: #2093DD; border: 6px solid #1B67AD; }
+    .btn.control { background: #E16CF0; border: 6px solid #BA1DB8; }
+    .btn.account { background: #1E6CE2; border: 6px solid #1D52BA; }
+
+    /* --- GRADIENT STYLES --- */
+    .btn.blue-gradient { background: linear-gradient(to right, #0077C2, #1DDDE3); }
+    .btn.yellow-gradient { background: linear-gradient(to right, #C2A300, #E6E41E); }
+    .btn.orange-gradient { background: linear-gradient(to right, #925105, #FF8A00); }
+
+    .btn:hover { filter: brightness(1.1); transform: scale(1.02); }
+    .btn.active { box-shadow: 0 0 15px rgba(255, 255, 255, 0.8); border-color: #FFFFFF !important; }
+
+    /* MAIN & SCROLLING FRAME */
+    .main { flex: 1; background: #DDFFFF; padding: 2rem; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+    .scrolling-frame { background: white; flex: 1; border-radius: 3rem; box-shadow: 0 10px 30px rgba(0,0,0,0.05); padding: 2.5rem; overflow-y: auto; width: 100%; max-width: 1200px; margin: 0 auto; transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.4s ease; }
     .frame-float { transform: scale(1.01) translateY(-5px); box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
 
     /* TABS */
@@ -197,127 +158,36 @@
 
     /* ADAPTIVE DUAL FRAMES */
     .dual-frame-container { display: flex; flex-wrap: wrap; gap: 20px; width: 100%; }
-    .sub-frame {
-      flex: 1 1 350px;
-      border-radius: 2.5rem;
-      padding: 2rem;
-      min-height: 450px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-      border: 1px solid #f0f0f0;
-      overflow: auto;
+    .sub-frame { flex: 1 1 350px; border-radius: 2.5rem; padding: 2rem; min-height: 450px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 2px solid #0BB7BD; overflow: auto; background: #fff; }
+
+    @media (max-width: 900px) {
+      .dual-frame-container { flex-direction: column; }
+      .sub-frame { width: 100%; flex: 1 1 100%; min-height: 380px; }
     }
-    .first-frame { background: #ffffff; border: 2px solid #0BB7BD; }
-    .second-frame { background: #ffffff; border: 2px solid #0BB7BD; }
 
-@media (max-width: 900px) {
-  .dual-frame-container {
-    flex-direction: column;
-  }
-
-  .sub-frame {
-    width: 100%;
-    flex: 1 1 100%;
-    aspect-ratio: auto;
-    min-height: 380px;
-  }
-}
     .glass-text {
-  font-size: 1.5rem;
-  font-family: 'League Spartan', sans-serif;
-  font-weight: 800;
-  color: #0BB7BD;
-  text-shadow: 0 0 10px rgba(11, 183, 189, 0.3);
-  letter-spacing: 1px;
-  text-transform: uppercase;
-}
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: #0BB7BD;
+      text-shadow: 0 0 10px rgba(11, 183, 189, 0.3);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
     
-    .content-section {
-  display: none;
-  opacity: 0;
-  transform: translateY(10px);
-  transition: opacity 0.35s ease, transform 0.35s ease;
-}
+    .content-section { display: none; opacity: 0; transform: translateY(10px); transition: opacity 0.35s ease, transform 0.35s ease; }
+    .content-section.show { display: block; opacity: 1; transform: translateY(0); }
 
-.content-section.show {
-  display: block;
-  opacity: 1;
-  transform: translateY(0);
-}
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-    .top-title { text-align: center; font-size: 2rem; font-weight: 900; background: linear-gradient(90deg, #1e90ff, #00c3ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 1.5rem; }
-
-    /* Scrollbar Styling */
-    .scrolling-frame::-webkit-scrollbar { width: 10px; }
-    .scrolling-frame::-webkit-scrollbar-thumb { background: #ccc; border-radius: 10px; border: 3px solid white; }
+    .top-title { text-align: center; font-size: 2.5rem; font-weight: 900; background: linear-gradient(90deg, #1e90ff, #00c3ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 1.5rem; }
 
     /* Modal */
-    .modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0,0,0,0.4);
-  
-  display: flex;
-  justify-content: center;
-  align-items: center;
+    .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); display: flex; justify-content: center; align-items: center; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; z-index: 2000; }
+    .modal.show { opacity: 1; pointer-events: auto; }
+    .modal-box { background: white; padding: 2rem; border-radius: 2rem; text-align: center; width: 90%; max-width: 400px; transform: scale(0.8); transition: transform 0.3s ease; }
+    .modal.show .modal-box { transform: scale(1); }
 
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.3s ease;
-}
-
-.modal.show {
-  opacity: 1;
-  pointer-events: auto;
-}
-
-.modal-box {
-  background: white;
-  padding: 2rem;
-  border-radius: 2rem;
-  text-align: center;
-  width: 90%;
-  max-width: 400px;
-
-  transform: scale(0.8);
-  transition: transform 0.3s ease;
-}
-
-.modal.show .modal-box {
-  transform: scale(1);
-    }
-
-.green {
-  background: linear-gradient(to right, #00c853, #00e676);
-  color: white;
-  border: none;
-  padding: 0.75rem;
-  border-radius: 1rem;
-  font-weight: bold;
-  cursor: pointer;
-  width: 100%;
-  margin-top: 0.5rem;
-  text-shadow: 2px 2px 4px #000000;
-}
-
-.red {
-  background: linear-gradient(to right, #d50000, #8e0000);
-  color: white;
-  border: none;
-  padding: 0.75rem;
-  border-radius: 1rem;
-  font-weight: bold;
-  cursor: pointer;
-  width: 100%;
-  margin-top: 0.5rem;
-  text-shadow: 2px 2px 4px #000000;
-}
-
-.green:hover { filter: brightness(1.1); }
-.red:hover { filter: brightness(1.1); }
+    .green { background: linear-gradient(to right, #00c853, #00e676); color: white; border: none; padding: 0.75rem; border-radius: 1rem; font-weight: bold; cursor: pointer; width: 100%; margin-top: 0.5rem; text-shadow: 1px 1px 2px #000; }
+    .red { background: linear-gradient(to right, #d50000, #8e0000); color: white; border: none; padding: 0.75rem; border-radius: 1rem; font-weight: bold; cursor: pointer; width: 100%; margin-top: 0.5rem; text-shadow: 1px 1px 2px #000; }
   </style>
 </head>
 
@@ -349,7 +219,7 @@
     <div class="top-title">AQUA WASH LAUNDRY SHOP</div>
     
     <div class="scrolling-frame">
-      <div id="daily-ops" class="content-section" style="display: block;">
+      <div id="daily-ops" class="content-section">
         <h2>Main Daily Operations View</h2>
         <p>Your default dashboard cards go here.</p>
       </div>
@@ -364,13 +234,13 @@
         <div id="service-input" class="tab-content">
           <div class="dual-frame-container">
             <div class="sub-frame first-frame">
-              <h3 class=glass-text">CUSTOMER ACCOUNT</h3>
-              <div class="divider" style="background-color:#0BB7BD; height:2px;"></div>
-              <button class="btn shop">CREATE NEW ACCOUNT</button>
+              <h3 class="glass-text">CUSTOMER ACCOUNT</h3>
+              <div class="divider" style="background-color:#0BB7BD; height:2px; margin: 10px 0;"></div>
+              <button class="btn medium shop">CREATE NEW ACCOUNT</button>
             </div>
             <div class="sub-frame second-frame">
-              <h3>AQUA WASH PREVIEW</h3>
-              <div class="divider" style="background-color:#555; height:2px;"></div>
+              <h3 class="glass-text" style="color: #333;">AQUA WASH PREVIEW</h3>
+              <div class="divider" style="background-color:#555; height:2px; margin: 10px 0;"></div>
             </div>
           </div>
         </div>
@@ -378,12 +248,9 @@
         <div id="supplies-log" class="tab-content" style="display:none;">
           <div class="dual-frame-container">
             <div class="sub-frame first-frame">
-              <h3 style="color: #0BB7BD;">SUPPLIES LOG</h3>
+              <h3 class="glass-text">SUPPLIES LOG</h3>
               <div class="divider" style="background-color:#0BB7BD; height:2px;"></div>
-              <button class="btn control">RECORD LOG</button>
-            </div>
-            <div class="sub-frame second-frame">
-              <h3>SUPPLIES TRANSACTION</h3>
+              <button class="btn medium control">RECORD LOG</button>
             </div>
           </div>
         </div>
@@ -391,11 +258,8 @@
         <div id="other-trans" class="tab-content" style="display:none;">
           <div class="dual-frame-container">
             <div class="sub-frame first-frame">
-              <h3>OTHER TRANSACTIONS</h3>
-              <button class="btn control">RECORD TRANSACTION</button>
-            </div>
-            <div class="sub-frame second-frame">
-              <h3>TRANSACTION SUMMARY</h3>
+              <h3 class="glass-text">OTHER TRANSACTIONS</h3>
+              <button class="btn medium control">RECORD TRANSACTION</button>
             </div>
           </div>
         </div>
@@ -410,35 +274,21 @@
 
   <script>
     function setActive(btn, sectionId) {
-  const frame = document.querySelector('.scrolling-frame');
-  frame.classList.add('frame-float');
-  
-  // Button active state
-  document.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-
-  // Hide all sections smoothly
-  document.querySelectorAll('.content-section').forEach(section => {
-    section.classList.remove('show');
-  });
-
-  // Show target with slight delay (smooth transition)
-  const target = document.getElementById(sectionId);
-  if (target) {
-    setTimeout(() => {
-      target.classList.add('show');
-    }, 50);
-  }
-
-  setTimeout(() => {
-    frame.classList.remove('frame-float');
-  }, 400);
+      const frame = document.querySelector('.scrolling-frame');
+      frame.classList.add('frame-float');
+      document.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      document.querySelectorAll('.content-section').forEach(section => section.classList.remove('show'));
+      const target = document.getElementById(sectionId);
+      if (target) {
+        setTimeout(() => { target.classList.add('show'); }, 50);
+      }
+      setTimeout(() => { frame.classList.remove('frame-float'); }, 400);
     }
 
     function switchTab(el, tabId) {
       document.querySelectorAll('.tab-link').forEach(t => t.classList.remove('active-tab'));
       el.classList.add('active-tab');
-
       document.querySelectorAll('.tab-content').forEach(tc => tc.style.display = 'none');
       document.getElementById(tabId).style.display = 'block';
     }
@@ -449,38 +299,24 @@
       document.querySelector('.toggle-btn').innerHTML = sidebar.classList.contains('collapsed') ? '&#10095;' : '&#10094;';
     }
 
-    function openModal() {
-  document.getElementById('modal').classList.add('show');
-}
-
-function closeModal() {
-  document.getElementById('modal').classList.remove('show');
-}
-
-function confirmLogout() {
-  alert('Logging out...'); // replace later with GAS function
-    }
+    function openModal() { document.getElementById('modal').classList.add('show'); }
+    function closeModal() { document.getElementById('modal').classList.remove('show'); }
+    function confirmLogout() { alert('Logging out...'); }
 
     window.onload = function() {
-  const defaultBtn = document.querySelector('.btn.active');
-  if (defaultBtn) {
-    setActive(defaultBtn, 'daily-ops');
-  }
-
-  // Show default tab
-  const firstTab = document.querySelector('.tab-content');
-  if (firstTab) {
-    firstTab.classList.add('show');
-  }
-};
+      const defaultBtn = document.querySelector('.btn.active');
+      if (defaultBtn) {
+        setActive(defaultBtn, 'daily-ops');
+      }
+    };
   </script>
-  <div class="modal" id="modal">
-  <div class="modal-box">
-    <p>Do you really want to log out? 🤔</p>
 
-    <button class="green" onclick="confirmLogout()">Log out anyway</button>
-<button class="red" onclick="closeModal()">Cancel</button>
-  </div>
+  <div class="modal" id="modal">
+    <div class="modal-box">
+      <p>Do you really want to log out? 🤔</p>
+      <button class="green" onclick="confirmLogout()">Log out anyway</button>
+      <button class="red" onclick="closeModal()">Cancel</button>
+    </div>
   </div>
 </body>
 </html>
