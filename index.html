@@ -31,37 +31,22 @@
       flex-direction: column;
     }
 
-    .sidebar.collapsed {
-      width: 60px;
-      padding: 2rem 0.5rem;
+    .sidebar.collapsed { width: 60px; padding: 2rem 0.5rem; }
+
+    /* Transitions for Opening/Closing Sidebar */
+    .sidebar .header, .sidebar .section-title, .sidebar .divider, 
+    .sidebar .divider-smallspace, .sidebar .btn, .sidebar .footer {
+      transition: opacity 0.6s ease-out 0.2s, transform 0.6s ease-out 0.2s;
     }
 
-    /* 1. STATE WHEN OPEN: Slow, delayed appearance */
-.sidebar .header,
-.sidebar .section-title,
-.sidebar .divider,
-.sidebar .divider-smallspace,
-.sidebar .btn,
-.sidebar .footer {
-  /* 0.6s duration, 0.2s delay for a smooth entrance */
-  transition: opacity 0.6s ease-out 0.2s, transform 0.6s ease-out 0.2s;
-}
-
-/* 2. STATE WHEN COLLAPSED: Fast disappearance */
-.sidebar.collapsed .header,
-.sidebar.collapsed .section-title,
-.sidebar.collapsed .divider,
-.sidebar.collapsed .divider-smallspace,
-.sidebar.collapsed .btn,
-.sidebar.collapsed .footer {
-  /* 0.1s duration, NO delay (0s) for an instant exit */
-  transition: opacity 0.1s ease-in 0s, transform 0.1s ease-in 0s;
-  
-  opacity: 0;
-  transform: translateX(-20px);
-  pointer-events: none;
-}
-
+    .sidebar.collapsed .header, .sidebar.collapsed .section-title, 
+    .sidebar.collapsed .divider, .sidebar.collapsed .divider-smallspace, 
+    .sidebar.collapsed .btn, .sidebar.collapsed .footer {
+      transition: opacity 0.1s ease-in 0s, transform 0.1s ease-in 0s;
+      opacity: 0;
+      transform: translateX(-20px);
+      pointer-events: none;
+    }
 
     .toggle-btn {
       position: absolute;
@@ -84,250 +69,128 @@
       transition: right 0.3s;
     }
 
-    .sidebar.collapsed .toggle-btn {
-      right: 18px;
-    }
+    .sidebar.collapsed .toggle-btn { right: 18px; }
 
-    /* DASHBOARD TEXT WITH STROKE */
     .header {
-  font-size: 2rem;
-  font-weight: 900;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 2rem;
-  margin-top: 10px;
-  color: white; /* The main fill color */
-  letter-spacing: 2px;
-  
-  /* The "Secret Sauce" for a clean stroke */
-  -webkit-text-stroke: 4px #1800AD; /* Thickness + Dark Blue */
-  paint-order: stroke fill; /* Forces the stroke behind the white fill */
-  
-  /* Optional: Soft shadow to stop it from looking flat */
-  text-shadow: 2px 2px 0px rgba(0,0,0,0.1);
-}
+      font-size: 2rem;
+      font-weight: 900;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 2rem;
+      margin-top: 10px;
+      color: white;
+      letter-spacing: 2px;
+      -webkit-text-stroke: 4px #1800AD;
+      paint-order: stroke fill;
+      text-shadow: 2px 2px 0px rgba(0,0,0,0.1);
+    }
 
     .section-title {
-  /* Change from 'center' to 'left' */
-  text-align: left; 
-  
-  /* Add padding-left so it's not touching the edge of the sidebar */
-  padding-left: 10px; 
-  
-  /* Keep your existing styles */
-  font-weight: 800;
-  margin: 1.2rem 0 0.5rem 0; /* Slightly tighter bottom margin for the buttons */
-  font-size: 1.1rem;
-  color: #FFFFFF !important;
-  text-transform: uppercase;
-  letter-spacing: 1.5px;
-  text-shadow: 2px 2px 4px #1800AD;
-
-  /* Underline styles */
-  display: block; 
-  text-decoration: underline !important; 
-  text-decoration-color: #FFFFFF !important;
-  text-underline-offset: 6px; 
-  text-decoration-thickness: 2px;
-}
-
-    .divider {
-      height: 4px; 
-      background-color: #FFFFFF;
-      margin: 1.5rem 0; /* Adds more space above and below the line */
-      border-radius: 2px; /* Smooths the edges of the thick line */
+      text-align: left;
+      padding-left: 10px;
+      font-weight: 800;
+      margin: 1.2rem 0 0.5rem 0;
+      font-size: 1.1rem;
+      color: #FFFFFF !important;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      text-shadow: 2px 2px 4px #1800AD;
+      text-decoration: underline !important;
+      text-decoration-color: #FFFFFF !important;
+      text-underline-offset: 6px;
+      text-decoration-thickness: 2px;
     }
 
-    .divider-smallspace {
-      height: 4px; /* It looks quite thin in your photo */
-      background-color: #FFFFFF; /* Solid white, no transparency */
-      margin: -25px 10px 30px 0px; /* -5px top margin pulls it closer to the DASHBOARD text */
-      width: auto; /* Let it stretch based on the side margins */
-      border-radius: 1px;
+    .divider, .divider-smallspace { height: 4px; background-color: #FFFFFF; border-radius: 2px; }
+    .divider { margin: 1.5rem 0; }
+    .divider-smallspace { margin: -25px 10px 30px 0px; }
+
+    /* BUTTONS */
+    .btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      min-height: 50px;
+      margin: 0.5rem 0;
+      border-radius: 16px;
+      border: 6px solid transparent;
+      color: white;
+      font-weight: bold;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease-in-out;
+      text-align: center;
+      white-space: nowrap;
     }
-
-    /* Update the active state to include a white stroke */
-.btn.active {
-  box-shadow: 0 0 15px rgba(255, 255, 255, 0.5); /* Enhanced glow */
-  border-color: #FFFFFF !important; /* Forces the stroke to white */
-  transform: scale(1.02); /* Optional: slight pop effect when selected */
-}
-
-/* Ensure smooth transition for the border color */
-.btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  min-height: 50px;
-  margin: 0.5rem 0;
-  border-radius: 16px;
-  border: 6px solid transparent; /* This stays as the base */
-  color: white;
-  font-weight: bold;
-  font-size: 12px;
-  cursor: pointer;
-  transition: all 0.2s ease-in-out; /* Smooths the transition for border and glow */
-  text-align: center;
-  white-space: nowrap;
-  flex-shrink: 0;
-}
 
     .btn.shop { background: #2093DD; border-color: #1B67AD; }
     .btn.control { background: #E16CF0; border-color: #BA1DB8; }
     .btn.account { background: #1E6CE2; border-color: #1D52BA; }
 
-    .footer {
-      margin-top: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-    }
+    .btn:hover { filter: brightness(1.1); transform: scale(1.02); }
+    .btn.active { box-shadow: 0 0 15px rgba(255, 255, 255, 0.8) !important; border-color: #FFFFFF !important; }
 
-    /* MAIN */
+    /* MAIN & SCROLLING FRAME */
     .main {
       flex: 1;
-      background: #d9faff;
+      background: radial-gradient(circle at top right, #DDFFFF, #FFFFFF 70%);
       padding: 2rem;
-      transition: 0.3s;
       display: flex;
       flex-direction: column;
-      align-items: center;
       height: 100vh;
-      overflow: hidden; /* Prevents the whole page from scrolling */
+      overflow: hidden;
     }
 
-    /* The actual white scrolling frame from your photo */
-.scrolling-frame {
-  background: white;
-  flex: 1;
-  border-radius: 3rem; /* Very rounded corners as seen in your photo */
-  box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-  padding: 2rem;
-  overflow-y: auto; /* This makes only the frame scrollable */
-  width: 100%;
-  max-width: 1200px; /* Optional: keeps it from getting too wide on huge monitors */
-  margin: 0 auto;
-
-  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
-              box-shadow 0.4s ease;
-}
-
-.frame-float {
-  transform: scale(1.01) translateY(-5px); /* Slightly bigger and lifts up */
-  box-shadow: 0 20px 40px rgba(0,0,0,0.1); /* Deeper shadow makes it look higher */
- }
-
-/* Hide sections by default */
-.content-section {
-  display: none;
-  animation: fadeIn 0.4s ease;
-}
-
-/* Show active section */
-.content-section.active-content {
-  display: block;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-/* Custom scrollbar to match your screenshot */
-.scrolling-frame::-webkit-scrollbar {
-  width: 12px;
-}
-.scrolling-frame::-webkit-scrollbar-thumb {
-  background: #cccccc;
-  border-radius: 10px;
-  border: 4px solid white; /* Creates the padding around the scrollbar handle */
-}
-
-    .top-title {
-      text-align: center;
-      font-size: 2rem;
-      font-weight: 900;
-      background: linear-gradient(90deg, #1e90ff, #00c3ff);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      margin-bottom: 1.5rem;
-    }
-
-    .cards {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 1rem;
-      justify-content: center;
-      width: 100%;
-    }
-
-    .card {
-      flex: 1 1 300px;
-      max-width: 400px;
-      padding: 1rem;
-      border-radius: 2rem;
+    .scrolling-frame {
       background: white;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-    }
-
-    .modal {
-      position: fixed;
-      top: 0;
-      left: 0;
+      flex: 1;
+      border-radius: 3rem;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+      padding: 2.5rem;
+      overflow-y: auto;
       width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.4);
-      display: none;
-      justify-content: center;
-      align-items: center;
-      padding: 1rem;
+      max-width: 1200px;
+      margin: 0 auto;
+      transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.4s ease;
     }
 
-    .modal-box {
-      background: white;
+    .frame-float { transform: scale(1.01) translateY(-5px); box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
+
+    /* TABS */
+    .tabs-container { display: flex; gap: 25px; margin-bottom: 25px; border-bottom: 2px solid #f0f0f0; padding-bottom: 10px; }
+    .tab-link { cursor: pointer; font-weight: 700; color: #1e90ff; font-size: 1rem; position: relative; transition: 0.3s; }
+    .tab-link.active-tab { color: #0BB7BD; }
+    .tab-link.active-tab::after { content: ''; position: absolute; bottom: -12px; left: 0; width: 100%; height: 4px; background: #0BB7BD; border-radius: 2px; }
+
+    /* ADAPTIVE DUAL FRAMES */
+    .dual-frame-container { display: flex; flex-wrap: wrap; gap: 20px; width: 100%; }
+    .sub-frame {
+      flex: 1 1 350px;
+      border-radius: 2.5rem;
       padding: 2rem;
-      border-radius: 2rem;
-      text-align: center;
-      width: 90%;
-      max-width: 400px;
+      min-height: 450px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      border: 1px solid #f0f0f0;
     }
+    .first-frame { background: #ffffff; border: 2px solid #0BB7BD; }
+    .second-frame { background: #e9ecef; }
 
-    .modal button {
-      margin-top: 1rem;
-      width: 100%;
-      padding: 0.75rem;
-      border-radius: 1rem;
-      border: none;
-      font-weight: bold;
-      cursor: pointer;
-    }
+    .content-section { display: none; animation: fadeIn 0.4s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-    .green { background: linear-gradient(to right, #00c853, #00e676); color: white; }
-    .red { background: linear-gradient(to right, #d50000, #8e0000); color: white; }
+    .top-title { text-align: center; font-size: 2rem; font-weight: 900; background: linear-gradient(90deg, #1e90ff, #00c3ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 1.5rem; }
 
-    .show { display: flex !important; }
-
-    @media (max-width: 900px) {
-      body { flex-direction: column; }
-      .sidebar { position: fixed; height: 100%; z-index: 5; }
-      .main { margin-left: 0; }
-      .hamburger { display: flex; }
-    }
-
-    @media (max-width: 600px) {
-      .top-title { font-size: 1.5rem; }
-      .card { flex: 1 1 90%; max-width: none; }
-      .btn { font-size: 12px; }
-    }
+    /* Scrollbar Styling */
+    .scrolling-frame::-webkit-scrollbar { width: 10px; }
+    .scrolling-frame::-webkit-scrollbar-thumb { background: #ccc; border-radius: 10px; border: 3px solid white; }
   </style>
 </head>
 
 <body>
   <div class="sidebar" id="sidebar">
     <div class="toggle-btn" onclick="toggleSidebar()">&#10094;</div>
-
     <div class="header">DASHBOARD</div>
     <div class="divider-smallspace"></div>
 
@@ -340,10 +203,8 @@
     <div class="divider"></div>
 
     <div class="section-title">CONTROLS</div>
-    <button class="btn control" onclick="setActive(this)">INPUT OR CONSOLE</button>
-    <button class="btn control" onclick="setActive(this)">SERVICE SETTINGS</button>
-
-    <div class="divider"></div>
+    <button class="btn control" onclick="setActive(this, 'input-console')">INPUT OR CONSOLE</button>
+    <button class="btn control" onclick="setActive(this, 'service-settings')">SERVICE SETTINGS</button>
 
     <div class="footer">
       <button class="btn account">ACCOUNT SETTINGS</button>
@@ -354,91 +215,102 @@
   <div class="main" id="main">
     <div class="top-title">AQUA WASH LAUNDRY SHOP</div>
     
-   <div class="scrolling-frame">
-     
-    <div id="daily-ops" class="content-section" style="display: block;">
-      <div class="cards">
-        
-        <div class="card">
-          <h3>ADD SERVICE ORDER</h3>
-          <p>Form elements here...</p>
+    <div class="scrolling-frame">
+      <div id="daily-ops" class="content-section" style="display: block;">
+        <h2>Main Daily Operations View</h2>
+        <p>Your default dashboard cards go here.</p>
+      </div>
+
+      <div id="input-console" class="content-section">
+        <div class="tabs-container">
+          <div class="tab-link active-tab" onclick="switchTab(this, 'service-input')">Service Input</div>
+          <div class="tab-link" onclick="switchTab(this, 'supplies-log')">Supplies Log</div>
+          <div class="tab-link" onclick="switchTab(this, 'other-trans')">Other Transactions</div>
         </div>
-        
-        <div class="card">
-          <h3>PREVIEW</h3>
-          <p>Live summary...</p>
+
+        <div id="service-input" class="tab-content">
+          <div class="dual-frame-container">
+            <div class="sub-frame first-frame">
+              <h3 style="color: #0BB7BD;">CUSTOMER ACCOUNT</h3>
+              <div class="divider" style="background-color:#0BB7BD; height:2px;"></div>
+              <button class="btn shop">CREATE NEW ACCOUNT</button>
+            </div>
+            <div class="sub-frame second-frame">
+              <h3>AQUA WASH PREVIEW</h3>
+              <div class="divider" style="background-color:#555; height:2px;"></div>
+            </div>
+          </div>
         </div>
-        
-     </div>
-    </div>
-  </div>
 
-  <div id="financial" class="content-section">
-      <h2>Financial Statements</h2>
-      <p>Reports and data will appear here.</p>
-  </div>
+        <div id="supplies-log" class="tab-content" style="display:none;">
+          <div class="dual-frame-container">
+            <div class="sub-frame first-frame">
+              <h3 style="color: #0BB7BD;">SUPPLIES LOG</h3>
+              <div class="divider" style="background-color:#0BB7BD; height:2px;"></div>
+              <button class="btn control">RECORD LOG</button>
+            </div>
+            <div class="sub-frame second-frame">
+              <h3>SUPPLIES TRANSACTION</h3>
+            </div>
+          </div>
+        </div>
 
-  <div id="metrics" class="content-section">
-      <h2>Performance Data</h2>
-  </div>
+        <div id="other-trans" class="tab-content" style="display:none;">
+          <div class="dual-frame-container">
+            <div class="sub-frame first-frame">
+              <h3>OTHER TRANSACTIONS</h3>
+              <button class="btn control">RECORD TRANSACTION</button>
+            </div>
+            <div class="sub-frame second-frame">
+              <h3>TRANSACTION SUMMARY</h3>
+            </div>
+          </div>
+        </div>
+      </div>
 
-  <div id="management" class="content-section">
-      <h2>Business Management</h2>
-  </div>
-    
-  </div>
-  
-  <div class="modal" id="modal">
-    <div class="modal-box">
-      <p>Do you really want to log out? 🤔</p>
-      <button class="green">Log out anyway</button>
-      <button class="red" onclick="closeModal()">Cancel</button>
+      <div id="financial" class="content-section"><h2>Financial Statements</h2></div>
+      <div id="metrics" class="content-section"><h2>Performance Data</h2></div>
+      <div id="management" class="content-section"><h2>Business Management</h2></div>
+      <div id="service-settings" class="content-section"><h2>Service Settings</h2></div>
     </div>
   </div>
 
   <script>
     function setActive(btn, sectionId) {
+      const frame = document.querySelector('.scrolling-frame');
+      frame.classList.add('frame-float');
       
-const frame = document.querySelector('.scrolling-frame');
-    frame.classList.add('frame-float');
-  
-  document.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
+      document.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
 
-  const allSections = document.querySelectorAll('.content-section');
-  allSections.forEach(section => {
-    section.classList.remove('active-content');
-    section.style.display = 'none'; // Ensure hidden
-  });
+      document.querySelectorAll('.content-section').forEach(section => {
+        section.style.display = 'none';
+      });
 
-  const targetSection = document.getElementById(sectionId);
-  if (targetSection) {
-    targetSection.style.display = 'block';
-    targetSection.classList.add('active-content');
-  }
+      const target = document.getElementById(sectionId);
+      if (target) { target.style.display = 'block'; }
 
-  setTimeout(() => {
-    frame.classList.remove('frame-float');
-  }, 400);
-}
-    // This runs automatically when the page finishes loading
-window.onload = function() {
-  const defaultBtn = document.querySelector('.btn.shop.active');
-  if (defaultBtn) {
-    // This ensures the logic is synced
-    setActive(defaultBtn, 'daily-ops');
-  }
-};
+      setTimeout(() => { frame.classList.remove('frame-float'); }, 400);
+    }
+
+    function switchTab(el, tabId) {
+      document.querySelectorAll('.tab-link').forEach(t => t.classList.remove('active-tab'));
+      el.classList.add('active-tab');
+
+      document.querySelectorAll('.tab-content').forEach(tc => tc.style.display = 'none');
+      document.getElementById(tabId).style.display = 'block';
+    }
 
     function toggleSidebar() {
       const sidebar = document.getElementById('sidebar');
-      const toggleBtn = document.querySelector('.toggle-btn');
       sidebar.classList.toggle('collapsed');
-      toggleBtn.innerHTML = sidebar.classList.contains('collapsed') ? '&#10095;' : '&#10094;';
+      document.querySelector('.toggle-btn').innerHTML = sidebar.classList.contains('collapsed') ? '&#10095;' : '&#10094;';
     }
 
-    function openModal() { document.getElementById('modal').classList.add('show'); }
-    function closeModal() { document.getElementById('modal').classList.remove('show'); }
+    window.onload = function() {
+      // Initialize Daily Ops as default
+      setActive(document.querySelector('.btn.active'), 'daily-ops');
+    };
   </script>
 </body>
 </html>
