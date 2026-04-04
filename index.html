@@ -1,348 +1,434 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <base target="_top">
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=League+Spartan:wght@100..900&display=swap');
+<!DOCTYPE html>  <html>  
+<head>  
+  <base target="_top">  
+  <style>  
+    @import url('https://fonts.googleapis.com/css2?family=League+Spartan:wght@100..900&display=swap');  * {  
+  margin: 0;  
+  padding: 0;  
+  box-sizing: border-box;  
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;  
+}  
+
+body {  
+  display: flex;  
+  min-height: 100vh;  
+  overflow-x: hidden;  
+  flex-direction: row;  
+  background-color: #DDFFFF;  
+}  
+
+/* SIDEBAR */  
+.sidebar {  
+  width: 260px;  
+  min-width: 60px;  
+  background: linear-gradient(to bottom, #0BB7BD 0%, #0BB7BD 50%, #58005D 100%);  
+  color: white;  
+  padding: 2rem 1rem;  
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);  
+  position: relative;  
+  display: flex;  
+  flex-direction: column;  
+}  
+
+.sidebar.collapsed { width: 60px; padding: 2rem 0.5rem; }  
+
+/* Transitions for Opening/Closing Sidebar */  
+.sidebar .header, .sidebar .section-title, .sidebar .divider,   
+.sidebar .divider-smallspace, .sidebar .btn, .sidebar .footer {  
+  transition: opacity 0.6s ease-out 0.2s, transform 0.6s ease-out 0.2s;  
+}  
+
+.sidebar.collapsed .header, .sidebar.collapsed .section-title,   
+.sidebar.collapsed .divider, .sidebar.collapsed .divider-smallspace,   
+.sidebar.collapsed .btn, .sidebar.collapsed .footer {  
+  transition: opacity 0.1s ease-in 0s, transform 0.1s ease-in 0s;  
+  opacity: 0;  
+  transform: translateX(-20px);  
+  pointer-events: none;  
+}  
+
+.toggle-btn {  
+  position: absolute;  
+  right: -18px;  
+  top: 50px;  
+  background: #7B2BCC;  
+  color: white;  
+  border: 2px solid #DDFFFF;  
+  border-radius: 50%;  
+  width: 35px;  
+  height: 35px;  
+  display: flex;  
+  align-items: center;  
+  justify-content: center;  
+  cursor: pointer;  
+  z-index: 1000;  
+  font-size: 18px;  
+  font-weight: bold;  
+  box-shadow: 2px 0 5px rgba(0,0,0,0.1);  
+  transition: right 0.3s;  
+}  
+
+.sidebar.collapsed .toggle-btn { right: 18px; }  
+
+.header {  
+  font-size: 2rem;  
+  font-weight: 900;  
+  display: flex;  
+  align-items: center;  
+  gap: 0.5rem;  
+  margin-bottom: 2rem;  
+  margin-top: 10px;  
+  color: white;  
+  letter-spacing: 2px;  
+  -webkit-text-stroke: 4px #1800AD;  
+  paint-order: stroke fill;  
+  text-shadow: 2px 2px 0px rgba(0,0,0,0.1);  
+}  
+
+.section-title {  
+  text-align: left;  
+  padding-left: 10px;  
+  font-weight: 800;  
+  margin: 1.2rem 0 0.5rem 0;  
+  font-size: 1.1rem;  
+  color: #FFFFFF !important;  
+  text-transform: uppercase;  
+  letter-spacing: 1.5px;  
+  text-shadow: 2px 2px 4px #1800AD;  
+  text-decoration: underline !important;  
+  text-decoration-color: #FFFFFF !important;  
+  text-underline-offset: 6px;  
+  text-decoration-thickness: 2px;  
+}  
+
+.divider, .divider-smallspace { height: 4px; background-color: #FFFFFF; border-radius: 2px; }  
+.divider { margin: 1.5rem 0; }  
+.divider-smallspace { margin: -25px 10px 30px 0px; }  
+
+/* --- THE BASE BUTTON --- */  
+.btn {  
+  display: flex;  
+  align-items: center;  
+  justify-content: center;  
+  margin: 0.5rem 0; /* Adds spacing back between buttons */  
+  color: white;  
+  cursor: pointer;  
+  transition: all 0.2s ease-in-out;  
+  text-align: center;  
+  white-space: nowrap;  
+  width: 100%;  
+  border: none;  
+  box-sizing: border-box;  
+  font-weight: 800 !important; /* Forces Bold Spartan */  
+}  
+
+/* --- THE SIZES --- */  
+.btn.large { height: 65px; border-radius: 20px; font-size: 16px; letter-spacing: 1px; }  
+.btn.medium { height: 50px; border-radius: 16px; font-size: 13px; }  
+.btn.thin { height: 35px; border-radius: 19px; font-size: 16px; }  
+
+/* --- SOLID STYLES --- */  
+.btn.shop { background: #2093DD; border: 6px solid #1B67AD; text-transform: uppercase; }  
+.btn.control { background: #E16CF0; border: 6px solid #BA1DB8; text-transform: uppercase; }  
+.btn.account { background: #1E6CE2; border: 6px solid #1D52BA; text-transform: uppercase; }  
+.btn.grey { background: #828282; }  
+
+/* --- GRADIENT STYLES --- */  
+.btn.blue-gradient { background: linear-gradient(to right, #0077C2, #1DDDE3); }  
+.btn.dedblue-gradient { background: linear-gradient(to right, #2D5066, #85B3CE); }  
+.btn.yellow-gradient { background: linear-gradient(to right, #C2A300, #E6E41E); }  
+.btn.orange-gradient { background: linear-gradient(to right, #925105, #FF8A00); }  
+
+.btn:hover { filter: brightness(1.1); transform: scale(1.02); }  
+.btn.active { box-shadow: 0 0 15px rgba(255, 255, 255, 0.8); border-color: #FFFFFF !important; }  
+
+/* MAIN & SCROLLING FRAME */  
+.main { flex: 1; background: #DDFFFF; padding: 2rem; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }  
+.scrolling-frame { background: white; flex: 1; border-radius: 3rem; box-shadow: 0 10px 30px rgba(0,0,0,0.05); padding: 2.5rem; overflow-y: auto; width: 100%; max-width: 1200px; margin: 0 auto; transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.4s ease; }  
+.frame-float { transform: scale(1.01) translateY(-5px); box-shadow: 0 20px 40px rgba(0,0,0,0.1); }  
+
+/* TABS */  
+.tabs-container { display: flex; gap: 25px; margin-bottom: 25px; border-bottom: 2px solid #f0f0f0; padding-bottom: 10px; }  
+.tab-link { cursor: pointer; font-weight: 700; color: #1e90ff; font-size: 1rem; position: relative; transition: 0.3s; }  
+.tab-link.active-tab { color: #0BB7BD; }  
+.tab-link.active-tab::after { content: ''; position: absolute; bottom: -12px; left: 0; width: 100%; height: 4px; background: #0BB7BD; border-radius: 2px; }  
+
+/* ADAPTIVE DUAL FRAMES */  
+.dual-frame-container { display: flex; flex-wrap: wrap; gap: 20px; width: 100%; }  
+.sub-frame { flex: 1 1 350px; aspect-ratio: 1 / 1; border-radius: 2.5rem; padding: 2rem; min-height: 450px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 2px solid #0BB7BD; overflow: auto; background: #fff; }  
+
+@media (max-width: 900px) {  
+  .dual-frame-container { flex-direction: column; }  
+  .sub-frame { width: 100%; flex: 1 1 100%; min-height: 380px; }  
+}  
+
+.spartan-text {  
+  font-family: 'League Spartan', sans-serif;  
+  font-size: 1.5rem;  
+  font-weight: 800;  
+  color: #0BB7BD;  
+  letter-spacing: 1px;  
+  text-transform: uppercase;  
+  margin-bottom: 10px;  
+  margin-top: 20px;  
+}  
+
+.center-lined-text {  
+  text-align: center;  
+  padding-left: 10px;  
+  font-weight: 800;  
+  margin: 3rem 0 3rem 0;  
+  font-size: 1.1rem;  
+  color: #2093DD !important;  
+  text-transform: uppercase;  
+  letter-spacing: 3px;  
+  text-decoration: underline !important;  
+  text-decoration-color: #2093DD !important;  
+  text-underline-offset: 6px;  
+  text-decoration-thickness: 2px;  
+}  
+  
+.content-section { display: none; opacity: 0; transform: translateY(10px); transition: opacity 0.35s ease, transform 0.35s ease; }  
+.content-section.show { display: block; opacity: 1; transform: translateY(0); }  
+
+.top-title { text-align: center; font-size: 2.5rem; font-weight: 900; background: linear-gradient(90deg, #1e90ff, #00c3ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 1.5rem; }  
+
+.form-input {
+
+width: 100%;
+padding: 15px;
+margin-bottom: 15px;
+border: 2px solid #0BB7BD;
+border-radius: 15px;
+font-family: 'League Spartan', sans-serif;
+font-weight: 600;
+color: #333;
+outline: none;
+}
+
+.form-input:focus {
+border-color: #1e90ff;
+box-shadow: 0 0 8px rgba(30, 144, 255, 0.2);
+}
+
+/* For the red delete button style */
+.red-gradient {
+background: linear-gradient(to right, #d32f2f, #f44336) !important;
+}
+
+/* Modal */  
+.modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); display: flex; justify-content: center; align-items: center; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; z-index: 2000; }  
+.modal.show { opacity: 1; pointer-events: auto; }  
+.modal-box { background: white; padding: 2rem; border-radius: 2rem; text-align: center; width: 90%; max-width: 400px; transform: scale(0.8); transition: transform 0.3s ease; }  
+.modal.show .modal-box { transform: scale(1); }  
+
+.green { background: linear-gradient(to right, #00c853, #00e676); color: white; border: none; padding: 0.75rem; border-radius: 1rem; font-weight: bold; cursor: pointer; width: 100%; margin-top: 0.5rem; text-shadow: 1px 1px 2px #000; }  
+.red { background: linear-gradient(to right, #d50000, #8e0000); color: white; border: none; padding: 0.75rem; border-radius: 1rem; font-weight: bold; cursor: pointer; width: 100%; margin-top: 0.5rem; text-shadow: 1px 1px 2px #000; }
+
+  </style>  
+</head>  <body>  
+  <div class="sidebar" id="sidebar">  
+    <div class="toggle-btn" onclick="toggleSidebar()">&#10094;</div>  
+    <div class="header">DASHBOARD</div>  
+    <div class="divider-smallspace"></div>  <div class="section-title">SHOP'S OVERVIEW</div>  
+<button class="btn medium shop active" onclick="setActive(this, 'daily-ops')">DAILY OPERATIONS OVERVIEW</button>  
+<button class="btn medium shop" onclick="setActive(this, 'financial')">FINANCIAL STATEMENTS</button>  
+<button class="btn medium shop" onclick="setActive(this, 'metrics')">KEY PERFORMANCE METRICS</button>  
+<button class="btn medium shop" onclick="setActive(this, 'leadboards')">CUSTOMERS LEADBOARDS</button>  
+
+<div class="divider"></div>  
+
+<div class="section-title">CONTROLS</div>  
+<button class="btn medium control" onclick="setActive(this, 'input-console')">INPUT OR CONSOLE</button>  
+<button class="btn medium control" onclick="setActive(this, 'service-settings')">SERVICE SETTINGS</button>  
+
+<div class="footer">  
+  <button class="btn medium account">ACCOUNT SETTINGS</button>  
+  <button class="btn medium account" onclick="openModal()">LOG OUT</button>  
+</div>
+
+  </div>    <div class="main" id="main">  
+    <div class="top-title">AQUA WASH LAUNDRY SHOP</div>  <div class="scrolling-frame">  
+  <div id="daily-ops" class="content-section">  
+    <h2>Main Daily Operations View</h2>  
+    <p>Your default dashboard cards go here.</p>  
+  </div>  
+
+  <div id="input-console" class="content-section">  
+    <div class="tabs-container">  
+      <div class="tab-link active-tab" onclick="switchTab(this, 'service-input')">Service Input</div>  
+      <div class="tab-link" onclick="switchTab(this, 'supplies-log')">Supplies Log</div>  
+      <div class="tab-link" onclick="switchTab(this, 'other-trans')">Other Transactions</div>  
+    </div>  
+
+    <div id="service-input" class="tab-content">  
+      <div class="dual-frame-container">  
+          
+        <div class="sub-frame first-frame" id="service-side-panel">  
+          <h3 class="spartan-text" style="color:#2093DD;">CUSTOMER ACCOUNT</h3>  
+          <div class="divider" style="background-color:#2093DD; height:2px; margin: 10px 0px 30px 0px;"></div>  
+
+          <div id="dynamic-form-container">  
+            <div id="selection-menu">  
+            <p class="center-lined-text">-- Selections --</p>  
+                <button class="btn large blue-gradient" onclick="showForm('new-customer')">List Customer Name</button>  
+                <button class="btn large blue-gradient" onclick="showForm('add-order')">Add New Service Order</button>  
+                <button class="btn thin dedblue-gradient" onclick="showForm('payment')">Customer Balance Payment</button>  
+                <button class="btn thin dedblue-gradient" onclick="showForm('update-order')">Update Service Order</button>  
+                <button class="btn large grey" onclick="showForm('print-invoice')">Print Service Order</button>  
+             </div>  
+            </div>  
+        </div>  
+          
+        <div class="sub-frame second-frame">  
+          <h3 class="spartan-text" style="color:#2093DD;">AQUA WASH PREVIEW</h3>  
+        </div>  
+      </div>  
+    </div>  
+
+    <div id="supplies-log" class="tab-content" style="display:none;">  
+      <div class="dual-frame-container">  
+        <div class="sub-frame first-frame">  
+          <h3 class="spartan-text" style="color:#FFBD59;">SUPPLIES LOG</h3>  
+          <div class="divider" style="background-color:#FFBD59; height:2px; margin: 10px 0px 30px 0px;"></div>  
+          <button class="btn medium yellow-gradient">Record Transaction</button>  
+          <button class="btn medium grey">Generate ID</button>  
+        </div>  
+      </div>  
+    </div>  
+
+    <div id="other-trans" class="tab-c<button class="btn large blue-gradient" onclick="showForm('new-customer')">List Customer Name</button>  
+  <div class="dual-frame-container">  
+        <div class="sub-frame first-frame">  
+          <h3 class="spartan-text" style="color:#FF8A00;">OTHER TRANSACTIONS</h3>  
+          <div class="divider" style="background-color:#FFBD59; height:2px; margin: 10px 0px 30px 0px;"></div>                                                                      
+          <button class="btn medium orange-gradient">Record Transaction</button>  
+          <button class="btn medium grey">Generate ID</button>  
+        </div>  
+      </div>  
+    </div>  
+  </div>  
+
+  <div id="financial" class="content-section"><h2>Financial Statements</h2></div>  
+  <div id="metrics" class="content-section"><h2>Performance Data</h2></div>  
+  <div id="leadboards" class="content-section"><h2>Business Management</h2></div>  
+  <div id="service-settings" class="content-section"><h2>Service Settings</h2></div>  
+</div>
+
+  </div>    <script>  
+    function setActive(btn, sectionId) {  
+      const frame = document.querySelector('.scrolling-frame');  
+      frame.classList.add('frame-float');  
+      document.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));  
+      btn.classList.add('active');  
+      document.querySelectorAll('.content-section').forEach(section => section.classList.remove('show'));  
+      const target = document.getElementById(sectionId);  
+      if (target) {  
+        setTimeout(() => { target.classList.add('show'); }, 50);  
+      }  
+      setTimeout(() => { frame.classList.remove('frame-float'); }, 400);  
+    }  
+  
+    function switchTab(el, tabId) {  
+      document.querySelectorAll('.tab-link').forEach(t => t.classList.remove('active-tab'));  
+      el.classList.add('active-tab');  
+      document.querySelectorAll('.tab-content').forEach(tc => tc.style.display = 'none');  
+      document.getElementById(tabId).style.display = 'block';  
+    }  
+  
+    function showForm(formType) {  
+  const container = document.getElementById('dynamic-form-container');  
+  const title = document.getElementById('panel-title');  
     
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
-
-    body {
-      display: flex;
-      min-height: 100vh;
-      overflow-x: hidden;
-      flex-direction: row;
-      background-color: #DDFFFF;
-    }
-
-    /* SIDEBAR */
-    .sidebar {
-      width: 260px;
-      min-width: 60px;
-      background: linear-gradient(to bottom, #0BB7BD 0%, #0BB7BD 50%, #58005D 100%);
-      color: white;
-      padding: 2rem 1rem;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      position: relative;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .sidebar.collapsed { width: 60px; padding: 2rem 0.5rem; }
-
-    .toggle-btn {
-      position: absolute;
-      right: -18px;
-      top: 50px;
-      background: #7B2BCC;
-      color: white;
-      border: 2px solid #DDFFFF;
-      border-radius: 50%;
-      width: 35px;
-      height: 35px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      z-index: 1000;
-      font-size: 18px;
-      font-weight: bold;
-      box-shadow: 2px 0 5px rgba(0,0,0,0.1);
-      transition: right 0.3s;
-    }
-
-    .sidebar.collapsed .toggle-btn { right: 18px; }
-
-    .header {
-      font-size: 2rem;
-      font-weight: 900;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      margin-bottom: 2rem;
-      margin-top: 10px;
-      color: white;
-      letter-spacing: 2px;
-      -webkit-text-stroke: 4px #1800AD;
-      paint-order: stroke fill;
-      text-shadow: 2px 2px 0px rgba(0,0,0,0.1);
-    }
-
-    .section-title {
-      text-align: left;
-      padding-left: 10px;
-      font-weight: 800;
-      margin: 1.2rem 0 0.5rem 0;
-      font-size: 1.1rem;
-      color: #FFFFFF !important;
-      text-transform: uppercase;
-      letter-spacing: 1.5px;
-      text-shadow: 2px 2px 4px #1800AD;
-      text-decoration: underline !important;
-      text-decoration-color: #FFFFFF !important;
-      text-underline-offset: 6px;
-      text-decoration-thickness: 2px;
-    }
-
-    .divider, .divider-smallspace { height: 4px; background-color: #FFFFFF; border-radius: 2px; }
-    .divider { margin: 1.5rem 0; }
-    .divider-smallspace { margin: -25px 10px 30px 0px; }
-
-    .btn {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0.5rem 0;
-      color: white;
-      cursor: pointer;
-      transition: all 0.2s ease-in-out;
-      text-align: center;
-      white-space: nowrap;
-      width: 100%;
-      border: none;
-      box-sizing: border-box;
-      font-weight: 800 !important;
-      font-family: 'League Spartan', sans-serif;
-    }
-
-    .btn.large { height: 65px; border-radius: 20px; font-size: 16px; letter-spacing: 1px; }
-    .btn.medium { height: 50px; border-radius: 16px; font-size: 13px; }
-    .btn.thin { height: 35px; border-radius: 19px; font-size: 14px; }
-
-    .btn.shop { background: #2093DD; border: 6px solid #1B67AD; text-transform: uppercase; }
-    .btn.control { background: #E16CF0; border: 6px solid #BA1DB8; text-transform: uppercase; }
-    .btn.account { background: #1E6CE2; border: 6px solid #1D52BA; text-transform: uppercase; }
-    .btn.grey { background: #828282; }
-
-    .btn.blue-gradient { background: linear-gradient(to right, #0077C2, #1DDDE3); }
-    .btn.dedblue-gradient { background: linear-gradient(to right, #2D5066, #85B3CE); }
-    .btn.yellow-gradient { background: linear-gradient(to right, #C2A300, #E6E41E); }
-    .btn.orange-gradient { background: linear-gradient(to right, #925105, #FF8A00); }
-
-    .btn:hover { filter: brightness(1.1); transform: scale(1.02); }
-    .btn.active { box-shadow: 0 0 15px rgba(255, 255, 255, 0.8); border-color: #FFFFFF !important; }
-
-    .main { flex: 1; background: #DDFFFF; padding: 2rem; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
-    .scrolling-frame { background: white; flex: 1; border-radius: 3rem; box-shadow: 0 10px 30px rgba(0,0,0,0.05); padding: 2.5rem; overflow-y: auto; width: 100%; max-width: 1200px; margin: 0 auto; transition: transform 0.4s ease; }
-
-    .tabs-container { display: flex; gap: 25px; margin-bottom: 25px; border-bottom: 2px solid #f0f0f0; padding-bottom: 10px; }
-    .tab-link { cursor: pointer; font-weight: 700; color: #1e90ff; font-size: 1rem; position: relative; transition: 0.3s; }
-    .tab-link.active-tab { color: #0BB7BD; }
-
-    .dual-frame-container { display: flex; flex-wrap: wrap; gap: 20px; width: 100%; }
-    .sub-frame { flex: 1 1 350px; border-radius: 2.5rem; padding: 2rem; min-height: 550px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 2px solid #0BB7BD; background: #fff; }
-
-    .spartan-text {
-      font-family: 'League Spartan', sans-serif;
-      font-size: 1.5rem;
-      font-weight: 800;
-      color: #0BB7BD;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      margin-bottom: 10px;
-    }
-
-    .center-lined-text {
-      text-align: center;
-      font-weight: 800;
-      margin: 2rem 0;
-      font-size: 1.1rem;
-      color: #2093DD;
-      text-transform: uppercase;
-      letter-spacing: 3px;
-      text-decoration: underline;
-    }
-
-    /* FORM INPUTS */
-    .form-input {
-      width: 100%;
-      padding: 12px;
-      margin-bottom: 15px;
-      border: 2px solid #0BB7BD;
-      border-radius: 12px;
-      font-family: 'League Spartan', sans-serif;
-      font-size: 14px;
-      outline: none;
-    }
-
-    .top-title { text-align: center; font-size: 2.5rem; font-weight: 900; background: linear-gradient(90deg, #1e90ff, #00c3ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 1.5rem; }
-    .content-section { display: none; opacity: 0; transition: opacity 0.3s ease; }
-    .content-section.show { display: block; opacity: 1; }
-
-    /* Modal */
-    .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); display: none; justify-content: center; align-items: center; z-index: 2000; }
-    .modal.show { display: flex; }
-    .modal-box { background: white; padding: 2rem; border-radius: 2rem; text-align: center; width: 90%; max-width: 400px; }
-  </style>
-</head>
-
-<body>
-  <div class="sidebar" id="sidebar">
-    <div class="toggle-btn" onclick="toggleSidebar()">&#10094;</div>
-    <div class="header">DASHBOARD</div>
-    <div class="divider-smallspace"></div>
-    <div class="section-title">SHOP'S OVERVIEW</div>
-    <button class="btn medium shop active" onclick="setActive(this, 'daily-ops')">DAILY OPERATIONS OVERVIEW</button>
-    <button class="btn medium shop" onclick="setActive(this, 'financial')">FINANCIAL STATEMENTS</button>
-    <button class="btn medium shop" onclick="setActive(this, 'metrics')">KEY PERFORMANCE METRICS</button>
-    <button class="btn medium shop" onclick="setActive(this, 'leadboards')">CUSTOMERS LEADBOARDS</button>
-    <div class="divider"></div>
-    <div class="section-title">CONTROLS</div>
-    <button class="btn medium control" onclick="setActive(this, 'input-console')">INPUT OR CONSOLE</button>
-    <button class="btn medium control" onclick="setActive(this, 'service-settings')">SERVICE SETTINGS</button>
-    <div class="footer">
-      <button class="btn medium account">ACCOUNT SETTINGS</button>
-      <button class="btn medium account" onclick="openModal()">LOG OUT</button>
-    </div>
-  </div>
-
-  <div class="main">
-    <div class="top-title">AQUA WASH LAUNDRY SHOP</div>
-    <div class="scrolling-frame">
-      
-      <div id="daily-ops" class="content-section show">
-        <h2>Welcome to Daily Operations</h2>
-      </div>
-
-      <div id="input-console" class="content-section">
-        <div class="tabs-container">
-          <div class="tab-link active-tab" onclick="switchTab(this, 'service-input')">Service Input</div>
-          <div class="tab-link" onclick="switchTab(this, 'supplies-log')">Supplies Log</div>
-          <div class="tab-link" onclick="switchTab(this, 'other-trans')">Other Transactions</div>
-        </div>
-
-        <div id="service-input" class="tab-content">
-          <div class="dual-frame-container">
-            <div class="sub-frame first-frame" id="service-side-panel">
-              <h3 class="spartan-text" id="panel-title" style="color:#2093DD;">CUSTOMER ACCOUNT</h3>
-              <div class="divider" style="background-color:#2093DD; height:2px; margin: 10px 0 30px 0;"></div>
-
-              <div id="dynamic-form-container">
-                <div id="selection-menu">
-                  <p class="center-lined-text">-- Selections --</p>
-                  <button class="btn large blue-gradient" onclick="showForm('new-customer')">List Customer Name</button>
-                  <button class="btn large blue-gradient" onclick="showForm('add-order')">Add New Service Order</button>
-                  <button class="btn thin dedblue-gradient" onclick="showForm('payment')">Customer Balance Payment</button>
-                  <button class="btn thin dedblue-gradient" onclick="showForm('update-order')">Update Service Order</button>
-                  <button class="btn large grey" onclick="showForm('print-invoice')">Print Service Order</button>
-                </div>
-              </div>
-            </div>
-            
-            <div class="sub-frame second-frame">
-              <h3 class="spartan-text" style="color:#2093DD;">AQUA WASH PREVIEW</h3>
-            </div>
-          </div>
-        </div>
-
-        <div id="supplies-log" class="tab-content" style="display:none;">
-            <div class="sub-frame" style="max-width: 500px;">
-                <h3 class="spartan-text" style="color:#FFBD59;">SUPPLIES LOG</h3>
-                <button class="btn medium yellow-gradient">Record Transaction</button>
-            </div>
-        </div>
-
-        <div id="other-trans" class="tab-content" style="display:none;">
-            <div class="sub-frame" style="max-width: 500px;">
-                <h3 class="spartan-text" style="color:#FF8A00;">OTHER TRANSACTIONS</h3>
-                <button class="btn medium orange-gradient">Record Transaction</button>
-            </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    function setActive(btn, sectionId) {
-      document.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      document.querySelectorAll('.content-section').forEach(s => s.classList.remove('show'));
-      document.getElementById(sectionId).classList.add('show');
-    }
-
-    function switchTab(el, tabId) {
-      document.querySelectorAll('.tab-link').forEach(t => t.classList.remove('active-tab'));
-      el.classList.add('active-tab');
-      document.querySelectorAll('.tab-content').forEach(tc => tc.style.display = 'none');
-      document.getElementById(tabId).style.display = 'block';
-    }
-
-    function showForm(formType) {
-      const container = document.getElementById('dynamic-form-container');
-      const title = document.getElementById('panel-title');
-      const backBtn = `<button class="btn medium grey" style="margin-top:20px" onclick="resetServicePanel()">Back to Selection</button>`;
-
-      if (formType === 'new-customer') {
-        title.innerText = "NEW CUSTOMER ACCOUNT";
-        container.innerHTML = `
-          <input type="text" placeholder="Full Name" class="form-input">
-          <input type="text" placeholder="Contact Number" class="form-input">
-          <button class="btn large blue-gradient">Save Customer</button>
-          ${backBtn}`;
-      } else if (formType === 'add-order') {
-        title.innerText = "ADD SERVICE ORDER";
-        container.innerHTML = `
-          <select class="form-input"><option>Select Customer</option></select>
-          <select class="form-input"><option>Wash & Dry (Full)</option></select>
-          <input type="number" placeholder="Kilos" class="form-input">
-          <button class="btn medium blue-gradient">Save Order</button>
-          ${backBtn}`;
-      } else if (formType === 'payment') {
-        title.innerText = "BALANCE PAYMENT";
-        container.innerHTML = `
-          <select class="form-input"><option>Select Unpaid Order</option></select>
-          <p style="font-size: 13px; margin-bottom:10px;">*Lump sum payment only</p>
-          <button class="btn medium blue-gradient">Confirm Payment</button>
-          ${backBtn}`;
-      } else if (formType === 'update-order') {
-        title.innerText = "UPDATE ORDER";
-        container.innerHTML = `
-          <select class="form-input"><option>Select Order to Edit</option></select>
-          <button class="btn medium blue-gradient">Update</button>
-          <button class="btn medium" style="background:red; color:white;">Delete Order</button>
-          ${backBtn}`;
-      } else if (formType === 'print-invoice') {
-        title.innerText = "INVOICE PREVIEW";
-        container.innerHTML = `
-          <select class="form-input"><option>Select Order</option></select>
-          <button class="btn medium blue-gradient">Print Now</button>
-          ${backBtn}`;
-      }
-    }
-
-    function resetServicePanel() {
-      const container = document.getElementById('dynamic-form-container');
-      const title = document.getElementById('panel-title');
-      title.innerText = "CUSTOMER ACCOUNT";
-      container.innerHTML = `
-        <div id="selection-menu">
-          <p class="center-lined-text">-- Selections --</p>
-          <button class="btn large blue-gradient" onclick="showForm('new-customer')">List Customer Name</button>
-          <button class="btn large blue-gradient" onclick="showForm('add-order')">Add New Service Order</button>
-          <button class="btn thin dedblue-gradient" onclick="showForm('payment')">Customer Balance Payment</button>
-          <button class="btn thin dedblue-gradient" onclick="showForm('update-order')">Update Service Order</button>
-          <button class="btn large grey" onclick="showForm('print-invoice')">Print Service Order</button>
-        </div>`;
-    }
-
-    function toggleSidebar() {
-      document.getElementById('sidebar').classList.toggle('collapsed');
-    }
-    function openModal() { document.getElementById('modal').classList.add('show'); }
-    function closeModal() { document.getElementById('modal').classList.remove('show'); }
-  </script>
-
-  <div class="modal" id="modal">
-    <div class="modal-box">
-      <p>Log out?</p>
-      <button class="btn medium shop" onclick="location.reload()">Yes</button>
-      <button class="btn medium grey" onclick="closeModal()">No</button>
-    </div>
-  </div>
-</body>
-</html>
+  // Back button template to reuse  
+  const backBtn = `<button class="btn medium grey" style="margin-top:20px" onclick="resetServicePanel()">Back to Selection</button>`;  
+  
+  if (formType === 'new-customer') {  
+    title.innerText = "NEW CUSTOMER ACCOUNT";  
+    container.innerHTML = `  
+      <input type="text" placeholder="Customer Name" class="form-input">  
+      <button class="btn large blue-gradient">List New Customer & Save</button>  
+      ${backBtn}`;  
+  }   
+    
+  else if (formType === 'add-order') {  
+    title.innerText = "ADD SERVICE ORDER";  
+    container.innerHTML = `  
+      <select class="form-input"><option>Pick Customer Name</option></select>  
+      <select class="form-input"><option>Pick Service Type</option></select>  
+      <input type="number" placeholder="Cash Payment" class="form-input">  
+      <button class="btn medium blue-gradient">Generate ID for Service Order</button>  
+      <button class="btn medium blue-gradient">Save and Add Service Order</button>  
+      ${backBtn}`;  
+  }  
+  
+  else if (formType === 'payment') {  
+    title.innerText = "CUSTOMER CREDIT SETTLEMENT";  
+    container.innerHTML = `  
+      <select class="form-input"><option>Pick Customer Name</option></select>  
+      <select class="form-input"><option>Pick Their Service ID</option></select>  
+      <p style="font-size: 12px; color: #666; margin: 10px 0;">*Lump sum payment only</p>  
+      <button class="btn medium blue-gradient">Record to Fully Settled</button>  
+      ${backBtn}`;  
+  }  
+  
+  else if (formType === 'update-order') {  
+    title.innerText = "UPDATE SERVICE ORDER";  
+    container.innerHTML = `  
+      <select class="form-input"><option>Pick Customer Name</option></select>  
+      <select class="form-input"><option>Pick Their Service ID</option></select>  
+      <button class="btn medium blue-gradient">Update Service Order</button>  
+      <button class="btn medium red-gradient" style="background:red">Remove and Delete Order</button>  
+      ${backBtn}`;  
+  }  
+  
+  else if (formType === 'print-invoice') {  
+    title.innerText = "SERVICE INVOICE";  
+    container.innerHTML = `  
+      <select class="form-input"><option>Pick Customer Name</option></select>  
+      <select class="form-input"><option>Pick Their Service ID</option></select>  
+      <button class="btn medium blue-gradient">Print</button>  
+      ${backBtn}`;  
+  }  
+}  
+  
+function resetServicePanel() {  
+  const container = document.getElementById('dynamic-form-container');  
+  const title = document.getElementById('panel-title');  
+  title.innerText = "CUSTOMER ACCOUNT";  
+  container.innerHTML = `  
+    <div id="selection-menu">  
+      <p class="center-lined-text">-- Selections --</p>  
+      <button class="btn large blue-gradient" onclick="showForm('new-customer')">List Customer Name</button>  
+      <button class="btn large blue-gradient" onclick="showForm('add-order')">Add New Service Order</button>  
+      <button class="btn thin dedblue-gradient" onclick="showForm('payment')">Customer Balance Payment</button>  
+      <button class="btn thin dedblue-gradient" onclick="showForm('update-order')">Update Service Order</button>  
+      <button class="btn large grey" onclick="showForm('print-invoice')">Print Service Order</button>  
+    </div>`;  
+    }  
+  
+    function toggleSidebar() {  
+      const sidebar = document.getElementById('sidebar');  
+      sidebar.classList.toggle('collapsed');  
+      document.querySelector('.toggle-btn').innerHTML = sidebar.classList.contains('collapsed') ? '&#10095;' : '&#10094;';  
+    }  
+  
+    function openModal() { document.getElementById('modal').classList.add('show'); }  
+    function closeModal() { document.getElementById('modal').classList.remove('show'); }  
+    function confirmLogout() { alert('Logging out...'); }  
+  
+    window.onload = function() {  
+      const defaultBtn = document.querySelector('.btn.active');  
+      if (defaultBtn) {  
+        setActive(defaultBtn, 'daily-ops');  
+      }  
+    };  
+  </script>    <div class="modal" id="modal">  
+    <div class="modal-box">  
+      <p>Do you really want to log out? 🤔</p>  
+      <button class="green" onclick="confirmLogout()">Log out anyway</button>  
+      <button class="red" onclick="closeModal()">Cancel</button>  
+    </div>  
+  </div>  
+</body>  
+</html> 
