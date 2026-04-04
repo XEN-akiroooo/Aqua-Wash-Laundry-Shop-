@@ -157,6 +157,18 @@ body {
 .dual-frame-container { display: flex; flex-wrap: wrap; gap: 20px; width: 100%; }  
 .sub-frame { flex: 1 1 350px; aspect-ratio: 1 / 1; border-radius: 2.5rem; padding: 2rem; min-height: 450px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 2px solid #0BB7BD; overflow: auto; background: #fff; }  
 
+    /* This removes the aqua border and adds the dark shadow to the Left frame */
+.first-frame {
+  border: none !important;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4); /* Solid dark shadow */
+}
+
+/* This ensures the Right frame keeps the aqua border and original look */
+.second-frame {
+  border: 2px solid #0BB7BD !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05); /* Light subtle shadow */
+}
+
 @media (max-width: 900px) {  
   .dual-frame-container { flex-direction: column; }  
   .sub-frame { width: 100%; flex: 1 1 100%; min-height: 380px; }  
@@ -226,7 +238,9 @@ background: linear-gradient(to right, #d32f2f, #f44336) !important;
 .red { background: linear-gradient(to right, #d50000, #8e0000); color: white; border: none; padding: 0.75rem; border-radius: 1rem; font-weight: bold; cursor: pointer; width: 100%; margin-top: 0.5rem; text-shadow: 1px 1px 2px #000; }
 
   </style>  
-</head>  <body>  
+</head> 
+
+<body>  
   <div class="sidebar" id="sidebar">  
     <div class="toggle-btn" onclick="toggleSidebar()">&#10094;</div>  
     <div class="header">DASHBOARD</div>  
