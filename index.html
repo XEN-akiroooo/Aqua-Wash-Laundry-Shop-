@@ -128,7 +128,7 @@
     /* --- THE SIZES --- */
     .btn.large { height: 65px; border-radius: 20px; font-size: 16px; letter-spacing: 1px; }
     .btn.medium { height: 50px; border-radius: 16px; font-size: 13px; }
-    .btn.thin { height: 35px; border-radius: 10px; font-size: 16px; }
+    .btn.thin { height: 35px; border-radius: 19px; font-size: 16px; }
 
     /* --- SOLID STYLES --- */
     .btn.shop { background: #2093DD; border: 6px solid #1B67AD; text-transform: uppercase; }
@@ -138,6 +138,7 @@
 
     /* --- GRADIENT STYLES --- */
     .btn.blue-gradient { background: linear-gradient(to right, #0077C2, #1DDDE3); }
+    .btn.dedblue-gradient { background: linear-gradient(to right, #2D5066, #85B3CE); }
     .btn.yellow-gradient { background: linear-gradient(to right, #C2A300, #E6E41E); }
     .btn.orange-gradient { background: linear-gradient(to right, #925105, #FF8A00); }
 
@@ -172,6 +173,21 @@
       letter-spacing: 1px;
       text-transform: uppercase;
       margin-bottom: 10px;
+    }
+
+    .center-lined-text {
+      text-align: center;
+      padding-left: 10px;
+      font-weight: 800;
+      margin: 3rem 0 3rem 0;
+      font-size: 1.1rem;
+      color: #2093DD !important;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      text-decoration: underline !important;
+      text-decoration-color: #2093DD !important;
+      text-underline-offset: 6px;
+      text-decoration-thickness: 2px;
     }
     
     .content-section { display: none; opacity: 0; transform: translateY(10px); transition: opacity 0.35s ease, transform 0.35s ease; }
@@ -235,6 +251,7 @@
             <div class="sub-frame first-frame">
               <h3 class="glass-text">CUSTOMER ACCOUNT</h3>
               <div class="divider" style="background-color:#2093DD; height:2px; margin: 10px 0px 50px 0px;"></div>
+              <p> class="center-lined-text">-- Selections --</p>
               <button class="btn large blue-gradient">Create New Customer Account</button>
               <button class="btn large blue-gradient">Add New Customer Order</button>
               <button class="btn thin blue-gradient">Customer Balance Payment</button>
@@ -253,7 +270,7 @@
               <h3 class="glass-text">SUPPLIES LOG</h3>
               <div class="divider" style="background-color:#FFBD59; height:2px; margin: 10px 0px 50px 0px;"></div>
               <button class="btn medium yellow-gradient">Record Transaction</button>
-              <button class="btn medium grey">GENERATE ID</button>
+              <button class="btn medium grey">Generate ID</button>
             </div>
           </div>
         </div>
