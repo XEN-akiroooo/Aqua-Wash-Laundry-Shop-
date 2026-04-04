@@ -165,12 +165,11 @@ body {
 
 /* This ensures the Right frame keeps the aqua border and original look */
 .second-frame {
-  border: 2px solid;
+  border: 3px solid;
   box-shadow: 0 4px 12px rgba(0,0,0,0.05); /* Light subtle shadow */
 }
     /* --- GRADIENT LABEL --- */
-.gradient-label {
-  background: linear-gradient(to right, #0077C2, #1DDDE3); /* Matches your buttons */
+.label-header {
   color: white;
   padding: 15px;
   border-radius: none;
@@ -180,8 +179,13 @@ body {
   font-size: 1.3rem;
   letter-spacing: 1px;
   text-transform: uppercase;
-  margin-bottom: 25px;
+  margin-bottom: 10px;
 }
+   
+/* --- GRADIENT STYLES --- */
+.label-header.blue-gradient { background: linear-gradient(to right, #0077C2, #1DDDE3); }  
+.label-header.yellow-gradient { background: linear-gradient(to right, #C2A300, #E6E41E); }  
+.label-header.orange-gradient { background: linear-gradient(to right, #925105, #FF8A00); }  
 
 /* --- DATA ROWS --- */
 .preview-data-grid {
@@ -192,17 +196,35 @@ body {
   font-family: 'Segoe UI', sans-serif; /* Clean font for data */
 }
 
-/* DATA LABELS (Left Column) */
-.preview-data-grid label {
-  font-weight: 700;
-  color: #1e6ce2; /* Deep blue for data labels */
-  font-size: 15px;
+.preview-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
-/* DATA VALUES (Right Column) */
-.preview-data-grid .data-value {
+.preview-row {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  align-items: center;
+}
+
+.preview-label {
+  font-family: 'League Spartan', sans-serif;
+  font-weight: 700;
+  color: #1B67AD;
+  font-size: 16px;
+}
+
+.preview-value-box {
+  border: 1.5px solid #A0A0A0;
+  padding: 8px 12px;
+  border-radius: 4px;
+  background: white;
   color: #666;
   font-size: 14px;
+  min-height: 35px;
+  display: flex;
+  align-items: center;
 }
 
 @media (max-width: 900px) {  
@@ -227,14 +249,15 @@ body {
   font-weight: 800;  
   margin: 3rem 0 3rem 0;  
   font-size: 1.1rem;  
-  color: #2093DD !important;  
-  text-transform: uppercase;  
-  letter-spacing: 3px;  
-  text-decoration: underline !important;  
-  text-decoration-color: #2093DD !important;  
-  text-underline-offset: 6px;  
-  text-decoration-thickness: 2px;  
-}  
+  color: #2093DD !important;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  text-decoration: underline !important;
+  text-decoration-color: #2093DD !important;
+  text-underline-offset: 6px;
+  text-decoration-thickness: 2px;
+
+}
   
 .content-section { display: none; opacity: 0; transform: translateY(10px); transition: opacity 0.35s ease, transform 0.35s ease; }  
 .content-section.show { display: block; opacity: 1; transform: translateY(0); }  
@@ -351,30 +374,38 @@ background: linear-gradient(to right, #d32f2f, #f44336) !important;
       <div class="sub-frame second-frame" style="border-color:#0BB7BD;">
         <div class="gradient-label">AQUA WASH LAUNDRY SHOP</div>
 
-        <div class="preview-data-grid">
-    
-    <label>Date:</label>
-    <div class="data-value">Sample (April 2, 2026)</div>
+        <div id="preview-content-area" class="preview-grid">
+    <div class="preview-row">
+      <div class="preview-label">Date</div>
+      <div class="preview-value-box">Sample (April 2, 2026)</div>
+    </div>
+    <div class="preview-row">
+      <div class="preview-label">Customers Name</div>
+      <div class="preview-value-box">Sample (John)</div>
+    </div>
+    <div class="preview-row">
+      <div class="preview-label">Service ID</div>
+      <div class="preview-value-box">Sample (#26-947379)</div>
+    </div>
+    <div style="margin: 15px 0;"></div> <div class="preview-row">
+      <div class="preview-label">Service Type</div>
+      <div class="preview-value-box">Sample (Full Service)</div>
+    </div>
+    <div class="preview-row">
+      <div class="preview-label">Service Price</div>
+      <div class="preview-value-box">Sample (₱ 190)</div>
+    </div>
+    <div class="preview-row">
+      <div class="preview-label">Payment</div>
+      <div class="preview-value-box">Sample (₱ 150)</div>
+    </div>
+    <div class="preview-row">
+      <div class="preview-label">Credit Balance</div>
+      <div class="preview-value-box">Sample (₱ 40)</div>
+    </div>
+  </div>
 
-    <label>Customers Name:</label>
-    <div class="data-value">Sample (John)</div>
-
-    <label>Service ID:</label>
-    <div class="data-value">Sample (#26-947379)</div>
-
-    <label>Service Type:</label>
-    <div class="data-value">Sample (Full Service)</div>
-
-    <label>Service Price:</label>
-    <div class="data-value">Sample (₱ 190)</div>
-
-    <label>Payment:</label>
-    <div class="data-value">Sample (₱ 150)</div>
-
-    <label>Credit Balance:</label>
-    <div class="data-value">Sample (₱ 40)</div>
-
-        </div>
+  <div id="preview-footer-note" class="preview-footer"></div>
         
       </div>
 
