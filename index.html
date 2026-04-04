@@ -135,7 +135,7 @@
     /* MAIN & SCROLLING FRAME */
     .main {
       flex: 1;
-      background: radial-gradient(circle at top right, #DDFFFF, #FFFFFF 70%);
+      background: #DDFFFF
       padding: 2rem;
       display: flex;
       flex-direction: column;
@@ -177,7 +177,18 @@
     .first-frame { background: #ffffff; border: 2px solid #0BB7BD; }
     .second-frame { background: #e9ecef; }
 
-    .content-section { display: none; animation: fadeIn 0.4s ease; }
+    .content-section {
+  display: none;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.35s ease, transform 0.35s ease;
+}
+
+.content-section.show {
+  display: block;
+  opacity: 1;
+  transform: translateY(0);
+}
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
     .top-title { text-align: center; font-size: 2rem; font-weight: 900; background: linear-gradient(90deg, #1e90ff, #00c3ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 1.5rem; }
@@ -185,6 +196,45 @@
     /* Scrollbar Styling */
     .scrolling-frame::-webkit-scrollbar { width: 10px; }
     .scrolling-frame::-webkit-scrollbar-thumb { background: #ccc; border-radius: 10px; border: 3px solid white; }
+
+    /* Modal */
+    .modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.4);
+  
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.modal.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal-box {
+  background: white;
+  padding: 2rem;
+  border-radius: 2rem;
+  text-align: center;
+  width: 90%;
+  max-width: 400px;
+
+  transform: scale(0.8);
+  transition: transform 0.3s ease;
+}
+
+.modal.show .modal-box {
+  transform: scale(1);
+    }
   </style>
 </head>
 
@@ -277,20 +327,29 @@
 
   <script>
     function setActive(btn, sectionId) {
-      const frame = document.querySelector('.scrolling-frame');
-      frame.classList.add('frame-float');
-      
-      document.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
+  const frame = document.querySelector('.scrolling-frame');
+  frame.classList.add('frame-float');
+  
+  // Button active state
+  document.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
 
-      document.querySelectorAll('.content-section').forEach(section => {
-        section.style.display = 'none';
-      });
+  // Hide all sections smoothly
+  document.querySelectorAll('.content-section').forEach(section => {
+    section.classList.remove('show');
+  });
 
-      const target = document.getElementById(sectionId);
-      if (target) { target.style.display = 'block'; }
+  // Show target with slight delay (smooth transition)
+  const target = document.getElementById(sectionId);
+  if (target) {
+    setTimeout(() => {
+      target.classList.add('show');
+    }, 50);
+  }
 
-      setTimeout(() => { frame.classList.remove('frame-float'); }, 400);
+  setTimeout(() => {
+    frame.classList.remove('frame-float');
+  }, 400);
     }
 
     function switchTab(el, tabId) {
@@ -307,10 +366,30 @@
       document.querySelector('.toggle-btn').innerHTML = sidebar.classList.contains('collapsed') ? '&#10095;' : '&#10094;';
     }
 
+    function openModal() {
+  document.getElementById('modal').classList.add('show');
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('show');
+}
+
+function confirmLogout() {
+  alert('Logging out...'); // replace later with GAS function
+    }
+
     window.onload = function() {
-      // Initialize Daily Ops as default
-      setActive(document.querySelector('.btn.active'), 'daily-ops');
-    };
+  const defaultBtn = document.querySelector('.btn.active');
+  if (defaultBtn) {
+    setActive(defaultBtn, 'daily-ops');
+  }
+
+  // Show default tab
+  const firstTab = document.querySelector('.tab-content');
+  if (firstTab) {
+    firstTab.classList.add('show');
+  }
+};
   </script>
 </body>
 </html>
