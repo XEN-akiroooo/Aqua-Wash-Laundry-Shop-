@@ -254,60 +254,89 @@ background: linear-gradient(to right, #d32f2f, #f44336) !important;
     <p>Your default dashboard cards go here.</p>  
   </div>  
 
-  <div id="input-console" class="content-section">  
-    <div class="tabs-container">  
-      <div class="tab-link active-tab" onclick="switchTab(this, 'service-input')">Service Input</div>  
-      <div class="tab-link" onclick="switchTab(this, 'supplies-log')">Supplies Log</div>  
-      <div class="tab-link" onclick="switchTab(this, 'other-trans')">Other Transactions</div>  
-    </div>  
+   <div id="input-console" class="content-section">
+  <div class="tabs-container">
+    <div class="tab-link active-tab" onclick="switchTab(this, 'service-input')">Service Input</div>
+    <div class="tab-link" onclick="switchTab(this, 'supplies-log')">Supplies Log</div>
+    <div class="tab-link" onclick="switchTab(this, 'other-trans')">Other Transactions</div>
+  </div>
 
-    <div id="service-input" class="tab-content">  
-      <div class="dual-frame-container">  
-          
-        <div class="sub-frame first-frame" id="service-side-panel">  
-          <h3 class="spartan-text" style="color:#2093DD;">CUSTOMER ACCOUNT</h3>  
-          <div class="divider" style="background-color:#2093DD; height:2px; margin: 10px 0px 30px 0px;"></div>  
+  <!-- SERVICE INPUT -->
+  <div id="service-input" class="tab-content">
+    <div class="dual-frame-container">
 
-          <div id="dynamic-form-container">  
-            <div id="selection-menu">  
-            <p class="center-lined-text">-- Selections --</p>  
-                <button class="btn large blue-gradient" onclick="showForm('new-customer')">List Customer Name</button>  
-                <button class="btn large blue-gradient" onclick="showForm('add-order')">Add New Service Order</button>  
-                <button class="btn thin dedblue-gradient" onclick="showForm('payment')">Customer Balance Payment</button>  
-                <button class="btn thin dedblue-gradient" onclick="showForm('update-order')">Update Service Order</button>  
-                <button class="btn large grey" onclick="showForm('print-invoice')">Print Service Order</button>  
-             </div>  
-            </div>  
-        </div>  
-          
-        <div class="sub-frame second-frame">  
-          <h3 class="spartan-text" style="color:#2093DD;">AQUA WASH PREVIEW</h3>  
-        </div>  
-      </div>  
-    </div>  
+      <!-- LEFT PANEL -->
+      <div class="sub-frame first-frame" id="service-side-panel">
+        <h3 class="spartan-text" id="panel-title" style="color:#2093DD;">CUSTOMER ACCOUNT</h3>
+        <div class="divider" style="background-color:#2093DD; height:2px; margin: 10px 0 30px 0;"></div>
 
-    <div id="supplies-log" class="tab-content" style="display:none;">  
-      <div class="dual-frame-container">  
-        <div class="sub-frame first-frame">  
-          <h3 class="spartan-text" style="color:#FFBD59;">SUPPLIES LOG</h3>  
-          <div class="divider" style="background-color:#FFBD59; height:2px; margin: 10px 0px 30px 0px;"></div>  
-          <button class="btn medium yellow-gradient">Record Transaction</button>  
-          <button class="btn medium grey">Generate ID</button>  
-        </div>  
-      </div>  
-    </div>  
+        <div id="dynamic-form-container">
+          <div id="selection-menu">
+            <p class="center-lined-text">-- Selections --</p>
 
-    <div id="other-trans" class="tab-c<button class="btn large blue-gradient" onclick="showForm('new-customer')">List Customer Name</button>  
-  <div class="dual-frame-container">  
-        <div class="sub-frame first-frame">  
-          <h3 class="spartan-text" style="color:#FF8A00;">OTHER TRANSACTIONS</h3>  
-          <div class="divider" style="background-color:#FFBD59; height:2px; margin: 10px 0px 30px 0px;"></div>                                                                      
-          <button class="btn medium orange-gradient">Record Transaction</button>  
-          <button class="btn medium grey">Generate ID</button>  
-        </div>  
-      </div>  
-    </div>  
-  </div>  
+            <button class="btn large blue-gradient" onclick="showForm('new-customer')">
+              List Customer Name
+            </button>
+
+            <button class="btn large blue-gradient" onclick="showForm('add-order')">
+              Add New Service Order
+            </button>
+
+            <button class="btn thin dedblue-gradient" onclick="showForm('payment')">
+              Customer Balance Payment
+            </button>
+
+            <button class="btn thin dedblue-gradient" onclick="showForm('update-order')">
+              Update Service Order
+            </button>
+
+            <button class="btn large grey" onclick="showForm('print-invoice')">
+              Print Service Order
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT PANEL -->
+      <div class="sub-frame second-frame">
+        <h3 class="spartan-text" style="color:#2093DD;">AQUA WASH PREVIEW</h3>
+        <div class="divider" style="background-color:#2093DD; height:2px; margin: 10px 0 20px 0;"></div>
+
+        <p style="color:#666; font-size:14px;">
+          Preview will appear here...
+        </p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- SUPPLIES LOG -->
+  <div id="supplies-log" class="tab-content" style="display:none;">
+    <div class="dual-frame-container">
+      <div class="sub-frame">
+        <h3 class="spartan-text" style="color:#FFBD59;">SUPPLIES LOG</h3>
+        <div class="divider" style="background-color:#FFBD59; height:2px; margin: 10px 0 20px 0;"></div>
+
+        <button class="btn medium yellow-gradient">Record Transaction</button>
+        <button class="btn medium grey">Generate ID</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- OTHER TRANSACTIONS -->
+  <div id="other-trans" class="tab-content" style="display:none;">
+    <div class="dual-frame-container">
+      <div class="sub-frame">
+        <h3 class="spartan-text" style="color:#FF8A00;">OTHER TRANSACTIONS</h3>
+        <div class="divider" style="background-color:#FF8A00; height:2px; margin: 10px 0 20px 0;"></div>
+
+        <button class="btn medium orange-gradient">Record Transaction</button>
+        <button class="btn medium grey">Generate ID</button>
+      </div>
+    </div>
+  </div>
+
+</div>
 
   <div id="financial" class="content-section"><h2>Financial Statements</h2></div>  
   <div id="metrics" class="content-section"><h2>Performance Data</h2></div>  
