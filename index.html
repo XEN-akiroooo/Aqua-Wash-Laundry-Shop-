@@ -3,6 +3,7 @@
 <head>
   <base target="_top">
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=League+Spartan:wght@100..900&display=swap');
     * {
       margin: 0;
       padding: 0;
@@ -106,33 +107,63 @@
     .divider { margin: 1.5rem 0; }
     .divider-smallspace { margin: -25px 10px 30px 0px; }
 
-    /* BUTTONS */
-    .btn {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 100%;
-      min-height: 50px;
-      margin: 0.5rem 0;
-      border-radius: 16px;
-      border: 6px solid transparent;
-      color: white;
-      font-weight: bold;
-      font-size: 12px;
-      cursor: pointer;
-      transition: all 0.2s ease-in-out;
-      text-align: center;
-      white-space: nowrap;
-    }
+    /* --- THE BASE BUTTON (League Spartan Integration) --- */
+.btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  text-align: center;
+  white-space: nowrap;
+  width: 100%;
+  border: none; /* Default to none for gradients */
+  box-sizing: border-box; /* Important for border calculations */
+}
 
-    .btn.shop { background: #2093DD; border-color: #1B67AD; }
-    .btn.control { background: #E16CF0; border-color: #BA1DB8; }
-    .btn.account { background: #1E6CE2; border-color: #1D52BA; }
+/* --- THE SIZES --- */
+.btn.large {
+  height: 65px;
+  border-radius: 20px;
+  font-size: 16px;
+  letter-spacing: 1px;
+}
 
-    .btn:hover { filter: brightness(1.1); transform: scale(1.02); }
-    .btn.active { box-shadow: 0 0 15px rgba(255, 255, 255, 0.8) !important; border-color: #FFFFFF !important; }
+.btn.medium {
+  height: 50px;
+  border-radius: 16px;
+  font-size: 13px; /* Slightly larger for Spartan readability */
+}
 
-    /* MAIN & SCROLLING FRAME */
+.btn.thin {
+  height: 35px;
+  border-radius: 10px;
+  font-size: 11px;
+}
+
+/* --- SOLID STYLES (With Borders) --- */
+.btn.shop { background: #2093DD; border: 6px solid #1B67AD; }
+.btn.control { background: #E16CF0; border: 6px solid #BA1DB8; }
+.btn.account { background: #1E6CE2; border: 6px solid #1D52BA; }
+
+/* --- GRADIENT STYLES (No Borders) --- */
+.btn.blue-gradient { background: linear-gradient(to right, #0077C2, #1DDDE3); }
+.btn.yellow-gradient { background: linear-gradient(to right, #C2A300, #E6E41E); }
+.btn.orange-gradient { background: linear-gradient(to right, #925105, #FF8A00); }
+
+/* --- HOVER & ACTIVE STATES --- */
+.btn:hover {
+  filter: brightness(1.1);
+  transform: scale(1.02);
+}
+
+.btn.active {
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
+  border-color: #FFFFFF !important; /* Forces the border white when active */
+}
+
+        /* MAIN & SCROLLING FRAME */
     .main {
       flex: 1;
       background: #DDFFFF;
@@ -192,6 +223,7 @@
 }
     .glass-text {
   font-size: 1.5rem;
+  font-family: 'League Spartan', sans-serif;
   font-weight: 800;
   color: #0BB7BD;
   text-shadow: 0 0 10px rgba(11, 183, 189, 0.3);
@@ -296,20 +328,20 @@
     <div class="divider-smallspace"></div>
 
     <div class="section-title">SHOP'S OVERVIEW</div>
-    <button class="btn shop active" onclick="setActive(this, 'daily-ops')">DAILY OPERATIONS OVERVIEW</button>
-    <button class="btn shop" onclick="setActive(this, 'financial')">FINANCIAL STATEMENTS</button>
-    <button class="btn shop" onclick="setActive(this, 'metrics')">KEY PERFORMANCE METRICS</button>
-    <button class="btn shop" onclick="setActive(this, 'management')">BUSINESS MANAGEMENT</button>
+    <button class="btn medium shop active" onclick="setActive(this, 'daily-ops')">DAILY OPERATIONS OVERVIEW</button>
+    <button class="btn medium shop" onclick="setActive(this, 'financial')">FINANCIAL STATEMENTS</button>
+    <button class="btn medium shop" onclick="setActive(this, 'metrics')">KEY PERFORMANCE METRICS</button>
+    <button class="btn medium shop" onclick="setActive(this, 'management')">BUSINESS MANAGEMENT</button>
 
     <div class="divider"></div>
 
     <div class="section-title">CONTROLS</div>
-    <button class="btn control" onclick="setActive(this, 'input-console')">INPUT OR CONSOLE</button>
-    <button class="btn control" onclick="setActive(this, 'service-settings')">SERVICE SETTINGS</button>
+    <button class="btn medium control" onclick="setActive(this, 'input-console')">INPUT OR CONSOLE</button>
+    <button class="btn medium control" onclick="setActive(this, 'service-settings')">SERVICE SETTINGS</button>
 
     <div class="footer">
-      <button class="btn account">ACCOUNT SETTINGS</button>
-      <button class="btn account" onclick="openModal()">LOG OUT</button>
+      <button class="btn medium account">ACCOUNT SETTINGS</button>
+      <button class="btn medium account" onclick="openModal()">LOG OUT</button>
     </div>
   </div>
 
