@@ -196,6 +196,28 @@
 
     .top-title { text-align: center; font-size: 2.5rem; font-weight: 900; background: linear-gradient(90deg, #1e90ff, #00c3ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 1.5rem; }
 
+    .form-input {
+  width: 100%;
+  padding: 15px;
+  margin-bottom: 15px;
+  border: 2px solid #0BB7BD;
+  border-radius: 15px;
+  font-family: 'League Spartan', sans-serif;
+  font-weight: 600;
+  color: #333;
+  outline: none;
+}
+
+.form-input:focus {
+  border-color: #1e90ff;
+  box-shadow: 0 0 8px rgba(30, 144, 255, 0.2);
+}
+
+/* For the red delete button style */
+.red-gradient {
+  background: linear-gradient(to right, #d32f2f, #f44336) !important;
+}
+
     /* Modal */
     .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); display: flex; justify-content: center; align-items: center; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; z-index: 2000; }
     .modal.show { opacity: 1; pointer-events: auto; }
@@ -249,16 +271,23 @@
 
         <div id="service-input" class="tab-content">
           <div class="dual-frame-container">
-            <div class="sub-frame first-frame">
+            
+            <div class="sub-frame first-frame" id="service-side-panel">
               <h3 class="spartan-text" style="color:#2093DD;">CUSTOMER ACCOUNT</h3>
               <div class="divider" style="background-color:#2093DD; height:2px; margin: 10px 0px 30px 0px;"></div>
-              <p class="center-lined-text">-- Selections --</p>
-              <button class="btn large blue-gradient">List Customer Name</button>
-              <button class="btn large blue-gradient">Add New Service Order</button>
-              <button class="btn thin dedblue-gradient">Customer Balance Payment</button>
-              <button class="btn thin dedblue-gradient">Update Service Order</button>
-              <button class="btn large grey">Print Service Order</button>
+
+              <div id="dynamic-form-container">
+                <div id="selection-menu">
+                <p class="center-lined-text">-- Selections --</p>
+                    <button class="btn large blue-gradient" onclick="showForm('new-customer')">List Customer Name</button>
+                    <button class="btn large blue-gradient" onclick="showForm('add-order')">Add New Service Order</button>
+                    <button class="btn thin dedblue-gradient" onclick="showForm('payment')">Customer Balance Payment</button>
+                    <button class="btn thin dedblue-gradient" onclick="showForm('update-order')">Update Service Order</button>
+                    <button class="btn large grey" onclick="showForm('print-invoice')">Print Service Order</button>
+                 </div>
+                </div>
             </div>
+            
             <div class="sub-frame second-frame">
               <h3 class="spartan-text" style="color:#2093DD;">AQUA WASH PREVIEW</h3>
             </div>
@@ -276,8 +305,8 @@
           </div>
         </div>
 
-        <div id="other-trans" class="tab-content" style="display:none;">
-          <div class="dual-frame-container">
+        <div id="other-trans" class="tab-c<button class="btn large blue-gradient" onclick="showForm('new-customer')">List Customer Name</button>
+      <div class="dual-frame-container">
             <div class="sub-frame first-frame">
               <h3 class="spartan-text" style="color:#FF8A00;">OTHER TRANSACTIONS</h3>
               <div class="divider" style="background-color:#FFBD59; height:2px; margin: 10px 0px 30px 0px;"></div>                                                                    
@@ -314,6 +343,77 @@
       el.classList.add('active-tab');
       document.querySelectorAll('.tab-content').forEach(tc => tc.style.display = 'none');
       document.getElementById(tabId).style.display = 'block';
+    }
+
+    function showForm(formType) {
+  const container = document.getElementById('dynamic-form-container');
+  const title = document.getElementById('panel-title');
+  
+  // Back button template to reuse
+  const backBtn = `<button class="btn medium grey" style="margin-top:20px" onclick="resetServicePanel()">Back to Selection</button>`;
+
+  if (formType === 'new-customer') {
+    title.innerText = "NEW CUSTOMER ACCOUNT";
+    container.innerHTML = `
+      <input type="text" placeholder="Customer Name" class="form-input">
+      <button class="btn large blue-gradient">List New Customer & Save</button>
+      ${backBtn}`;
+  } 
+  
+  else if (formType === 'add-order') {
+    title.innerText = "ADD SERVICE ORDER";
+    container.innerHTML = `
+      <select class="form-input"><option>Pick Customer Name</option></select>
+      <select class="form-input"><option>Pick Service Type</option></select>
+      <input type="number" placeholder="Cash Payment" class="form-input">
+      <button class="btn medium blue-gradient">Generate ID for Service Order</button>
+      <button class="btn medium blue-gradient">Save and Add Service Order</button>
+      ${backBtn}`;
+  }
+
+  else if (formType === 'payment') {
+    title.innerText = "CUSTOMER CREDIT SETTLEMENT";
+    container.innerHTML = `
+      <select class="form-input"><option>Pick Customer Name</option></select>
+      <select class="form-input"><option>Pick Their Service ID</option></select>
+      <p style="font-size: 12px; color: #666; margin: 10px 0;">*Lump sum payment only</p>
+      <button class="btn medium blue-gradient">Record to Fully Settled</button>
+      ${backBtn}`;
+  }
+
+  else if (formType === 'update-order') {
+    title.innerText = "UPDATE SERVICE ORDER";
+    container.innerHTML = `
+      <select class="form-input"><option>Pick Customer Name</option></select>
+      <select class="form-input"><option>Pick Their Service ID</option></select>
+      <button class="btn medium blue-gradient">Update Service Order</button>
+      <button class="btn medium red-gradient" style="background:red">Remove and Delete Order</button>
+      ${backBtn}`;
+  }
+
+  else if (formType === 'print-invoice') {
+    title.innerText = "SERVICE INVOICE";
+    container.innerHTML = `
+      <select class="form-input"><option>Pick Customer Name</option></select>
+      <select class="form-input"><option>Pick Their Service ID</option></select>
+      <button class="btn medium blue-gradient">Print</button>
+      ${backBtn}`;
+  }
+}
+
+function resetServicePanel() {
+  const container = document.getElementById('dynamic-form-container');
+  const title = document.getElementById('panel-title');
+  title.innerText = "CUSTOMER ACCOUNT";
+  container.innerHTML = `
+    <div id="selection-menu">
+      <p class="center-lined-text">-- Selections --</p>
+      <button class="btn large blue-gradient" onclick="showForm('new-customer')">List Customer Name</button>
+      <button class="btn large blue-gradient" onclick="showForm('add-order')">Add New Service Order</button>
+      <button class="btn thin dedblue-gradient" onclick="showForm('payment')">Customer Balance Payment</button>
+      <button class="btn thin dedblue-gradient" onclick="showForm('update-order')">Update Service Order</button>
+      <button class="btn large grey" onclick="showForm('print-invoice')">Print Service Order</button>
+    </div>`;
     }
 
     function toggleSidebar() {
