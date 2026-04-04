@@ -168,6 +168,42 @@ body {
   border: 2px solid;
   box-shadow: 0 4px 12px rgba(0,0,0,0.05); /* Light subtle shadow */
 }
+    /* --- GRADIENT LABEL --- */
+.gradient-label {
+  background: linear-gradient(to right, #0077C2, #1DDDE3); /* Matches your buttons */
+  color: white;
+  padding: 15px;
+  border-radius: 12px;
+  text-align: center;
+  font-family: 'League Spartan', sans-serif;
+  font-weight: 800;
+  font-size: 1.3rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 25px;
+}
+
+/* --- DATA ROWS --- */
+.preview-data-grid {
+  display: grid;
+  grid-template-columns: 140px 1fr; /* Fixed width for labels, rest for data */
+  gap: 15px 20px; /* Spacing between rows and columns */
+  align-items: center; /* Vertically center content */
+  font-family: 'Segoe UI', sans-serif; /* Clean font for data */
+}
+
+/* DATA LABELS (Left Column) */
+.preview-data-grid label {
+  font-weight: 700;
+  color: #1e6ce2; /* Deep blue for data labels */
+  font-size: 15px;
+}
+
+/* DATA VALUES (Right Column) */
+.preview-data-grid .data-value {
+  color: #666;
+  font-size: 14px;
+}
 
 @media (max-width: 900px) {  
   .dual-frame-container { flex-direction: column; }  
@@ -313,12 +349,33 @@ background: linear-gradient(to right, #d32f2f, #f44336) !important;
 
       <!-- RIGHT PANEL -->
       <div class="sub-frame second-frame" style="border-color:#0BB7BD;">
-        <h3 class="spartan-text" style="color:#2093DD;">AQUA WASH PREVIEW</h3>
-        <div class="divider" style="background-color:#2093DD; height:2px; margin: 10px 0 20px 0;"></div>
+        <div class="gradient-label">AQUA WASH LAUNDRY SHOP</div>
 
-        <p style="color:#666; font-size:14px;">
-          Preview will appear here...
-        </p>
+        <div class="preview-data-grid">
+    
+    <label>Date:</label>
+    <div class="data-value">Sample (April 2, 2026)</div>
+
+    <label>Customers Name:</label>
+    <div class="data-value">Sample (John)</div>
+
+    <label>Service ID:</label>
+    <div class="data-value">Sample (#26-947379)</div>
+
+    <label>Service Type:</label>
+    <div class="data-value">Sample (Full Service)</div>
+
+    <label>Service Price:</label>
+    <div class="data-value">Sample (₱ 190)</div>
+
+    <label>Payment:</label>
+    <div class="data-value">Sample (₱ 150)</div>
+
+    <label>Credit Balance:</label>
+    <div class="data-value">Sample (₱ 40)</div>
+
+        </div>
+        
       </div>
 
     </div>
