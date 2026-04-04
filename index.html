@@ -209,11 +209,13 @@ body {
 }
 
 .preview-label {
-  font-family: 'League Spartan', sans-serif;
+  font-weight: 800;
   font-weight: 700;
-  color: #1B67AD;
   font-size: 16px;
 }
+.preview-label.blue {color: #1B67AD;}
+.preview-label.yellow {color: #FFBD59;}
+.preview-label.orange {color: #FF8A00;}
 
 .preview-value-box {
   border: 1.5px solid #A0A0A0;
@@ -376,37 +378,36 @@ background: linear-gradient(to right, #d32f2f, #f44336) !important;
 
         <div id="preview-content-area" class="preview-grid">
     <div class="preview-row">
-      <div class="preview-label">Date</div>
+      <div class="preview-label blue">Date</div>
       <div class="preview-value-box">Sample (April 2, 2026)</div>
     </div>
     <div class="preview-row">
-      <div class="preview-label">Customers Name</div>
+      <div class="preview-label blue">Customers Name</div>
       <div class="preview-value-box">Sample (John)</div>
     </div>
     <div class="preview-row">
-      <div class="preview-label">Service ID</div>
+      <div class="preview-label blue">Service ID</div>
       <div class="preview-value-box">Sample (#26-947379)</div>
     </div>
     <div style="margin: 15px 0;"></div> <div class="preview-row">
-      <div class="preview-label">Service Type</div>
+      <div class="preview-label blue">Service Type</div>
       <div class="preview-value-box">Sample (Full Service)</div>
     </div>
     <div class="preview-row">
-      <div class="preview-label">Service Price</div>
+      <div class="preview-label blue">Service Price</div>
       <div class="preview-value-box">Sample (₱ 190)</div>
     </div>
     <div class="preview-row">
-      <div class="preview-label">Payment</div>
+      <div class="preview-label blue">Payment</div>
       <div class="preview-value-box">Sample (₱ 150)</div>
     </div>
     <div class="preview-row">
-      <div class="preview-label">Credit Balance</div>
+      <div class="preview-label blue">Credit Balance</div>
       <div class="preview-value-box">Sample (₱ 40)</div>
     </div>
   </div>
 
   <div id="preview-footer-note" class="preview-footer"></div>
-        
       </div>
 
     </div>
@@ -426,8 +427,40 @@ background: linear-gradient(to right, #d32f2f, #f44336) !important;
       </div>
 
       <div class="sub-frame second-frame" style="border-color:#FFBD59;">
-        <h3 class="spartan-text" style="color:#FFBD59;">TRANSACTION ENTRIES</h3>
-        <div class="divider" style="background-color:#FFBD59; height:2px; margin: 10px 0 20px 0;"></div>
+        <div class="label-header yellow-gradient">TRANSACTION ENTRIES</div>
+        <div id="preview-content-area" class="preview-grid">
+          <div class="preview-row">
+            <div class="preview-label yellow">Date</div>
+            <div class="preview-value-box">Sample (April 2, 2026)</div>
+          </div>
+          <div style="margin: 10px 0;"></div>
+          <div class="preview-row">
+            <div class="preview-label yellow">Transaction Type</div>
+            <div class="preview-value-box">Sample (Purchase Supplies)</div>
+          </div>
+          <div class="preview-row">
+            <div class="preview-label yellow">Transaction With</div>
+            <div class="preview-value-box">Sample (puregold)</div>
+          </div>
+          <div class="preview-row">
+            <div class="preview-label yellow">Transaction No.</div>
+            <div class="preview-value-box">Sample (T26-324618)</div>
+          </div>
+          <div style="margin: 15px 0;"></div>
+          <div class="preview-row">
+            <div class="preview-label yellow">Debit</div>
+            <div class="preview-value-box">Sample (Laundry Supplies)</div>
+          </div>
+          <div class="preview-row">
+            <div class="preview-label yellow">Credit</div>
+            <div class="preview-value-box">Sample (Cash)</div>
+          </div>
+          <div style="margin: 5px 0;"></div>
+          <div class="preview-row">
+            <div class="preview-label yellow">Amount</div>
+            <div class="preview-value-box">Sample (₱100)</div>
+          </div>
+        </div>
       </div>
 
       
@@ -446,9 +479,41 @@ background: linear-gradient(to right, #d32f2f, #f44336) !important;
       </div>
 
       <div class="sub-frame second-frame" style="border-color:#FF8A00;">
-        <h3 class="spartan-text" style="color:#FF8A00;">TRANSACTION ENTRIES</h3>
-        <div class="divider" style="background-color:#FF8A00; height:2px; margin: 10px 0 20px 0;"></div>
-      </div>
+        <div class="label-header orange-gradient">TRANSACTION ENTRIES</div>
+        <div id="preview-content-area" class="preview-grid">
+          <div class="preview-row">
+            <div class="preview-label orange">Date</div>
+            <div class="preview-value-box">Sample (April 2, 2026)</div>
+          </div>
+          <div style="margin: 10px 0;"></div>
+          <div class="preview-row">
+            <div class="preview-label orange">Transaction Type</div>
+            <div class="preview-value-box">Sample (Purchase Supplies)</div>
+          </div>
+          <div class="preview-row">
+            <div class="preview-label orange">Transaction With</div>
+            <div class="preview-value-box">Sample (puregold)</div>
+          </div>
+          <div class="preview-row">
+            <div class="preview-label orange">Transaction No.</div>
+            <div class="preview-value-box">Sample (T26-324618)</div>
+          </div>
+          <div style="margin: 15px 0;"></div>
+          <div class="preview-row">
+            <div class="preview-label orange">Debit</div>
+            <div class="preview-value-box">Sample (Laundry Supplies)</div>
+          </div>
+          <div class="preview-row">
+            <div class="preview-label orange">Credit</div>
+            <div class="preview-value-box">Sample (Cash)</div>
+          </div>
+          <div style="margin: 5px 0;"></div>
+          <div class="preview-row">
+            <div class="preview-label orange">Amount</div>
+            <div class="preview-value-box">Sample (₱100)</div>
+          </div>
+        </div>
+        </div>
       
     </div>
   </div>
