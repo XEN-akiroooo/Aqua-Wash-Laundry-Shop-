@@ -173,10 +173,24 @@
       min-height: 450px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.05);
       border: 1px solid #f0f0f0;
+      overflow: auto;
     }
     .first-frame { background: #ffffff; border: 2px solid #0BB7BD; }
     .second-frame { background: #e9ecef; }
 
+@media (max-width: 900px) {
+  .dual-frame-container {
+    flex-direction: column;
+  }
+
+  .sub-frame {
+    width: 100%;
+    flex: 1 1 100%;
+    aspect-ratio: auto;
+    min-height: 380px;
+  }
+}
+    
     .content-section {
   display: none;
   opacity: 0;
