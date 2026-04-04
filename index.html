@@ -384,7 +384,7 @@ background: linear-gradient(to right, #d32f2f, #f44336) !important;
   const title = document.getElementById('panel-title');  
     
   // Back button template to reuse  
-  const backBtn = `<button class="btn medium grey" style="margin-top:20px" onclick="resetServicePanel()">Back to Selection</button>`;  
+  const backBtn = `<button class="btn large grey" style="margin-top:20px" onclick="resetServicePanel()">Back to Selection</button>`;  
   
   if (formType === 'new-customer') {  
     title.innerText = "NEW CUSTOMER ACCOUNT";  
@@ -400,8 +400,8 @@ background: linear-gradient(to right, #d32f2f, #f44336) !important;
       <select class="form-input"><option>Pick Customer Name</option></select>  
       <select class="form-input"><option>Pick Service Type</option></select>  
       <input type="number" placeholder="Cash Payment" class="form-input">  
-      <button class="btn medium blue-gradient">Generate ID for Service Order</button>  
-      <button class="btn medium blue-gradient">Save and Add Service Order</button>  
+      <button class="btn large blue-gradient">Generate ID for Service Order</button>  
+      <button class="btn large blue-gradient">Save and Add Service Order</button>  
       ${backBtn}`;  
   }  
   
@@ -411,7 +411,7 @@ background: linear-gradient(to right, #d32f2f, #f44336) !important;
       <select class="form-input"><option>Pick Customer Name</option></select>  
       <select class="form-input"><option>Pick Their Service ID</option></select>  
       <p style="font-size: 12px; color: #666; margin: 10px 0;">*Lump sum payment only</p>  
-      <button class="btn medium blue-gradient">Record to Fully Settled</button>  
+      <button class="btn large blue-gradient">Record to Fully Settled</button>  
       ${backBtn}`;  
   }  
   
@@ -420,8 +420,8 @@ background: linear-gradient(to right, #d32f2f, #f44336) !important;
     container.innerHTML = `  
       <select class="form-input"><option>Pick Customer Name</option></select>  
       <select class="form-input"><option>Pick Their Service ID</option></select>  
-      <button class="btn medium blue-gradient">Update Service Order</button>  
-      <button class="btn medium red-gradient" style="background:red">Remove and Delete Order</button>  
+      <button class="btn large blue-gradient">Update Service Order</button>  
+      <button class="btn large red-gradient" style="background:red">Remove and Delete Order</button>  
       ${backBtn}`;  
   }  
   
@@ -430,7 +430,7 @@ background: linear-gradient(to right, #d32f2f, #f44336) !important;
     container.innerHTML = `  
       <select class="form-input"><option>Pick Customer Name</option></select>  
       <select class="form-input"><option>Pick Their Service ID</option></select>  
-      <button class="btn medium blue-gradient">Print</button>  
+      <button class="btn large blue-gradient">Print</button>  
       ${backBtn}`;  
   }  
 }  
