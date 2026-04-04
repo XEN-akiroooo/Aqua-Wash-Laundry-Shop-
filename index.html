@@ -235,6 +235,33 @@
 .modal.show .modal-box {
   transform: scale(1);
     }
+
+.green {
+  background: linear-gradient(to right, #00c853, #00e676);
+  color: white;
+  border: none;
+  padding: 0.75rem;
+  border-radius: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  width: 100%;
+  margin-top: 0.5rem;
+}
+
+.red {
+  background: linear-gradient(to right, #d50000, #8e0000);
+  color: white;
+  border: none;
+  padding: 0.75rem;
+  border-radius: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  width: 100%;
+  margin-top: 0.5rem;
+}
+
+.green:hover { filter: brightness(1.1); }
+.red:hover { filter: brightness(1.1); }
   </style>
 </head>
 
@@ -395,13 +422,8 @@ function confirmLogout() {
   <div class="modal-box">
     <p>Do you really want to log out? 🤔</p>
 
-    <button class="btn account" onclick="confirmLogout()">
-      Log out anyway
-    </button>
-
-    <button class="btn control" onclick="closeModal()">
-      Cancel
-    </button>
+    <button class="green" onclick="confirmLogout()">Log out anyway</button>
+<button class="red" onclick="closeModal()">Cancel</button>
   </div>
   </div>
 </body>
