@@ -135,7 +135,7 @@
     /* MAIN & SCROLLING FRAME */
     .main {
       flex: 1;
-      background: #DDFFFF
+      background: #DDFFFF;
       padding: 2rem;
       display: flex;
       flex-direction: column;
@@ -391,5 +391,18 @@ function confirmLogout() {
   }
 };
   </script>
+  <div class="modal" id="modal">
+  <div class="modal-box">
+    <p>Do you really want to log out? 🤔</p>
+
+    <button class="btn account" onclick="confirmLogout()">
+      Log out anyway
+    </button>
+
+    <button class="btn control" onclick="closeModal()">
+      Cancel
+    </button>
+  </div>
+  </div>
 </body>
 </html>
