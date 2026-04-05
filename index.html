@@ -711,7 +711,7 @@ background: linear-gradient(to right, #d32f2f, #f44336) !important;
   <div class="settings-grid" id="grid-supplies">
     <div class="grid-header has-action" style="grid-template-columns: 2fr 1fr;">
       <span>Supplies Name</span>
-      <span>Cost (₱)</span>
+      <span>Cost Per Unit(₱)</span>
     </div>
     <div class="grid-row has-action" style="grid-template-columns: 2fr 1fr;">
       <input type="text" class="grid-input" value="Detergent (Liquid)">
@@ -896,7 +896,7 @@ function closeDeleteModal() {
     const input = document.createElement('input');
     input.type = "text";
     input.className = "grid-input";
-    input.placeholder = "New Entry...";
+    input.placeholder = "Type Here!";
     newRow.appendChild(input);
   }
 
@@ -932,9 +932,9 @@ function closeDeleteModal() {
 <div id="delete-modal" class="modal">
   <div class="modal-box">
     <h2 class="spartan-text" style="color:#d32f2f; margin-top:0;">CONFIRM DELETE</h2>
-    <p id="modal-message">Are you sure you want to remove this item?</p>
+    <p id="modal-message">Are you sure you want to remove this item?😱</p>
     <div style="display: flex; gap: 10px; margin-top: 20px;">
-      <button class="green" id="confirm-delete-btn">YES, DELETE</button>
+      <button class="green" id="confirm-delete-btn">CONFIRM</button>
       <button class="red" onclick="closeDeleteModal()">CANCEL</button>
     </div>
   </div>
@@ -942,7 +942,9 @@ function closeDeleteModal() {
   
   <div class="modal" id="modal">  
     <div class="modal-box">  
-      <p>Do you really want to log out? 🤔</p>  
+      <h2 class="spartan-text" style="color:#d32f2f; margin-top:0;">CLOSING DASHBOARD</h2>
+      <p>Do you really want to log out? 🤔</p> 
+      <div style="display: flex; gap: 10px; margin-top: 20px;">
       <button class="green" onclick="confirmLogout()">Log out anyway</button>  
       <button class="red" onclick="closeModal()">Cancel</button>  
     </div>  
