@@ -481,15 +481,15 @@ background: linear-gradient(to right, #d32f2f, #f44336) !important;
         <div class="divider" style="background-color:#FFBD59; height:2px; margin: 10px 0 20px 0;"></div>
 
         <input type="text" placeholder="Transaction With" class="form-input md yellow">
+        <select class="form-input md yellow"><option>Transaction Type</option></select>
         <select class="form-input sm miniY"><option>Kind of Supplies</option></select>
+        <input type="number" placeholder="Total Amount" class="form-input md black">
 
         <div class="qty-container">
     <button type="button" class="qty-btn" onclick="changeQty(-1)">−</button>
     <input type="number" id="item-qty" class="qty-input" value="1" min="1" readonly>
     <button type="button" class="qty-btn" onclick="changeQty(1)">+</button>
         </div>
-
-        <input type="number" placeholder="Total Amount" class="form-input md black">
         
         <button class="btn large yellow-gradient">Record Transaction</button>
         <button class="btn large grey">Generate ID</button>
@@ -543,6 +543,9 @@ background: linear-gradient(to right, #d32f2f, #f44336) !important;
         <h3 class="spartan-text" style="color:#FF8A00;">OTHER TRANSACTIONS</h3>
         <div class="divider" style="background-color:#FF8A00; height:2px; margin: 10px 0 20px 0;"></div>
 
+        <input type="text" placeholder="Transaction With" class="form-input md orange">
+        <select class="form-input md orange"><option>Transaction Type</option></select>
+        <input type="number" placeholder="Total Amount" class="form-input md black">
         <button class="btn large orange-gradient">Record Transaction</button>
         <button class="btn large grey">Generate ID</button>
       </div>
