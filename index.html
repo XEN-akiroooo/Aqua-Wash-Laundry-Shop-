@@ -428,6 +428,10 @@ background: linear-gradient(to right, #d32f2f, #f44336) !important;
   grid-template-columns: 2fr 1fr 50px !important; /* 2 cols + 50px for delete */
 }
 
+    .grid-header.customer-grid, .grid-row.customer-grid {
+  grid-template-columns: 2fr 1fr 1fr 50px !important; /* Name, Orders, Cash, Delete */
+    }
+
 .grid-header.has-action-wide, .grid-row.has-action-wide {
   grid-template-columns: 1fr 1fr 1fr 2fr 50px !important; /* 4 cols + 50px for delete */
 }
@@ -721,6 +725,18 @@ background: linear-gradient(to right, #d32f2f, #f44336) !important;
   </div>
   <button class="add-row-btn" onclick="addNewRow('grid-supplies', 2)">+</button>
 
+  <p class="center-lined-text">Customer Records</p>
+<div class="settings-grid" id="grid-customers">
+  <div class="grid-header" style="grid-template-columns: 1fr 50px;">
+    <span>Customer Name</span>
+    <span></span>
+  </div>
+  
+  <div class="grid-row" style="grid-template-columns: 1fr 50px;">
+    <input type="text" class="grid-input" value="John" readonly> <button class="delete-row-btn" onclick="confirmDelete(this)">✕</button>
+  </div>
+</div>
+  
   <p class="center-lined-text">Other Transaction</p>
   <div class="settings-grid" id="grid-others">
     <div class="grid-header has-action-wide" style="grid-template-columns: 1fr 1fr 1fr 2fr;">
@@ -776,10 +792,12 @@ background: linear-gradient(to right, #d32f2f, #f44336) !important;
   if (formType === 'new-customer') {  
     title.innerText = "NEW CUSTOMER ACCOUNT";  
     container.innerHTML = `  
-      <input type="text" placeholder="Customer Name" class="form-input md black">  
-      <button class="btn large blue-gradient">List New Customer & Save</button>  
+      <input type="text" id="new-cust-name" placeholder="Enter Customer Name..." class="form-input md black">  
+      
+      <button class="btn large blue-gradient" onclick="saveNewCustomer()">List New Customer & Save</button>  
+      
       ${backBtn}`;  
-  }   
+  }
     
   else if (formType === 'add-order') {  
     title.innerText = "ADD SERVICE ORDER";  
@@ -909,7 +927,36 @@ function closeDeleteModal() {
 
   grid.appendChild(newRow);
 }
+
+  function saveNewCustomer() {
+  const nameInput = document.getElementById('new-cust-name');
+  const name = nameInput.value.trim();
   
+  if (name === "") {
+    alert("Please enter a name!");
+    return;
+  }
+
+  // 1. Find the Settings Grid
+  const grid = document.getElementById('grid-customers');
+  
+  // 2. Create the new row for the Settings Tab
+  const newRow = document.createElement('div');
+  newRow.className = 'grid-row';
+  newRow.style.gridTemplateColumns = '1fr 50px';
+  
+  newRow.innerHTML = `
+    <input type="text" class="grid-input" value="${name}" readonly>
+    <button class="delete-row-btn" onclick="confirmDelete(this)">✕</button>
+  `;
+  
+  // 3. Add to the list
+  grid.appendChild(newRow);
+  
+  // 4. Clear input and give feedback
+  nameInput.value = "";
+  alert(name + " has been added to the customer records!");
+}
   
     function toggleSidebar() {  
       const sidebar = document.getElementById('sidebar');  
