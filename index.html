@@ -465,7 +465,7 @@ background: linear-gradient(to right, #d32f2f, #f44336) !important;
 <button class="btn medium control" onclick="setActive(this, 'service-settings')">SERVICE SETTINGS</button>  
 
 <div class="footer">  
-  <button class="btn medium account">ACCOUNT SETTINGS</button>  
+  <button class="btn medium account" onclick="setActive(this, 'account-settings')">ACCOUNT SETTINGS</button>  
   <button class="btn medium account" onclick="openModal()">LOG OUT</button>  
 </div>
 
@@ -757,23 +757,72 @@ background: linear-gradient(to right, #d32f2f, #f44336) !important;
 
   <p style="margin-top:50px; font-style: italic; color: #888;">*This section is for Accountant ONLY!</p>
   </div>
+
+      <div id="account-settings" class="content-section">
+  <h3 class="spartan-text" style="color:#1E6CE2;">ACCOUNT SETTINGS</h3>
+  <div class="divider" style="background-color:#1E6CE2; height:2px; margin: 10px 0 30px 0;"></div>
+
+  <div class="dual-frame-container">
+    <div class="sub-frame first-frame">
+      <p class="center-lined-text" style="color:#1E6CE2; text-decoration-color:#1E6CE2 !important;">Profile Security</p>
+      
+      <label style="font-weight:bold; color:#555;">Username</label>
+      <input type="text" class="form-input md black" value="Admin_AquaWash">
+      
+      <label style="font-weight:bold; color:#555;">New Password</label>
+      <input type="password" class="form-input md black" placeholder="••••••••">
+      
+      <button class="btn sz-md bg-cyan" style="margin-top:20px;">Update Credentials</button>
+    </div>
+
+    <div class="sub-frame second-frame" style="border-color:#1E6CE2;">
+      <div class="label-header blue-gradient" style="background: linear-gradient(to right, #1E6CE2, #1D52BA);">SYSTEM INFO</div>
+      <div class="preview-grid">
+        <div class="preview-row">
+          <div class="preview-label" style="color:#1E6CE2;">Access Level</div>
+          <div class="preview-value-box">Administrator / Accountant</div>
+        </div>
+        <div class="preview-row">
+          <div class="preview-label" style="color:#1E6CE2;">Last Login</div>
+          <div class="preview-value-box">April 5, 2026</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
       
     </div>
   </div>    
   
 <script>  
     function setActive(btn, sectionId) {  
-      const frame = document.querySelector('.scrolling-frame');  
-      frame.classList.add('frame-float');  
-      document.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));  
-      btn.classList.add('active');  
-      document.querySelectorAll('.content-section').forEach(section => section.classList.remove('show'));  
-      const target = document.getElementById(sectionId);  
-      if (target) {  
-        setTimeout(() => { target.classList.add('show'); }, 50);  
-      }  
-      setTimeout(() => { frame.classList.remove('frame-float'); }, 400);  
-    }  
+  const frame = document.querySelector('.scrolling-frame');  
+  
+  // 1. Trigger the "Float" animation
+  frame.classList.add('frame-float');  
+  
+  // 2. Handle Button Highlights
+  document.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));  
+  btn.classList.add('active');  
+
+  // 3. HIDE all sections and remove the 'show' animation class
+  document.querySelectorAll('.content-section').forEach(section => {
+    section.style.display = 'none'; // This is the missing piece!
+    section.classList.remove('show');
+  });
+
+  // 4. SHOW the target section
+  const target = document.getElementById(sectionId);  
+  if (target) {  
+    target.style.display = 'block'; // Make it exist in the layout
+    setTimeout(() => { 
+      target.classList.add('show'); // Trigger the fade-up animation
+    }, 50);  
+  }  
+
+  // 5. End the "Float" animation
+  setTimeout(() => { frame.classList.remove('frame-float'); }, 400);  
+}
   
     function switchTab(el, tabId) {  
       document.querySelectorAll('.tab-link').forEach(t => t.classList.remove('active-tab'));  
