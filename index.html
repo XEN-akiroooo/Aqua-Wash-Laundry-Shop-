@@ -474,6 +474,14 @@ background: linear-gradient(to right, #d32f2f, #f44336) !important;
 /* FADE ANIMATION CLASS */
 .fade-out { opacity: 0; visibility: hidden; }
 
+    #main-dashboard {
+  display: none; 
+}
+
+.show-dash {
+  display: flex !important;
+}
+
 /* OTP & FORGOT PASSWORD LINK */
 .forgot-link {
   display: block;
@@ -502,12 +510,18 @@ background: linear-gradient(to right, #d32f2f, #f44336) !important;
     </div>
 
     <div id="otp-form" style="display: none;">
-       <p style="margin-bottom: 15px; font-weight: bold;">Enter e-mail to receive OTP</p>
-       <input type="email" id="recovery-email" placeholder="jamandreprince@gmail.com" class="form-input md black">
-       <input type="text" id="otp-input" placeholder="Enter OTP" class="form-input md black" style="display:none;">
-       <button class="btn medium blue-gradient" id="otp-btn" onclick="sendFakeOtp()">Send OTP</button>
-       <span class="forgot-link" onclick="toggleForgotMode(false)">Back to Login</span>
-    </div>
+  <p style="margin-bottom: 15px; font-weight: bold;">Enter e-mail to receive OTP</p>
+  <input type="email" id="recovery-email" placeholder="jamandreprince@gmail.com" class="form-input md black">
+  
+  <div id="reset-pass-fields" style="display:none;">
+     <input type="password" id="reset-new-pass" placeholder="New Password" class="form-input md black">
+  </div>
+  
+  <input type="text" id="otp-input" placeholder="Enter OTP" class="form-input md black" style="display:none;">
+  <button class="btn medium blue-gradient" id="otp-btn" onclick="handleForgotOtp()">Send OTP</button>
+  <span class="forgot-link" onclick="toggleForgotMode(false)">Back to Login</span>
+</div>
+    
   </div>
   </div>
 
@@ -869,163 +883,146 @@ background: linear-gradient(to right, #d32f2f, #f44336) !important;
   <div style="margin: 15px 0;"></div>
 </div>
         
-  <button class="btn large grey">Send Otp</button>
-  <button class="btn large grey">Update Security</button>
+  <button class="btn large grey" onclick="sendSettingsOtp()">Send Otp</button>
+<button class="btn large grey" onclick="updateSecurity()">Update Security</button>
 </div>
       
     </div>
   </div>    
   
-<script>  
-    function setActive(btn, sectionId) {  
-  const frame = document.querySelector('.scrolling-frame');  
-  
-  // 1. Trigger the "Float" animation
-  frame.classList.add('frame-float');  
-  
-  // 2. Handle Button Highlights
-  document.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));  
-  btn.classList.add('active');  
+<script>
+/* ============================================================
+   1. IMMEDIATE PERSISTENCE CHECK
+   (Runs before the page even draws to prevent flickering)
+   ============================================================ */
+if (localStorage.getItem('isLoggedIn') === 'true') {
+  document.write('<style>#login-screen { display: none !important; }</style>');
+}
 
-  // 3. HIDE all sections and remove the 'show' animation class
+/* ============================================================
+   2. NAVIGATION & UI TABS
+   ============================================================ */
+function setActive(btn, sectionId) {
+  const frame = document.querySelector('.scrolling-frame');
+  frame.classList.add('frame-float');
+
+  document.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+
   document.querySelectorAll('.content-section').forEach(section => {
-    section.style.display = 'none'; // This is the missing piece!
+    section.style.display = 'none';
     section.classList.remove('show');
   });
 
-  // 4. SHOW the target section
-  const target = document.getElementById(sectionId);  
-  if (target) {  
-    target.style.display = 'block'; // Make it exist in the layout
-    setTimeout(() => { 
-      target.classList.add('show'); // Trigger the fade-up animation
-    }, 50);  
-  }  
-
-  // 5. End the "Float" animation
-  setTimeout(() => { frame.classList.remove('frame-float'); }, 400);  
-}
-  
-    function switchTab(el, tabId) {  
-      document.querySelectorAll('.tab-link').forEach(t => t.classList.remove('active-tab'));  
-      el.classList.add('active-tab');  
-      document.querySelectorAll('.tab-content').forEach(tc => tc.style.display = 'none');  
-      document.getElementById(tabId).style.display = 'block';  
-    }  
-  
-    function showForm(formType) {  
-  const container = document.getElementById('dynamic-form-container');  
-  const title = document.getElementById('panel-title');  
-    
-  // Back button template to reuse  
-  const backBtn = `<button class="btn large grey" style="margin-top:20px" onclick="resetServicePanel()">Back to Selection</button>`;  
-  
-  if (formType === 'new-customer') {  
-    title.innerText = "NEW CUSTOMER ACCOUNT";  
-    container.innerHTML = `  
-      <input type="text" id="new-cust-name" placeholder="Enter Customer Name..." class="form-input md black">  
-      
-      <button class="btn large blue-gradient" onclick="saveNewCustomer()">List New Customer & Save</button>  
-      
-      ${backBtn}`;  
+  const target = document.getElementById(sectionId);
+  if (target) {
+    target.style.display = 'block';
+    setTimeout(() => { target.classList.add('show'); }, 50);
   }
-    
-  else if (formType === 'add-order') {  
-    title.innerText = "ADD SERVICE ORDER";  
-    container.innerHTML = `  
-      <select class="form-input md cyan"><option>Pick Customer Name</option></select>  
-      <select class="form-input md cyan"><option>Pick Service Type</option></select>  
-      <input type="number" placeholder="Cash Payment" class="form-input md black">  
-      <button class="btn large blue-gradient">Generate ID for Service Order</button>  
-      <button class="btn large blue-gradient">Save and Add Service Order</button>  
-      ${backBtn}`;  
-  }  
-  
-  else if (formType === 'payment') {  
-    title.innerText = "CUSTOMER CREDIT SETTLEMENT";  
-    container.innerHTML = `  
-      <select class="form-input md cyan"><option>Pick Customer Name</option></select>  
-      <select class="form-input md cyan"><option>Pick Their Service ID</option></select>  
-      <button class="btn large blue-gradient">Record to Fully Settled</button>  
-      ${backBtn}`;  
-  }  
-  
-  else if (formType === 'update-order') {  
-    title.innerText = "UPDATE SERVICE ORDER";  
-    container.innerHTML = `  
-      <select class="form-input md cyan"><option>Pick Customer Name</option></select>  
-      <select class="form-input md cyan"><option>Pick Their Service ID</option></select>  
-      <button class="btn large blue-gradient">Update Service Order</button>  
-      <button class="btn large red-gradient" style="background:red">Remove and Delete Order</button>  
-      ${backBtn}`;  
-  }  
-  
-  else if (formType === 'print-invoice') {  
-    title.innerText = "SERVICE INVOICE";  
-    container.innerHTML = `  
-      <select class="form-input md cyan"><option>Pick Customer Name</option></select>  
-      <select class="form-input md cyan"><option>Pick Their Service ID</option></select>  
-      <button class="btn large blue-gradient">Print</button>  
-      ${backBtn}`;  
-  }  
-}  
-  
-function resetServicePanel() {  
-  const container = document.getElementById('dynamic-form-container');  
-  const title = document.getElementById('panel-title');  
-  title.innerText = "CUSTOMER ACCOUNT";  
-  container.innerHTML = `  
-    <div id="selection-menu">  
-      <p class="center-lined-text">-- Selections --</p>  
-      <button class="btn large blue-gradient" onclick="showForm('new-customer')">List Customer Name</button>  
-      <button class="btn large blue-gradient" onclick="showForm('add-order')">Add New Service Order</button>  
-      <button class="btn thin dedblue-gradient" onclick="showForm('payment')">Customer Balance Payment</button>  
-      <button class="btn thin dedblue-gradient" onclick="showForm('update-order')">Update Service Order</button>  
-      <button class="btn large grey" onclick="showForm('print-invoice')">Print Service Order</button>  
-    </div>`;  
-    }  
+  setTimeout(() => { frame.classList.remove('frame-float'); }, 400);
+}
 
-    function changeQty(amount) {
+function switchTab(el, tabId) {
+  document.querySelectorAll('.tab-link').forEach(t => t.classList.remove('active-tab'));
+  el.classList.add('active-tab');
+  document.querySelectorAll('.tab-content').forEach(tc => tc.style.display = 'none');
+  document.getElementById(tabId).style.display = 'block';
+}
+
+function toggleSidebar() {
+  const sidebar = document.getElementById('sidebar');
+  sidebar.classList.toggle('collapsed');
+  document.querySelector('.toggle-btn').innerHTML = sidebar.classList.contains('collapsed') ? '&#10095;' : '&#10094;';
+}
+
+/* ============================================================
+   3. SERVICE INPUT & FORMS
+   ============================================================ */
+function showForm(formType) {
+  const container = document.getElementById('dynamic-form-container');
+  const title = document.getElementById('panel-title');
+  const backBtn = `<button class="btn large grey" style="margin-top:20px" onclick="resetServicePanel()">Back to Selection</button>`;
+
+  if (formType === 'new-customer') {
+    title.innerText = "NEW CUSTOMER ACCOUNT";
+    container.innerHTML = `
+      <input type="text" id="new-cust-name" placeholder="Enter Customer Name..." class="form-input md black">
+      <button class="btn large blue-gradient" onclick="saveNewCustomer()">List New Customer & Save</button>
+      ${backBtn}`;
+  } else if (formType === 'add-order') {
+    title.innerText = "ADD SERVICE ORDER";
+    container.innerHTML = `
+      <select class="form-input md cyan"><option>Pick Customer Name</option></select>
+      <select class="form-input md cyan"><option>Pick Service Type</option></select>
+      <input type="number" placeholder="Cash Payment" class="form-input md black">
+      <button class="btn large blue-gradient">Generate ID for Service Order</button>
+      <button class="btn large blue-gradient">Save and Add Service Order</button>
+      ${backBtn}`;
+  } else if (formType === 'payment') {
+    title.innerText = "CUSTOMER CREDIT SETTLEMENT";
+    container.innerHTML = `
+      <select class="form-input md cyan"><option>Pick Customer Name</option></select>
+      <select class="form-input md cyan"><option>Pick Their Service ID</option></select>
+      <button class="btn large blue-gradient">Record to Fully Settled</button>
+      ${backBtn}`;
+  } else if (formType === 'update-order') {
+    title.innerText = "UPDATE SERVICE ORDER";
+    container.innerHTML = `
+      <select class="form-input md cyan"><option>Pick Customer Name</option></select>
+      <select class="form-input md cyan"><option>Pick Their Service ID</option></select>
+      <button class="btn large blue-gradient">Update Service Order</button>
+      <button class="btn large red-gradient" style="background:red">Remove and Delete Order</button>
+      ${backBtn}`;
+  } else if (formType === 'print-invoice') {
+    title.innerText = "SERVICE INVOICE";
+    container.innerHTML = `
+      <select class="form-input md cyan"><option>Pick Customer Name</option></select>
+      <select class="form-input md cyan"><option>Pick Their Service ID</option></select>
+      <button class="btn large blue-gradient">Print</button>
+      ${backBtn}`;
+  }
+}
+
+function resetServicePanel() {
+  const container = document.getElementById('dynamic-form-container');
+  const title = document.getElementById('panel-title');
+  title.innerText = "CUSTOMER ACCOUNT";
+  container.innerHTML = `
+    <div id="selection-menu">
+      <p class="center-lined-text">-- Selections --</p>
+      <button class="btn large blue-gradient" onclick="showForm('new-customer')">List Customer Name</button>
+      <button class="btn large blue-gradient" onclick="showForm('add-order')">Add New Service Order</button>
+      <button class="btn thin dedblue-gradient" onclick="showForm('payment')">Customer Balance Payment</button>
+      <button class="btn thin dedblue-gradient" onclick="showForm('update-order')">Update Service Order</button>
+      <button class="btn large grey" onclick="showForm('print-invoice')">Print Service Order</button>
+    </div>`;
+}
+
+function changeQty(amount) {
   const qtyInput = document.getElementById('item-qty');
   let currentVal = parseInt(qtyInput.value);
-  
-  // Update value but don't go below 1
-  if (currentVal + amount >= 1) {
-    qtyInput.value = currentVal + amount;
-  }
-    }
+  if (currentVal + amount >= 1) { qtyInput.value = currentVal + amount; }
+}
 
-  let rowToDelete = null;
+/* ============================================================
+   4. GRID MANAGEMENT (SETTINGS)
+   ============================================================ */
+let rowToDelete = null;
 
 function confirmDelete(button) {
-  rowToDelete = button.parentElement; // Target the whole .grid-row
+  rowToDelete = button.parentElement;
   const itemName = rowToDelete.querySelector('input').value || "this item";
-  
-  // Update modal text
   document.getElementById('modal-message').innerText = `Are you sure you want to delete "${itemName}"? This will also remove it from the database.`;
-  
-  // Show the modal
   document.getElementById('delete-modal').classList.add('show');
-  
-  // Set the confirm button action
-  document.getElementById('confirm-delete-btn').onclick = function() {
-    executeDelete();
-  };
+  document.getElementById('confirm-delete-btn').onclick = function() { executeDelete(); };
 }
 
 function executeDelete() {
   if (rowToDelete) {
-    // 1. ANIMATION: Fade out the row
     rowToDelete.style.opacity = '0';
     rowToDelete.style.transform = 'translateX(20px)';
-    
     setTimeout(() => {
-      // 2. FRONTEND: Remove from HTML
       rowToDelete.remove();
-      
-      // 3. BACKEND: (Future Google Sheets Code)
-      // google.script.run.deleteRowFromSheet(itemName);
-      
       closeDeleteModal();
     }, 300);
   }
@@ -1034,13 +1031,12 @@ function executeDelete() {
 function closeDeleteModal() {
   document.getElementById('delete-modal').classList.remove('show');
   rowToDelete = null;
-  }
+}
 
-  function addNewRow(gridId, columnCount) {
+function addNewRow(gridId, columnCount) {
   const grid = document.getElementById(gridId);
   const newRow = document.createElement('div');
   newRow.className = (columnCount === 2) ? 'grid-row has-action' : 'grid-row has-action-wide';
-
   for (let i = 0; i < columnCount; i++) {
     const input = document.createElement('input');
     input.type = "text";
@@ -1048,115 +1044,95 @@ function closeDeleteModal() {
     input.placeholder = "Type Here!";
     newRow.appendChild(input);
   }
-
-  // Add the delete button to the new row
   const delBtn = document.createElement('button');
   delBtn.className = 'delete-row-btn';
   delBtn.innerHTML = '✕';
   delBtn.onclick = function() { confirmDelete(this); };
   newRow.appendChild(delBtn);
-
   grid.appendChild(newRow);
 }
 
-  function saveNewCustomer() {
+function saveNewCustomer() {
   const nameInput = document.getElementById('new-cust-name');
   const name = nameInput.value.trim();
-  
-  if (name === "") {
-    alert("Please enter a name!");
-    return;
-  }
-
-  // 1. Find the Settings Grid
+  if (name === "") { alert("Please enter a name!"); return; }
   const grid = document.getElementById('grid-customers');
-  
-  // 2. Create the new row for the Settings Tab
   const newRow = document.createElement('div');
   newRow.className = 'grid-row';
   newRow.style.gridTemplateColumns = '1fr 50px';
-  
-  newRow.innerHTML = `
-    <input type="text" class="grid-input" value="${name}" readonly>
-    <button class="delete-row-btn" onclick="confirmDelete(this)">✕</button>
-  `;
-  
-  // 3. Add to the list
+  newRow.innerHTML = `<input type="text" class="grid-input" value="${name}" readonly><button class="delete-row-btn" onclick="confirmDelete(this)">✕</button>`;
   grid.appendChild(newRow);
-  
-  // 4. Clear input and give feedback
   nameInput.value = "";
-  alert(name + " has been added to the customer records!");
+  alert(name + " has been added to the records!");
 }
-  
-    function toggleSidebar() {  
-      const sidebar = document.getElementById('sidebar');  
-      sidebar.classList.toggle('collapsed');  
-      document.querySelector('.toggle-btn').innerHTML = sidebar.classList.contains('collapsed') ? '&#10095;' : '&#10094;';  
-    }  
-  
-    function openModal() { document.getElementById('modal').classList.add('show'); }  
-    function closeModal() { document.getElementById('modal').classList.remove('show'); }  
-    function confirmLogout() { alert('Logging out...'); }
 
-  // --- INITIAL STATE CHECK ---
-window.onload = function() {
-  const isLoggedIn = localStorage.getItem('isLoggedIn');
-  if (isLoggedIn === 'true') {
-    document.getElementById('login-screen').classList.add('fade-out');
-  }
-};
-
-// --- LOGIN LOGIC ---
+/* ============================================================
+   5. LOGIN, LOGOUT & SECURITY (THE CORE)
+   ============================================================ */
 function handleLogin() {
   const user = document.getElementById('user-input').value;
   const pass = document.getElementById('pass-input').value;
 
-  // Static credentials for now
-  if (user === "Aquawash" && pass === "1234") {
+  // Checks LocalStorage for custom credentials set in Account Settings
+  const savedUser = localStorage.getItem('adminUser') || "Aquawash";
+  const savedPass = localStorage.getItem('adminPass') || "1234";
+
+  if (user === savedUser && pass === savedPass) {
     localStorage.setItem('isLoggedIn', 'true');
     document.getElementById('login-screen').classList.add('fade-out');
+    // Allow animation to finish before removing from display
+    setTimeout(() => { document.getElementById('login-screen').style.display = 'none'; }, 600);
   } else {
     alert("Invalid Credentials!");
   }
 }
 
-// --- LOGOUT LOGIC ---
+function openModal() { document.getElementById('modal').classList.add('show'); }
+function closeModal() { document.getElementById('modal').classList.remove('show'); }
+
 function confirmLogout() {
   localStorage.setItem('isLoggedIn', 'false');
-  location.reload(); // Reloads and shows the login screen because state is false
+  location.reload(); 
 }
-
-// --- OTP / FORGOT PASSWORD LOGIC ---
-let generatedOtp = null;
 
 function toggleForgotMode(isForgot) {
   document.getElementById('login-form').style.display = isForgot ? 'none' : 'block';
   document.getElementById('otp-form').style.display = isForgot ? 'block' : 'none';
 }
 
-function sendFakeOtp() {
+// FORGOT PASSWORD OTP
+let generatedOtp = null;
+function handleForgotOtp() {
+  const email = document.getElementById('recovery-email').value;
   const btn = document.getElementById('otp-btn');
-  if (btn.innerText === "Send OTP") {
-    generatedOtp = Math.floor(1000 + Math.random() * 9000); // Random 4-digit code
-    alert("OTP sent to email! Your code is: " + generatedOtp);
-    document.getElementById('otp-input').style.display = 'block';
-    btn.innerText = "Verify & Reset";
-  } else {
-    const entered = document.getElementById('otp-input').value;
-    if (entered == generatedOtp) {
-      alert("Verification successful! Reset your password in Account Settings.");
-      toggleForgotMode(false);
-    } else {
-      alert("Wrong OTP!");
-    }
-  }
-  }
+  const otpInput = document.getElementById('otp-input');
 
-  function sendSettingsOtp() {
+  if (btn.innerText === "Send OTP") {
+    generatedOtp = Math.floor(1000 + Math.random() * 9000);
+    // Real Backend Email Call
+    google.script.run.withSuccessHandler(() => {
+      alert("OTP sent to " + email);
+      otpInput.style.display = 'block';
+      btn.innerText = "Verify & Login";
+    }).sendEmailOTP(email, generatedOtp);
+  } else {
+    if (otpInput.value == generatedOtp) {
+      alert("Verified! Since this is a reset, use '1234' as temp password to login.");
+      localStorage.setItem('adminPass', '1234');
+      toggleForgotMode(false);
+    } else { alert("Wrong OTP!"); }
+  }
+}
+
+// ACCOUNT SETTINGS OTP
+function sendSettingsOtp() {
+  const email = "jamandreprince@gmail.com"; 
   const code = Math.floor(1000 + Math.random() * 9000);
   localStorage.setItem('tempOtp', code);
-  alert("Your security OTP is: " + code);
+
+  google.script.run.withSuccessHandler(() => {
+    alert("A security code has been sent to " + email);
+  }).sendEmailOTP(email, code);
 }
 
 function updateSecurity() {
@@ -1164,36 +1140,40 @@ function updateSecurity() {
   const storedOtp = localStorage.getItem('tempOtp');
   
   if (enteredOtp !== storedOtp || !storedOtp) {
-    alert("Invalid OTP! Please request a new one.");
-    return;
+    alert("Invalid OTP! Check your email."); return;
   }
 
   const newU = document.getElementById('new-username').value;
   const newP = document.getElementById('new-password').value;
   const confP = document.getElementById('confirm-password').value;
 
-  if (newU) {
-    document.getElementById('current-user-display').innerText = newU;
-    alert("Username updated to " + newU);
-  }
-
+  if (newU) localStorage.setItem('adminUser', newU);
   if (newP && newP === confP) {
-    alert("Password updated successfully!");
+    localStorage.setItem('adminPass', newP);
+    alert("Security Updated! Username/Password changed.");
   } else if (newP !== confP) {
-    alert("Passwords do not match!");
+    alert("Passwords do not match!"); return;
   }
   
-  localStorage.removeItem('tempOtp'); // Clear OTP after use
-  }
-  
-    window.onload = function() {  
-      const defaultBtn = document.querySelector('.btn.active');  
-      if (defaultBtn) {  
-        setActive(defaultBtn, 'daily-ops');  
-      }  
-    };  
-  </script>    
+  localStorage.removeItem('tempOtp');
+  location.reload(); 
+}
 
+/* ============================================================
+   6. INITIALIZATION (Runs once when page is ready)
+   ============================================================ */
+window.addEventListener('DOMContentLoaded', () => {
+  // Set default view
+  const dailyOpsBtn = document.querySelector('.sidebar .btn'); 
+  if (dailyOpsBtn) setActive(dailyOpsBtn, 'daily-ops');
+
+  // Check login state for animation
+  if (localStorage.getItem('isLoggedIn') === 'true') {
+     document.getElementById('login-screen').style.display = 'none';
+  }
+});
+</script>
+  
 <div id="delete-modal" class="modal">
   <div class="modal-box">
     <h2 class="spartan-text" style="color:#d32f2f; margin-top:0;">CONFIRM DELETE</h2>
