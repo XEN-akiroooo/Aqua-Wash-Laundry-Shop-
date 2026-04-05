@@ -404,6 +404,34 @@ background: linear-gradient(to right, #d32f2f, #f44336) !important;
 .add-row-btn:hover { transform: scale(1.1); }
 .add-row-btn::after { content: 'Add New Item'; font-size: 12px; font-weight: normal; }
 
+/* Delete Button Styling */
+.delete-row-btn {
+  background: none;
+  border: none;
+  color: #d32f2f; /* Red */
+  font-size: 18px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: transform 0.2s, color 0.2s;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.delete-row-btn:hover {
+  transform: scale(1.2);
+  color: #8e0000;
+}
+
+/* Update Grid Headers to accommodate the Delete Column */
+.grid-header.has-action, .grid-row.has-action {
+  grid-template-columns: 2fr 1fr 50px !important; /* 2 cols + 50px for delete */
+}
+
+.grid-header.has-action-wide, .grid-row.has-action-wide {
+  grid-template-columns: 1fr 1fr 1fr 2fr 50px !important; /* 4 cols + 50px for delete */
+}
+
 /* Modal */  
 .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); display: flex; justify-content: center; align-items: center; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; z-index: 2000; }  
 .modal.show { opacity: 1; pointer-events: auto; }  
@@ -667,43 +695,46 @@ background: linear-gradient(to right, #d32f2f, #f44336) !important;
 
   <p class="center-lined-text">Service Pricing</p>
   <div class="settings-grid" id="grid-service">
-    <div class="grid-header" style="grid-template-columns: 2fr 1fr;">
+    <div class="grid-header has-action" style="grid-template-columns: 2fr 1fr;">
       <span>Service Type</span>
       <span>Price (₱)</span>
     </div>
-    <div class="grid-row" style="grid-template-columns: 2fr 1fr;">
+    <div class="grid-row has-action" style="grid-template-columns: 2fr 1fr;">
       <input type="text" class="grid-input" value="Full Service (Wash/Dry/Fold)">
       <input type="number" class="grid-input" value="190">
+      <button class="delete-row-btn" onclick="confirmDelete(this)">✕</button>
     </div>
   </div>
   <button class="add-row-btn" onclick="addNewRow('grid-service', 2)">+</button>
 
   <p class="center-lined-text">Supplies Costing</p>
   <div class="settings-grid" id="grid-supplies">
-    <div class="grid-header" style="grid-template-columns: 2fr 1fr;">
+    <div class="grid-header has-action" style="grid-template-columns: 2fr 1fr;">
       <span>Supplies Name</span>
       <span>Cost (₱)</span>
     </div>
-    <div class="grid-row" style="grid-template-columns: 2fr 1fr;">
+    <div class="grid-row has-action" style="grid-template-columns: 2fr 1fr;">
       <input type="text" class="grid-input" value="Detergent (Liquid)">
       <input type="number" class="grid-input" value="550">
+      <button class="delete-row-btn" onclick="confirmDelete(this)">✕</button>
     </div>
   </div>
   <button class="add-row-btn" onclick="addNewRow('grid-supplies', 2)">+</button>
 
   <p class="center-lined-text">Other Transaction</p>
   <div class="settings-grid" id="grid-others">
-    <div class="grid-header" style="grid-template-columns: 1fr 1fr 1fr 2fr;">
+    <div class="grid-header has-action-wide" style="grid-template-columns: 1fr 1fr 1fr 2fr;">
       <span>Type</span>
       <span>Debit</span>
       <span>Credit</span>
       <span>Description</span>
     </div>
-    <div class="grid-row" style="grid-template-columns: 1fr 1fr 1fr 2fr;">
+    <div class="grid-row has-action-wide" style="grid-template-columns: 1fr 1fr 1fr 2fr;">
       <input type="text" class="grid-input" value="Utilities">
       <input type="text" class="grid-input" value="Electricity">
       <input type="text" class="grid-input" value="Cash">
       <input type="text" class="grid-input" value="Monthly Meralco Bill">
+      <button class="delete-row-btn" onclick="confirmDelete(this)">✕</button>
     </div>
   </div>
   <button class="add-row-btn" onclick="addNewRow('grid-others', 4)">+</button>
@@ -815,19 +846,52 @@ function resetServicePanel() {
   }
     }
 
+  let rowToDelete = null;
+
+function confirmDelete(button) {
+  rowToDelete = button.parentElement; // Target the whole .grid-row
+  const itemName = rowToDelete.querySelector('input').value || "this item";
+  
+  // Update modal text
+  document.getElementById('modal-message').innerText = `Are you sure you want to delete "${itemName}"? This will also remove it from the database.`;
+  
+  // Show the modal
+  document.getElementById('delete-modal').classList.add('show');
+  
+  // Set the confirm button action
+  document.getElementById('confirm-delete-btn').onclick = function() {
+    executeDelete();
+  };
+}
+
+function executeDelete() {
+  if (rowToDelete) {
+    // 1. ANIMATION: Fade out the row
+    rowToDelete.style.opacity = '0';
+    rowToDelete.style.transform = 'translateX(20px)';
+    
+    setTimeout(() => {
+      // 2. FRONTEND: Remove from HTML
+      rowToDelete.remove();
+      
+      // 3. BACKEND: (Future Google Sheets Code)
+      // google.script.run.deleteRowFromSheet(itemName);
+      
+      closeDeleteModal();
+    }, 300);
+  }
+}
+
+function closeDeleteModal() {
+  document.getElementById('delete-modal').classList.remove('show');
+  rowToDelete = null;
+  }
+
   function addNewRow(gridId, columnCount) {
   const grid = document.getElementById(gridId);
   const newRow = document.createElement('div');
-  newRow.className = 'grid-row';
-  
-  // Match the column layout of the header
-  if (columnCount === 2) {
-    newRow.style.gridTemplateColumns = '2fr 1fr';
-  } else if (columnCount === 4) {
-    newRow.style.gridTemplateColumns = '1fr 1fr 1fr 2fr';
-  }
+  newRow.className = (columnCount === 2) ? 'grid-row has-action' : 'grid-row has-action-wide';
 
-  // Create the inputs
   for (let i = 0; i < columnCount; i++) {
     const input = document.createElement('input');
     input.type = "text";
@@ -836,8 +900,16 @@ function resetServicePanel() {
     newRow.appendChild(input);
   }
 
+  // Add the delete button to the new row
+  const delBtn = document.createElement('button');
+  delBtn.className = 'delete-row-btn';
+  delBtn.innerHTML = '✕';
+  delBtn.onclick = function() { confirmDelete(this); };
+  newRow.appendChild(delBtn);
+
   grid.appendChild(newRow);
-    }
+}
+  
   
     function toggleSidebar() {  
       const sidebar = document.getElementById('sidebar');  
@@ -855,12 +927,26 @@ function resetServicePanel() {
         setActive(defaultBtn, 'daily-ops');  
       }  
     };  
-  </script>    <div class="modal" id="modal">  
+  </script>    
+
+<div id="delete-modal" class="modal">
+  <div class="modal-box">
+    <h2 class="spartan-text" style="color:#d32f2f; margin-top:0;">CONFIRM DELETE</h2>
+    <p id="modal-message">Are you sure you want to remove this item?</p>
+    <div style="display: flex; gap: 10px; margin-top: 20px;">
+      <button class="green" id="confirm-delete-btn">YES, DELETE</button>
+      <button class="red" onclick="closeDeleteModal()">CANCEL</button>
+    </div>
+  </div>
+</div>
+  
+  <div class="modal" id="modal">  
     <div class="modal-box">  
       <p>Do you really want to log out? 🤔</p>  
       <button class="green" onclick="confirmLogout()">Log out anyway</button>  
       <button class="red" onclick="closeModal()">Cancel</button>  
     </div>  
   </div>  
+  
 </body>  
 </html> 
