@@ -343,6 +343,67 @@ background: linear-gradient(to right, #d32f2f, #f44336) !important;
   margin: 0;
 }
 
+  /* --- SETTINGS GRID SYSTEM --- */
+.settings-grid {
+  display: grid;
+  width: 100%;
+  margin-bottom: 40px;
+}
+
+/* Header Row */
+.grid-header {
+  display: grid;
+  padding: 10px 0;
+  border-bottom: 2px solid #2093DD; /* Blue horizontal line */
+  font-weight: 900;
+  color: #333;
+  text-transform: uppercase;
+  font-size: 14px;
+}
+
+/* Data Row */
+.grid-row {
+  display: grid;
+  padding: 8px 0;
+  border-bottom: 1px solid #e0e0e0; /* Light line for items */
+  align-items: center;
+}
+
+/* Editable Input Styling */
+.grid-input {
+  border: none;
+  background: transparent;
+  font-weight: bold;
+  font-size: 14px;
+  color: #555;
+  padding: 5px;
+  width: 100%;
+  outline: none;
+}
+
+.grid-input:focus {
+  background: #f0fbff;
+  color: #2093DD;
+}
+
+/* Add Button Styling */
+.add-row-btn {
+  background: none;
+  border: none;
+  color: #2093DD;
+  font-size: 24px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: transform 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.add-row-btn:hover { transform: scale(1.1); }
+.add-row-btn::after { content: 'Add New Item'; font-size: 12px; font-weight: normal; }
+
 /* Modal */  
 .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); display: flex; justify-content: center; align-items: center; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; z-index: 2000; }  
 .modal.show { opacity: 1; pointer-events: auto; }  
@@ -601,14 +662,54 @@ background: linear-gradient(to right, #d32f2f, #f44336) !important;
 
 
   <div id="service-settings" class="content-section">
-    <h3 class="spartan-text" style="color:#2093DD;">SERVICE SETTINGS</h3>
-    <div class="divider" style="background-color:#2093DD; height:2px; margin: 10px 0 30px 0;"></div>
-    <p class="center-lined-text">Service Pricing</p>
-    <p class="center-lined-text">Supplies Costing</p>
-    <p class="center-lined-text">Other Transaction</p>
-    <p>*This section is for Accountant ONLY!</p>
-    
-  </div>  
+  <h3 class="spartan-text" style="color:#2093DD;">SERVICE SETTINGS</h3>
+  <div class="divider" style="background-color:#2093DD; height:2px; margin: 10px 0 30px 0;"></div>
+
+  <p class="center-lined-text">Service Pricing</p>
+  <div class="settings-grid" id="grid-service">
+    <div class="grid-header" style="grid-template-columns: 2fr 1fr;">
+      <span>Service Type</span>
+      <span>Price (₱)</span>
+    </div>
+    <div class="grid-row" style="grid-template-columns: 2fr 1fr;">
+      <input type="text" class="grid-input" value="Full Service (Wash/Dry/Fold)">
+      <input type="number" class="grid-input" value="190">
+    </div>
+  </div>
+  <button class="add-row-btn" onclick="addNewRow('grid-service', 2)">+</button>
+
+  <p class="center-lined-text">Supplies Costing</p>
+  <div class="settings-grid" id="grid-supplies">
+    <div class="grid-header" style="grid-template-columns: 2fr 1fr;">
+      <span>Supplies Name</span>
+      <span>Cost (₱)</span>
+    </div>
+    <div class="grid-row" style="grid-template-columns: 2fr 1fr;">
+      <input type="text" class="grid-input" value="Detergent (Liquid)">
+      <input type="number" class="grid-input" value="550">
+    </div>
+  </div>
+  <button class="add-row-btn" onclick="addNewRow('grid-supplies', 2)">+</button>
+
+  <p class="center-lined-text">Other Transaction</p>
+  <div class="settings-grid" id="grid-others">
+    <div class="grid-header" style="grid-template-columns: 1fr 1fr 1fr 2fr;">
+      <span>Type</span>
+      <span>Debit</span>
+      <span>Credit</span>
+      <span>Description</span>
+    </div>
+    <div class="grid-row" style="grid-template-columns: 1fr 1fr 1fr 2fr;">
+      <input type="text" class="grid-input" value="Utilities">
+      <input type="text" class="grid-input" value="Electricity">
+      <input type="text" class="grid-input" value="Cash">
+      <input type="text" class="grid-input" value="Monthly Meralco Bill">
+    </div>
+  </div>
+  <button class="add-row-btn" onclick="addNewRow('grid-others', 4)">+</button>
+
+  <p style="margin-top:50px; font-style: italic; color: #888;">*This section is for Accountant ONLY!</p>
+  </div>
       
     </div>
   </div>    
@@ -712,6 +813,30 @@ function resetServicePanel() {
   if (currentVal + amount >= 1) {
     qtyInput.value = currentVal + amount;
   }
+    }
+
+  function addNewRow(gridId, columnCount) {
+  const grid = document.getElementById(gridId);
+  const newRow = document.createElement('div');
+  newRow.className = 'grid-row';
+  
+  // Match the column layout of the header
+  if (columnCount === 2) {
+    newRow.style.gridTemplateColumns = '2fr 1fr';
+  } else if (columnCount === 4) {
+    newRow.style.gridTemplateColumns = '1fr 1fr 1fr 2fr';
+  }
+
+  // Create the inputs
+  for (let i = 0; i < columnCount; i++) {
+    const input = document.createElement('input');
+    input.type = "text";
+    input.className = "grid-input";
+    input.placeholder = "New Entry...";
+    newRow.appendChild(input);
+  }
+
+  grid.appendChild(newRow);
     }
   
     function toggleSidebar() {  
