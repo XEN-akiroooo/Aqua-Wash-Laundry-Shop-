@@ -266,12 +266,11 @@ body {
 
 .top-title { text-align: center; font-size: 2.5rem; font-weight: 900; background: linear-gradient(90deg, #1e90ff, #00c3ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 1.5rem; }  
 
+/* --- FORM INPUT --- */
 .form-input {
-
 width: 100%;
 padding: 15px;
 margin-bottom: 15px;
-border: 2px solid #0BB7BD;
 border-radius: 15px;
 font-family: 'League Spartan', sans-serif;
 font-weight: 600;
@@ -279,11 +278,19 @@ color: #333;
 outline: none;
 }
 
+/* --- SELECTED FORM --- */
 .form-input:focus {
 border-color: #1e90ff;
 box-shadow: 0 0 8px rgba(30, 144, 255, 0.2);
 }
 
+/* --- STYLES --- */
+.form-input.cyan { height: 50px; border: 2px solid #0BB7BD; }
+.form-input.yellow { height: 50px; border: 2px solid #0BB7BD; }
+.form-input.miniY { height: 35px; border: 2px solid #0BB7BD; }
+.form-input.orange { height: 50px; border: 2px solid #0BB7BD; }
+.form-input.black { height: 50px; border: 2px solid #0BB7BD; }
+    
 /* For the red delete button style */
 .red-gradient {
 background: linear-gradient(to right, #d32f2f, #f44336) !important;
@@ -569,9 +576,9 @@ background: linear-gradient(to right, #d32f2f, #f44336) !important;
   else if (formType === 'add-order') {  
     title.innerText = "ADD SERVICE ORDER";  
     container.innerHTML = `  
-      <select class="form-input"><option>Pick Customer Name</option></select>  
-      <select class="form-input"><option>Pick Service Type</option></select>  
-      <input type="number" placeholder="Cash Payment" class="form-input">  
+      <select class="form-input cyan"><option>Pick Customer Name</option></select>  
+      <select class="form-input cyan"><option>Pick Service Type</option></select>  
+      <input type="number" placeholder="Cash Payment" class="form-input black">  
       <button class="btn large blue-gradient">Generate ID for Service Order</button>  
       <button class="btn large blue-gradient">Save and Add Service Order</button>  
       ${backBtn}`;  
@@ -580,8 +587,8 @@ background: linear-gradient(to right, #d32f2f, #f44336) !important;
   else if (formType === 'payment') {  
     title.innerText = "CUSTOMER CREDIT SETTLEMENT";  
     container.innerHTML = `  
-      <select class="form-input"><option>Pick Customer Name</option></select>  
-      <select class="form-input"><option>Pick Their Service ID</option></select>  
+      <select class="form-input cyan"><option>Pick Customer Name</option></select>  
+      <select class="form-input cyan"><option>Pick Their Service ID</option></select>  
       <button class="btn large blue-gradient">Record to Fully Settled</button>  
       ${backBtn}`;  
   }  
@@ -589,8 +596,8 @@ background: linear-gradient(to right, #d32f2f, #f44336) !important;
   else if (formType === 'update-order') {  
     title.innerText = "UPDATE SERVICE ORDER";  
     container.innerHTML = `  
-      <select class="form-input"><option>Pick Customer Name</option></select>  
-      <select class="form-input"><option>Pick Their Service ID</option></select>  
+      <select class="form-input cyan"><option>Pick Customer Name</option></select>  
+      <select class="form-input cyan"><option>Pick Their Service ID</option></select>  
       <button class="btn large blue-gradient">Update Service Order</button>  
       <button class="btn large red-gradient" style="background:red">Remove and Delete Order</button>  
       ${backBtn}`;  
@@ -599,8 +606,8 @@ background: linear-gradient(to right, #d32f2f, #f44336) !important;
   else if (formType === 'print-invoice') {  
     title.innerText = "SERVICE INVOICE";  
     container.innerHTML = `  
-      <select class="form-input"><option>Pick Customer Name</option></select>  
-      <select class="form-input"><option>Pick Their Service ID</option></select>  
+      <select class="form-input cyan"><option>Pick Customer Name</option></select>  
+      <select class="form-input cyan"><option>Pick Their Service ID</option></select>  
       <button class="btn large blue-gradient">Print</button>  
       ${backBtn}`;  
   }  
