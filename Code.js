@@ -92,7 +92,7 @@ function generateJournal() {
   }
   
   if (finalValues.length > 0) {
-    const targetRange = journalSheet.getRange(3, 1, finalValues.length, 1).setNumberFormat("mm/dd/yyyy");
+    const targetRange = journalSheet.getRange(3, 1, finalValues.length, 6);
     targetRange.setValues(finalValues);
     targetRange.setBackgrounds(finalColors);
   }
