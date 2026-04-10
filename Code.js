@@ -66,6 +66,38 @@ function getUnsettledTransactions() {
   return unsettled; 
 }
 
+// --- OTHER TRANSACTION FETCHING --- //
+function saveOtherTransaction(payload) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName("Supplies & Other Transaction");
+  
+  if (!sheet) return "Error: Sheet Not Found";
+
+  // 1. Find the true last row with data in Column B (Transaction No.)
+  const values = sheet.getRange("B:B").getValues();
+  let lastRow = 0;
+  for (let i = values.length - 1; i >= 0; i--) {
+    if (values[i][0] !== "") {
+      lastRow = i + 1;
+      break;
+    }
+  }
+  
+  // 2. Insert row to prevent overwriting existing formulas below the table
+  sheet.insertRowAfter(lastRow);
+  const destRow = lastRow + 1;
+  
+  // 3. Write data starting at Column B (Index 2) spanning 8 columns
+  const targetRange = sheet.getRange(destRow, 2, 1, 8);
+  targetRange.setValues([payload]);
+  
+  // 4. Force strict formatting to ensure ledger formulas don't break
+  sheet.getRange(destRow, 2).setNumberFormat("@"); // Force Column B (ID) to Plain Text
+  sheet.getRange(destRow, 3).setNumberFormat("dd/MM/yyyy"); // Force Column C (Date) to strict format
+  
+  return "Success";
+}
+
 // --- MASTERDATA FETCHING ---
 function getSheetData(sheetName) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
