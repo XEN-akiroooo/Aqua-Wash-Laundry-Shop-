@@ -155,6 +155,34 @@ function getSheetData(sheetName) {
   return values;
 }
 
+// --- FINANCIAL STATEMENT FETCHING ---
+function updateAndFetchFinancials(month, year) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const trialSheet = ss.getSheetByName("Auto Adjusted Trial Balance");
+  const finSheet = ss.getSheetByName("Financial Statements");
+
+  if (!trialSheet || !finSheet) return { error: "Sheets not found" };
+
+  // 1. Set the Date in Trial Balance (Triggers your sheet formulas)
+  trialSheet.getRange("B3").setValue(month);
+  trialSheet.getRange("D3").setValue(year);
+  
+  // 2. Wait a moment for Google Sheets to recalculate
+  SpreadsheetApp.flush();
+
+  // 3. Fetch data from "Financial Statements" sheet
+  // ADJUST THESE CELL REFERENCES TO MATCH YOUR ACTUAL SHEET LAYOUT
+  return {
+    period: month + " " + year,
+    revenue: finSheet.getRange("C10").getValue(), // Change C10 to your Revenue cell
+    expenses: finSheet.getRange("C20").getValue(), // Change C20 to your Total Expenses cell
+    netIncome: finSheet.getRange("C25").getValue(), // Change C25 to your Net Income cell
+    assets: finSheet.getRange("F10").getValue(),    // Change F10 to your Total Assets cell
+    liabilities: finSheet.getRange("F20").getValue(),// Change F20 to your Total Liabilities cell
+    equity: finSheet.getRange("F25").getValue()     // Change F25 to your Total Equity cell
+  };
+}
+
 // --- DATA SAVING ---
 function addDataToSheet(sheetName, rowData) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
