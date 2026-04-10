@@ -564,38 +564,7 @@ background: linear-gradient(to right, #d32f2f, #f44336) !important;
 
 <body>  
   
-  <div id="login-screen">
-    
-  <div class="login-box">
-    <h2 class="header" style="margin-bottom: 2rem; justify-content: center;">LOGIN</h2>
-
-    <div id="login-form">
-      <input type="text" id="user-input" placeholder="Username" class="form-input md black">
-      <input type="password" id="pass-input" placeholder="Password" class="form-input md black">
-      <button class="btn large blue-gradient" onclick="handleLogin()">Login to Dashboard</button>
-      <span class="forgot-link" onclick="toggleForgotMode(true)">Forgot Password?</span>
-    </div>
-
-    <div id="api-key-form" style="display: none;">
-       <p style="margin-bottom: 15px; font-weight: bold;">Enter e-mail to receive API Key</p>
-       <input type="email" id="recovery-email" placeholder="Sample (jamandreprince@gmail.com)" class="form-input md black">
-
-      <div id="reset-pass-fields" style="display:none; margin-bottom: 10px;">
-        <input type="password" id="reset-new-pass" placeholder="New Password" class="form-input md black">
-        <input type="password" id="reset-conf-pass" placeholder="Confirm New Password" class="form-input md black">
-      </div>
-
-        <input type="text" id="api-key-input" placeholder="Enter API Key" class="form-input md black" style="display:none;">
   
-        <p id="timer-display" style="color: #58005D; font-weight: bold; margin-bottom: 10px; display: none;">Expires in: 02:00</p>
-
-        <button class="btn medium blue-gradient" id="resend-api-btn" onclick="resendApiKey()" style="display:none; margin-bottom: 10px; width: 100%;">Resend API Key</button>
-        <button class="btn medium blue-gradient" id="api-key-btn" onclick="handleForgotApiKey()">Send API Key</button>
-        <span class="forgot-link" onclick="toggleForgotMode(false)">Back to Login</span>
-    </div>
-
-  </div>
-</div>
 
   
   <div class="sidebar" id="sidebar">  
@@ -603,6 +572,36 @@ background: linear-gradient(to right, #d32f2f, #f44336) !important;
     <div class="header">DASHBOARD</div>  
     <div class="divider-smallspace"></div>  <div class="section-title">SHOP'S OVERVIEW</div>  
 <button class="btn medium shop active" onclick="setActive(this, 'daily-ops')">DAILY OPERATIONS OVERVIEW</button>  
+
+    <div id="login-screen">
+       <div class="login-box">
+       <h2 class="header" style="margin-bottom: 2rem; justify-content: center;">LOGIN</h2>
+       <div id="login-form">
+         <input type="text" id="user-input" placeholder="Username" class="form-input md black">
+         <input type="password" id="pass-input" placeholder="Password" class="form-input md black">
+         <button class="btn large blue-gradient" onclick="handleLogin()">Login to Dashboard</button>
+         <span class="forgot-link" onclick="toggleForgotMode(true)">Forgot Password?</span>
+       </div>
+
+       <div id="api-key-form" style="display: none;">
+         <p style="margin-bottom: 15px; font-weight: bold;">Enter e-mail to receive API Key</p>
+         <input type="email" id="recovery-email" placeholder="Sample (jamandreprince@gmail.com)" class="form-input md black">
+         
+         <div id="reset-pass-fields" style="display:none; margin-bottom: 10px;">
+           <input type="password" id="reset-new-pass" placeholder="New Password" class="form-input md black">
+           <input type="password" id="reset-conf-pass" placeholder="Confirm New Password" class="form-input md black">
+         </div>
+         
+         <input type="text" id="api-key-input" placeholder="Enter API Key" class="form-input md black" style="display:none;">
+         <p id="timer-display" style="color: #58005D; font-weight: bold; margin-bottom: 10px; display: none;">Expires in: 02:00</p>
+         <button class="btn medium blue-gradient" id="resend-api-btn" onclick="resendApiKey()" style="display:none; margin-bottom: 10px; width: 100%;">Resend API Key</button>
+         <button class="btn medium blue-gradient" id="api-key-btn" onclick="handleForgotApiKey()">Send API Key</button>
+         <span class="forgot-link" onclick="toggleForgotMode(false)">Back to Login</span>
+       </div>
+         
+    </div>
+    </div>
+    
 <button class="btn medium shop" onclick="setActive(this, 'financial')">FINANCIAL STATEMENTS</button>  
 <button class="btn medium shop" onclick="setActive(this, 'metrics')">KEY PERFORMANCE METRICS</button>  
 <button class="btn medium shop" onclick="setActive(this, 'leadboards')">CUSTOMERS LEADBOARDS</button>  
