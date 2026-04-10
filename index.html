@@ -780,7 +780,92 @@ background: linear-gradient(to right, #d32f2f, #f44336) !important;
 
 </div>
 
-  <div id="financial" class="content-section"><h2>Financial Statements</h2></div>  
+  <div id="financial" class="content-section">
+  <h2 class="top-title">FINANCIAL REPORTS</h2>
+  
+  <div class="dual-frame-container">
+    <div class="sub-frame first-frame">
+      <h3 class="spartan-text" style="color:#0BB7BD;">REPORT PERIOD</h3>
+      <div class="divider" style="background-color:#0BB7BD; height:2px; margin: 10px 0 20px 0;"></div>
+      
+      <p style="font-size: 14px; margin-bottom: 5px; font-weight: bold; color: #555;">Select Month</p>
+      <select id="finMonth" class="form-input md cyan">
+        <option value="January">January</option>
+        <option value="February">February</option>
+        <option value="March">March</option>
+        <option value="April">April</option>
+        <option value="May">May</option>
+        <option value="June">June</option>
+        <option value="July">July</option>
+        <option value="August">August</option>
+        <option value="September">September</option>
+        <option value="October">October</option>
+        <option value="November">November</option>
+        <option value="December">December</option>
+      </select>
+
+      <p style="font-size: 14px; margin-bottom: 5px; font-weight: bold; color: #555;">Select Year</p>
+      <select id="finYear" class="form-input md cyan">
+        <option value="2025">2025</option>
+        <option value="2026">2026</option>
+        <option value="2027">2027</option>
+        <option value="2027">2028</option>
+        <option value="2027">2029</option>
+        <option value="2027">2030</option>
+      </select>
+
+      <button id="btnUpdateFin" class="btn large blue-gradient" style="margin-top: 20px;">Generate Statement</button>
+      <p id="finStatus" style="text-align: center; font-size: 12px; margin-top: 10px; color: #0BB7BD;"></p>
+    </div>
+
+    <div class="sub-frame second-frame" style="border-color:#0BB7BD;">
+      <div class="label-header blue-gradient">AQUA WASH FINANCIAL SUMMARY</div>
+      
+      <div class="preview-grid">
+        <div class="preview-row">
+          <div class="preview-label blue">Period</div>
+          <div id="dispPeriod" class="preview-value-box">---</div>
+        </div>
+        
+        <div class="center-lined-text" style="margin: 20px 0 10px 0; font-size: 0.9rem;">Income Statement</div>
+        
+        <div class="preview-row">
+          <div class="preview-label blue">Total Revenue</div>
+          <div id="dispRevenue" class="preview-value-box" style="font-weight: bold; color: #2093DD;">₱0.00</div>
+        </div>
+        <div class="preview-row">
+          <div class="preview-label blue">Total Expenses</div>
+          <div id="dispExpenses" class="preview-value-box" style="color: #d32f2f;">₱0.00</div>
+        </div>
+        <div class="preview-row">
+          <div class="preview-label blue">Net Income</div>
+          <div id="dispNetIncome" class="preview-value-box" style="background: #eafff0; font-weight: 900;">₱0.00</div>
+        </div>
+
+        <div class="center-lined-text" style="margin: 20px 0 10px 0; font-size: 0.9rem;">Balance Sheet</div>
+
+        <div class="preview-row">
+          <div class="preview-label blue">Total Assets</div>
+          <div id="dispAssets" class="preview-value-box">₱0.00</div>
+        </div>
+        <div class="preview-row">
+          <div class="preview-label blue">Total Liabilities</div>
+          <div id="dispLiabilities" class="preview-value-box">₱0.00</div>
+        </div>
+        <div class="preview-row">
+          <div class="preview-label blue">Owner's Equity</div>
+          <div id="dispEquity" class="preview-value-box">₱0.00</div>
+        </div>
+      </div>
+      
+      <div class="preview-footer" style="margin-top: 20px; font-style: italic; font-size: 11px; color: #888;">
+        *Values are synced directly from the "Financial Statements" sheet.
+      </div>
+    </div>
+  </div>
+</div>  
+
+      
   <div id="metrics" class="content-section"><h2>Performance Data</h2></div>  
   <div id="leadboards" class="content-section"><h2>Customers Leadboards</h2></div>  
 
