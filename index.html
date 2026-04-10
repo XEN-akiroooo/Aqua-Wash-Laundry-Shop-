@@ -514,7 +514,7 @@ background: linear-gradient(to right, #d32f2f, #f44336) !important;
 
 /* --- LOGIN SCREEN OVERLAY --- */
 #login-screen {
-  position: fixed;
+  position: relative;
   top: 0;
   left: 0;
   width: 100vw;
@@ -535,6 +535,33 @@ background: linear-gradient(to right, #d32f2f, #f44336) !important;
   width: 90%;
   max-width: 400px;
   text-align: center;
+}
+
+.school-logo-top {
+  position: absolute;
+  top: 25px;      /* Distance from the top */
+  left: 25px;     /* Distance from the left */
+  width: 120px;   /* Adjust size as needed */
+  height: auto;
+  
+  /* Aesthetic touches */
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.15)); /* Soft shadow for depth */
+  z-index: 10;    /* Ensures it stays above the background */
+  transition: transform 0.3s ease;
+}
+
+/* Optional: Slight hover effect for the logo */
+.school-logo-top:hover {
+  transform: scale(1.05);
+}
+
+/* Mobile responsive: Shrink logo on smaller screens */
+@media (max-width: 600px) {
+  .school-logo-top {
+    width: 80px;
+    top: 15px;
+    left: 15px;
+  }
 }
 
 /* FADE ANIMATION CLASS */
@@ -565,6 +592,8 @@ background: linear-gradient(to right, #d32f2f, #f44336) !important;
 <body>  
   
   <div id="login-screen">
+    <img src="https://smmc.edu.ph/" class="school-logo-top">
+    
   <div class="login-box">
     <h2 class="header" style="margin-bottom: 2rem; justify-content: center;">LOGIN</h2>
 
