@@ -17,6 +17,9 @@ function getExistingServiceIds() {
   if (!sheet) {
     return []; // Fixed: return is now inside the function block
   }
+
+   const lastRow = sheet.getLastRow();
+  if (lastRow < 4) return [];
   
   // Get all IDs starting from row 4 to avoid headers
   const data = sheet.getRange("B4:B" + sheet.getLastRow()).getValues(); 
