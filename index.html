@@ -1015,22 +1015,22 @@ function changeQty(amount) {
    4. GRID MANAGEMENT (SETTINGS)
    ============================================================ */
 function refreshAllGrids() {
-  // Load Services
+  // Fix 1: Added missing closing quote after MasterData)
   google.script.run.withSuccessHandler(data => {
-    renderGrid('grid-service', data, 2, 'Service Pricing(MasterData));
+    renderGrid('grid-service', data, 2, 'Service Pricing(MasterData)'); 
   }).getSheetData('Service Pricing(MasterData)');
 
-  // Load Supplies
+  // Fix 2: Ensure this matches your actual tab name
   google.script.run.withSuccessHandler(data => {
     renderGrid('grid-supplies', data, 2, 'Supplies Costing(MasterData)');
   }).getSheetData('Supplies Costing(MasterData)');
 
-  // Load Customers
+  // Load Customers - Looks Good!
   google.script.run.withSuccessHandler(data => {
     renderGrid('grid-customers', data, 1, 'Customers List(MasterData)');
   }).getSheetData('Customers List(MasterData)');
 
-  // Load Other Transactions
+  // Load Other Transactions - Looks Good!
   google.script.run.withSuccessHandler(data => {
     renderGrid('grid-others', data, 4, 'Entries(MasterData)');
   }).getSheetData('Entries(MasterData)');
