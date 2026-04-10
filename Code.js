@@ -9,7 +9,21 @@ function doGet() {
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
 
-// --- DATA FETCHING ---
+// --- SERVICE ID FETCHING ---
+function getExistingServiceIds() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName('Service Transaction'); 
+  
+  if (!sheet) {
+    return []; // Fixed: return is now inside the function block
+  }
+  
+  // Get all IDs starting from row 4 to avoid headers
+  const data = sheet.getRange("B4:B" + sheet.getLastRow()).getValues(); 
+  return data.flat().filter(id => id !== "");
+}
+
+// --- MASTERDATA FETCHING ---
 function getSheetData(sheetName) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   
@@ -75,6 +89,7 @@ function addDataToSheet(sheetName, rowData) {
   return "Success";
 }
 
+
 // --- DATA DELETION ---
 function deleteDataFromSheet(sheetName, primaryValue) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -88,6 +103,39 @@ function deleteDataFromSheet(sheetName, primaryValue) {
     }
   }
      }
+
+/* ====================================================================================================
+   DASHBOARD INPUTS (BRIDGE)
+==================================================================================================== */
+
+function addServiceOrderToSheet(sheetName, payload) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(sheetName);
+  
+  if (!sheet) return "Sheet Not Found";
+
+  // 1. Find the last row with actual data in Column B (Service ID)
+  const values = sheet.getRange("B:B").getValues();
+  let lastRow = 0;
+  for (let i = values.length - 1; i >= 0; i--) {
+    if (values[i][0] !== "") {
+      lastRow = i + 1;
+      break;
+    }
+  }
+  
+  // 2. Insert a fresh row after the last data to ensure space exists
+  sheet.insertRowAfter(lastRow);
+  
+  const destRow = lastRow + 1;
+  
+  // 3. Write payload starting from Column B (Index 2)
+  // Payload: [ID, Date, Name, Service Type, Price, Status, Cash, Balance, Description]
+  sheet.getRange(destRow, 2, 1, payload.length).setValues([payload]);
+  
+  return "Success";
+}
+
 
 /* ====================================================================================================
    SENDING API KEY (EMAIL)
