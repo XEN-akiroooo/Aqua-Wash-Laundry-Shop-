@@ -15,14 +15,37 @@ function getSheetData(sheetName) {
   
   // 1. Matches 'Entries(MasterData)'
   if (sheetName === "Entries(MasterData)") {
-    const sheet = ss.getSheetByName(sheetName);
-    if (!sheet) return [];
-    const rawData = sheet.getDataRange().getValues();
-    const dataAfterHeader = rawData.slice(7); 
-    const filteredRows = dataAfterHeader.filter(row => row[0] !== "");
-    // Returns Type, Account(Debit), Source(Credit), Description (skips Column D)
-    return filteredRows.map(row => [row[0], row[2], row[4], row[1]]);
-  }
+  const sheet = ss.getSheetByName(sheetName);
+  if (!sheet) return [];
+  const rawData = sheet.getDataRange().getValues();
+  
+  // Skip the first 7 rows
+  const dataAfterHeader = rawData.slice(7); 
+  
+  // SMARTER FILTER: 
+  // 1. Ignore if Column A is empty
+  // 2. Ignore if Column B is empty (Real transactions always have a description)
+  // 3. Ignore if the row is one of your Category Headers
+  const filteredRows = dataAfterHeader.filter(row => {
+    const colA = String(row[0]).trim();
+    const colB = String(row[1]).trim();
+    
+    // List of category headers to ignore specifically
+    const categories = [
+      "SUPPLIES ON CASH & SUPPLIES ON CREDIT",
+      "EQUIPMENT / MACHINARY OF LAUNDRY",
+      "ACCOUNTS PAYABLE / LIABILITIES",
+      "AQUA WASH LAUNDRY SHOP'S EQUITY",
+      "EXPENSES",
+      "INCOME SUMMARY / CLOSING NOMINAL ACCTS"
+    ];
+
+    return colA !== "" && colB !== "" && !categories.includes(colA);
+  });
+
+  // Return the cleaned data
+  return filteredRows.map(row => [row[0], row[2], row[4], row[1]]);
+}
 
   // 2. Matches 'Customers List(MasterData)'
   if (sheetName === "Customers List(MasterData)") {
