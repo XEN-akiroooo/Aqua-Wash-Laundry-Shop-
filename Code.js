@@ -12,10 +12,34 @@ function doGet() {
 // --- DATA FETCHING ---
 function getSheetData(sheetName) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
+  
+  // 1. Matches 'Entries(MasterData)'
+  if (sheetName === "Entries(MasterData)") {
+    const sheet = ss.getSheetByName(sheetName);
+    if (!sheet) return [];
+    const rawData = sheet.getDataRange().getValues();
+    const dataAfterHeader = rawData.slice(7); 
+    const filteredRows = dataAfterHeader.filter(row => row[0] !== "");
+    // Returns Type, Account(Debit), Source(Credit), Description (skips Column D)
+    return filteredRows.map(row => [row[0], row[2], row[4], row[1]]);
+  }
+
+  // 2. Matches 'Customers List(MasterData)'
+  if (sheetName === "Customers List(MasterData)") {
+    const sheet = ss.getSheetByName(sheetName);
+    if (!sheet) return [];
+    const rawData = sheet.getDataRange().getValues();
+    const dataOnly = rawData.slice(2); 
+    // Returns only Column A (Index 0)
+    return dataOnly.filter(row => row[0] !== "").map(row => [row[0]]);
+  }
+
+  // 3. DEFAULT: Service Pricing and Supplies Costing
+  // These only skip 1 row (the header)
   const sheet = ss.getSheetByName(sheetName);
   if (!sheet) return [];
   const values = sheet.getDataRange().getValues();
-  values.shift(); // Remove header row
+  values.shift(); 
   return values;
 }
 
@@ -23,6 +47,7 @@ function getSheetData(sheetName) {
 function addDataToSheet(sheetName, rowData) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sheet = ss.getSheetByName(sheetName);
+  if (!sheet) return "Sheet Not Found";
   sheet.appendRow(rowData);
   return "Success";
 }
