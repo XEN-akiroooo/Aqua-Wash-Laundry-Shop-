@@ -970,10 +970,17 @@ function showForm(formType) {
   } else if (formType === 'payment') {
     title.innerText = "CUSTOMER CREDIT SETTLEMENT";
     container.innerHTML = `
-      <select class="form-input md cyan"><option>Pick Customer Name</option></select>
-      <select class="form-input md cyan"><option>Pick Their Service ID</option></select>
-      <button class="btn large blue-gradient">Record to Fully Settled</button>
+      <select id="settle-customer" class="form-input md cyan" onchange="updateSettleIds()">
+        <option value="">Pick Customer Name</option>
+      </select>
+      <select id="settle-id" class="form-input md cyan" onchange="previewSettlement()">
+        <option value="">Pick Their Service ID</option>
+      </select> 
+      <button class="btn large blue-gradient" onclick="saveSettlement()">Record to Fully Settled</button>
       ${backBtn}`;
+      
+    loadSettlementData(); // Call to fetch data
+
   } else if (formType === 'update-order') {
     title.innerText = "UPDATE SERVICE ORDER";
     container.innerHTML = `
@@ -1037,6 +1044,9 @@ function changeQty(amount) {
    4. SERVICE INPUT FUNCTIONALITY (ADD, SETTLEMENT, UPDATE DELETE)
    ============================================================ */
 
+
+// ------------ ADDING SERVICE ORDER ------------
+
 // Global variables to store fetched prices and the final payload
 let servicePrices = []; 
 let orderPayload = null; 
@@ -1045,6 +1055,9 @@ function loadOrderDropdowns() {
   // Fetch Customers
   google.script.run.withSuccessHandler(customers => {
     const custSelect = document.getElementById('order-customer');
+    if (!custSelect) return; // Stop if element isn't on screen
+    
+    custSelect.innerHTML = '<option value="">Pick Customer Name</option>';
     customers.forEach(row => {
       let opt = document.createElement('option');
       opt.value = row[0];
@@ -1055,21 +1068,29 @@ function loadOrderDropdowns() {
 
   // Fetch Services & Prices
   google.script.run.withSuccessHandler(services => {
-    servicePrices = services; // Save globally to calculate balance later
+    servicePrices = services; 
     const servSelect = document.getElementById('order-service');
+    if (!servSelect) return; // Stop if element isn't on screen
+    
+    servSelect.innerHTML = '<option value="">Pick Service Type</option>';
     services.forEach(row => {
       let opt = document.createElement('option');
       opt.value = row[0];
-      opt.textContent = row[0];
+      const price = parseFloat(row[1]).toFixed(2);
+      opt.textContent = `${row[0]} - ₱ ${price}`; 
       servSelect.appendChild(opt);
     });
   }).getSheetData('Service Pricing(MasterData)');
 
-  // Attach Event Listeners to Buttons
-  document.getElementById('btn-generate').addEventListener('click', generateOrderPreview);
-  document.getElementById('btn-save').addEventListener('click', saveOrderData);
+  // Safe Event Listeners
+  const genBtn = document.getElementById('btn-generate');
+  const saveBtn = document.getElementById('btn-save');
+  
+  if (genBtn) genBtn.onclick = generateOrderPreview;
+  if (saveBtn) saveBtn.onclick = saveOrderData;
 }
 
+// ----- Generate ID-----
 function generateOrderPreview() {
   const customer = document.getElementById('order-customer').value;
   const service = document.getElementById('order-service').value;
@@ -1169,6 +1190,114 @@ function resetPreviewArea() {
     const el = document.getElementById(id);
     if (el) el.innerText = "---";
   });
+}
+
+// ------------ SETTLING SERVICE ORDER ------------
+
+let unsettledData = []; 
+
+function loadSettlementData() {
+  console.log("Triggering Settlement Data Load...");
+  
+  google.script.run
+    .withSuccessHandler(data => {
+      console.log("Backend returned data:", data);
+      unsettledData = data;
+      
+      const custSelect = document.getElementById('settle-customer');
+      
+      // If the element isn't there yet, wait 100ms and try again
+      if (!custSelect) {
+        console.warn("Dropdown not found, retrying in 100ms...");
+        setTimeout(loadSettlementData, 100);
+        return;
+      }
+
+      custSelect.innerHTML = '<option value="">Pick Customer Name</option>';
+      
+      if (data.length === 0) {
+        custSelect.innerHTML = '<option value="">No Pending Credits Found</option>';
+        return;
+      }
+
+      // Get unique names from data
+      const uniqueNames = [...new Set(data.map(row => row[2]))].filter(n => n);
+      
+      uniqueNames.forEach(name => {
+        let opt = document.createElement('option');
+        opt.value = name;
+        opt.textContent = name;
+        custSelect.appendChild(opt);
+      });
+    })
+    .withFailureHandler(err => alert("Error loading settlement: " + err))
+    .getUnsettledTransactions();
+}
+
+function updateSettleIds() {
+  const selectedName = document.getElementById('settle-customer').value;
+  const idSelect = document.getElementById('settle-id');
+  if (!idSelect) return;
+
+  idSelect.innerHTML = '<option value="">Pick Their Service ID</option>';
+  
+  // Filter global data for this specific customer
+  const customerRows = unsettledData.filter(row => row[2] === selectedName);
+  
+  customerRows.forEach(row => {
+    let opt = document.createElement('option');
+    opt.value = row[0]; 
+    opt.textContent = `ID: ${row[0]} (Bal: ₱${parseFloat(row[7]).toFixed(2)})`;
+    idSelect.appendChild(opt);
+  });
+  
+  resetPreviewArea(); 
+}
+
+function previewSettlement() {
+  const selectedId = document.getElementById('settle-id').value;
+  if (!selectedId) return;
+
+  const row = unsettledData.find(r => String(r[0]) === selectedId);
+  if (!row) return;
+
+  const today = new Date();
+  const displayDateStr = today.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+  const sheetDateStr = ("0" + today.getDate()).slice(-2) + "/" + ("0" + (today.getMonth() + 1)).slice(-2) + "/" + today.getFullYear();
+
+  // Mapping indices based on B:J range (B=0, C=1, D=2, E=3, F=4, G=5, H=6, I=7)
+  const balanceValue = parseFloat(row[7]) || 0;
+
+  document.getElementById('prev-date').innerText = displayDateStr;
+  document.getElementById('prev-customer').innerText = row[2]; // Col D
+  document.getElementById('prev-id').innerText = row[0];       // Col B
+  document.getElementById('prev-service').innerText = "Settlement";
+  document.getElementById('prev-price').innerText = `₱ ${parseFloat(row[4]).toFixed(2)}`; // Col F
+  document.getElementById('prev-payment').innerText = `₱ ${balanceValue.toFixed(2)}`;     // Col I
+  document.getElementById('prev-balance').innerText = `₱ 0.00`;
+
+  // Payload: [B:ID, C:Date, D:Name, E:Type, F:Price(skip), G:Status(skip), H:Cash, I:Balance(skip)]
+  orderPayload = [
+    row[0],       
+    sheetDateStr, 
+    row[2],       
+    "Settlement", 
+    "", "",       
+    balanceValue, // Payment = Full remaining balance
+    ""            
+  ];
+}
+
+function saveSettlement() {
+  if (!orderPayload) {
+    alert("Please select a Customer and Service ID first.");
+    return;
+  }
+
+  google.script.run.withSuccessHandler(response => {
+    alert("Settlement Recorded Successfully!");
+    resetServicePanel(); // Return to main menu and clear right panel
+  }).addServiceOrderToSheet('Service Transaction', orderPayload);
 }
 
 /* ============================================================
