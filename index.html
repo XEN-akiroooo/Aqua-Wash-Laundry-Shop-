@@ -1014,65 +1014,105 @@ function changeQty(amount) {
 /* ============================================================
    4. GRID MANAGEMENT (SETTINGS)
    ============================================================ */
-let rowToDelete = null;
+function refreshAllGrids() {
+  // Load Services
+  google.script.run.withSuccessHandler(data => {
+    renderGrid('grid-service', data, 2, 'Services');
+  }).getSheetData('Services');
 
-function confirmDelete(button) {
-  rowToDelete = button.parentElement;
-  const itemName = rowToDelete.querySelector('input').value || "this item";
-  document.getElementById('modal-message').innerText = `Are you sure you want to delete "${itemName}"? This will also remove it from the database.`;
-  document.getElementById('delete-modal').classList.add('show');
-  document.getElementById('confirm-delete-btn').onclick = function() { executeDelete(); };
+  // Load Supplies
+  google.script.run.withSuccessHandler(data => {
+    renderGrid('grid-supplies', data, 2, 'Supplies');
+  }).getSheetData('Supplies');
+
+  // Load Customers
+  google.script.run.withSuccessHandler(data => {
+    renderGrid('grid-customers', data, 1, 'Customers');
+  }).getSheetData('Customers');
+
+  // Load Other Transactions
+  google.script.run.withSuccessHandler(data => {
+    renderGrid('grid-others', data, 4, 'Others');
+  }).getSheetData('Others');
 }
 
-function executeDelete() {
-  if (rowToDelete) {
-    rowToDelete.style.opacity = '0';
-    rowToDelete.style.transform = 'translateX(20px)';
-    setTimeout(() => {
-      rowToDelete.remove();
-      closeDeleteModal();
-    }, 300);
-  }
-}
-
-function closeDeleteModal() {
-  document.getElementById('delete-modal').classList.remove('show');
-  rowToDelete = null;
-}
-
-function addNewRow(gridId, columnCount) {
+function renderGrid(gridId, data, colCount, sheetName) {
   const grid = document.getElementById(gridId);
-  const newRow = document.createElement('div');
-  newRow.className = (columnCount === 2) ? 'grid-row has-action' : 'grid-row has-action-wide';
-  for (let i = 0; i < columnCount; i++) {
-    const input = document.createElement('input');
-    input.type = "text";
-    input.className = "grid-input";
-    input.placeholder = "Type Here!";
-    newRow.appendChild(input);
-  }
-  const delBtn = document.createElement('button');
-  delBtn.className = 'delete-row-btn';
-  delBtn.innerHTML = '✕';
-  delBtn.onclick = function() { confirmDelete(this); };
-  newRow.appendChild(delBtn);
-  grid.appendChild(newRow);
+  // Keep the header, remove the rest
+  const header = grid.querySelector('.grid-header');
+  grid.innerHTML = '';
+  grid.appendChild(header);
+
+  data.forEach(row => {
+    const rowDiv = document.createElement('div');
+    rowDiv.className = (colCount > 3) ? 'grid-row has-action-wide' : 'grid-row has-action';
+    
+    // Determine grid columns based on ID (Matches your CSS)
+    if(gridId === 'grid-customers') rowDiv.style.gridTemplateColumns = '1fr 50px';
+    else if(colCount === 2) rowDiv.style.gridTemplateColumns = '2fr 1fr 50px';
+    else rowDiv.style.gridTemplateColumns = '1fr 1fr 1fr 2fr 50px';
+
+    let html = '';
+    row.forEach((cell, idx) => {
+      html += `<input type="${typeof cell === 'number' ? 'number' : 'text'}" 
+                      class="grid-input" value="${cell}" readonly>`;
+    });
+    html += `<button class="delete-row-btn" onclick="confirmDelete(this, '${sheetName}')">✕</button>`;
+    
+    rowDiv.innerHTML = html;
+    grid.appendChild(rowDiv);
+  });
 }
 
+/* ============================================================
+   SAVE & DELETE (Syncing with Sheets)
+   ============================================================ */
 function saveNewCustomer() {
   const nameInput = document.getElementById('new-cust-name');
   const name = nameInput.value.trim();
-  if (name === "") { alert("Please enter a name!"); return; }
-  const grid = document.getElementById('grid-customers');
-  const newRow = document.createElement('div');
-  newRow.className = 'grid-row';
-  newRow.style.gridTemplateColumns = '1fr 50px';
-  newRow.innerHTML = `<input type="text" class="grid-input" value="${name}" readonly><button class="delete-row-btn" onclick="confirmDelete(this)">✕</button>`;
-  grid.appendChild(newRow);
-  nameInput.value = "";
-  alert(name + " has been added to the records!");
+  if (!name) return alert("Enter a name!");
+
+  google.script.run.withSuccessHandler(() => {
+    nameInput.value = "";
+    alert(name + " saved to Google Sheets!");
+    refreshAllGrids(); // Refresh the list
+  }).addDataToSheet('Customers', [name]);
 }
 
+// Updated AddNewRow to handle specific sheets
+function addNewRow(gridId, columnCount, sheetName) {
+  // Instead of just adding a row to HTML, we prompt for data
+  // or allow blank entry then save. For simplicity, we'll prompt:
+  let values = [];
+  for(let i=0; i<columnCount; i++) {
+    let val = prompt("Enter value for column " + (i+1));
+    if (val === null) return;
+    values.push(val);
+  }
+
+  google.script.run.withSuccessHandler(() => {
+    refreshAllGrids();
+  }).addDataToSheet(sheetName, values);
+}
+
+let targetToDelete = null;
+let targetSheet = '';
+
+function confirmDelete(button, sheetName) {
+  targetToDelete = button.parentElement;
+  targetSheet = sheetName;
+  const itemName = targetToDelete.querySelector('input').value;
+  
+  document.getElementById('modal-message').innerText = `Delete "${itemName}" from ${sheetName} sheet?`;
+  document.getElementById('delete-modal').classList.add('show');
+  
+  document.getElementById('confirm-delete-btn').onclick = () => {
+    google.script.run.withSuccessHandler(() => {
+      targetToDelete.remove();
+      closeDeleteModal();
+    }).deleteDataFromSheet(targetSheet, itemName);
+  };
+}
 /* ============================================================
    5. LOGIN, LOGOUT & SECURITY (THE CORE)
 ============================================================ */
@@ -1247,15 +1287,19 @@ window.addEventListener('DOMContentLoaded', () => {
    6. INITIALIZATION (Runs once when page is ready)
    ============================================================ */
 window.addEventListener('DOMContentLoaded', () => {
-  // Set default view
+  // Standard UI setup
   const dailyOpsBtn = document.querySelector('.sidebar .btn'); 
   if (dailyOpsBtn) setActive(dailyOpsBtn, 'daily-ops');
 
-  // Check login state for animation
+  // FETCH DATA FROM GOOGLE SHEETS ON LOAD
+  refreshAllGrids();
+
+  // Handle Login persistence
   if (localStorage.getItem('isLoggedIn') === 'true') {
      document.getElementById('login-screen').style.display = 'none';
   }
 });
+
 </script>
   
 <div id="delete-modal" class="modal">
