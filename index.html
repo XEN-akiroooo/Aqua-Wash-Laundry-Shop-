@@ -1006,7 +1006,25 @@ function resetServicePanel() {
       <button class="btn large grey" onclick="showForm('print-invoice')">Print Service Order</button>
     </div>`;
 
-  resetPreviewArea();
+  const previewFields = [
+    'prev-date', 
+    'prev-customer', 
+    'prev-id', 
+    'prev-service', 
+    'prev-price', 
+    'prev-payment', 
+    'prev-balance'
+  ];
+
+  previewFields.forEach(id => {
+    const element = document.getElementById(id);
+    if (element) {
+      element.innerText = "---"; // Reset to default placeholder
+    }
+  });
+
+  // 3. Clear any internal variables and descriptions
+  orderPayload = null;
 }
 
 function changeQty(amount) {
