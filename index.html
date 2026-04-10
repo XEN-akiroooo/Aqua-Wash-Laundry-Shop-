@@ -1259,6 +1259,7 @@ function previewSettlement() {
   if (!selectedId) return;
 
   const row = unsettledData.find(r => String(r[0]) === selectedId);
+  console.error("Could not find ID in unsettledData:", selectedId);
   if (!row) return;
 
   const today = new Date();
