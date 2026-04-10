@@ -26,6 +26,46 @@ function getExistingServiceIds() {
   return data.flat().filter(id => id !== "");
 }
 
+// --- CUSTOMER CREDIT FETCHING ---
+function getUnsettledTransactions() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName('Service Transaction');
+  if (!sheet) return [];
+
+  const lastRow = sheet.getLastRow();
+  if (lastRow < 4) return [];
+
+  // Fetch B to J (covering ID through Balance/Description)
+  const data = sheet.getRange("B4:J" + lastRow).getValues();
+  
+  // 1. Find all IDs that already have a "Settlement" row
+  const settledIds = new Set();
+  data.forEach(row => {
+    const serviceType = String(row[3]).trim(); // Column E
+    const serviceId = String(row[0]).trim();  // Column B
+    if (serviceType === "Settlement") {
+      settledIds.add(serviceId);
+    }
+  });
+
+  // 2. Filter: Must be a Credit, must have a balance > 0, and must NOT be in settledIds
+  const unsettled = data.filter(row => {
+    const id = String(row[0]).trim();
+    const status = String(row[5]); // Column G
+    const balance = cleanAmount(row[7]); // Column I
+    
+    // Valid credit = has "Credit" in status, has money owed, and hasn't been settled yet
+    const isCredit = status.includes("Credit");
+    const hasOwed = balance > 0;
+    const notYetSettled = !settledIds.has(id);
+
+    return id !== "" && isCredit && hasOwed && notYetSettled;
+  });
+
+  console.log("Found unsettled rows: " + unsettled.length);
+  return unsettled; 
+}
+
 // --- MASTERDATA FETCHING ---
 function getSheetData(sheetName) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
