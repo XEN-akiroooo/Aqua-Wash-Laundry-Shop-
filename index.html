@@ -791,7 +791,7 @@ background: linear-gradient(to right, #d32f2f, #f44336) !important;
       <button class="delete-row-btn" onclick="confirmDelete(this)">✕</button>
     </div>
   </div>
-  <button class="add-row-btn" onclick="addNewRow('grid-service', 2)">+</button>
+  <button class="add-row-btn" onclick="addNewRow('grid-service', 2, 'Service Pricing(MasterData)')">+</button>
 
   <p class="center-lined-text">Supplies Costing</p>
   <div class="settings-grid" id="grid-supplies">
@@ -805,7 +805,7 @@ background: linear-gradient(to right, #d32f2f, #f44336) !important;
       <button class="delete-row-btn" onclick="confirmDelete(this)">✕</button>
     </div>
   </div>
-  <button class="add-row-btn" onclick="addNewRow('grid-supplies', 2)">+</button>
+  <button class="add-row-btn" onclick="addNewRow('grid-supplies', 2, 'Supplies Costing(MasterData)')">+</button>
 
   <p class="center-lined-text">Customer Records</p>
 <div class="settings-grid" id="grid-customers">
@@ -835,7 +835,7 @@ background: linear-gradient(to right, #d32f2f, #f44336) !important;
       <button class="delete-row-btn" onclick="confirmDelete(this)">✕</button>
     </div>
   </div>
-  <button class="add-row-btn" onclick="addNewRow('grid-others', 4)">+</button>
+  <button class="add-row-btn" onclick="addNewRow('grid-others', 4, 'Entries(MasterData)')">+</button>
 
   <p style="margin-top:50px; font-style: italic; color: #888;">*This section is for Accountant ONLY!</p>
   </div>
@@ -1017,23 +1017,23 @@ function changeQty(amount) {
 function refreshAllGrids() {
   // Load Services
   google.script.run.withSuccessHandler(data => {
-    renderGrid('grid-service', data, 2, 'Services');
-  }).getSheetData('Services');
+    renderGrid('grid-service', data, 2, 'Service Pricing(MasterData));
+  }).getSheetData('Service Pricing(MasterData)');
 
   // Load Supplies
   google.script.run.withSuccessHandler(data => {
-    renderGrid('grid-supplies', data, 2, 'Supplies');
-  }).getSheetData('Supplies');
+    renderGrid('grid-supplies', data, 2, 'Supplies Costing(MasterData)');
+  }).getSheetData('Supplies Costing(MasterData)');
 
   // Load Customers
   google.script.run.withSuccessHandler(data => {
-    renderGrid('grid-customers', data, 1, 'Customers');
-  }).getSheetData('Customers');
+    renderGrid('grid-customers', data, 1, 'Customers List(MasterData)');
+  }).getSheetData('Customers List(MasterData)');
 
   // Load Other Transactions
   google.script.run.withSuccessHandler(data => {
-    renderGrid('grid-others', data, 4, 'Others');
-  }).getSheetData('Others');
+    renderGrid('grid-others', data, 4, 'Entries(MasterData)');
+  }).getSheetData('Entries(MasterData)');
 }
 
 function renderGrid(gridId, data, colCount, sheetName) {
@@ -1076,7 +1076,7 @@ function saveNewCustomer() {
     nameInput.value = "";
     alert(name + " saved to Google Sheets!");
     refreshAllGrids(); // Refresh the list
-  }).addDataToSheet('Customers', [name]);
+  }).addDataToSheet('Customers List(MasterData)', [name]);
 }
 
 // Updated AddNewRow to handle specific sheets
