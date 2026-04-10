@@ -1,5 +1,5 @@
 /* ====================================================================================================
-   JOURNALIZING
+   GETTING AND SYNCHRONIZING
 ==================================================================================================== */
 
 function doGet() {
@@ -8,6 +8,38 @@ function doGet() {
     .addMetaTag('viewport', 'width=device-width, initial-scale=1')
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
+
+// --- DATA FETCHING ---
+function getSheetData(sheetName) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(sheetName);
+  if (!sheet) return [];
+  const values = sheet.getDataRange().getValues();
+  values.shift(); // Remove header row
+  return values;
+}
+
+// --- DATA SAVING ---
+function addDataToSheet(sheetName, rowData) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(sheetName);
+  sheet.appendRow(rowData);
+  return "Success";
+}
+
+// --- DATA DELETION ---
+function deleteDataFromSheet(sheetName, primaryValue) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(sheetName);
+  const data = sheet.getDataRange().getValues();
+  
+  for (let i = data.length - 1; i >= 0; i--) {
+    if (data[i][0] == primaryValue) {
+      sheet.deleteRow(i + 1);
+      return "Deleted";
+    }
+  }
+     }
 
 /* ====================================================================================================
    SENDING API KEY (EMAIL)
