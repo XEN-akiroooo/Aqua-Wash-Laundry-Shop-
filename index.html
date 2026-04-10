@@ -510,17 +510,21 @@ background: linear-gradient(to right, #d32f2f, #f44336) !important;
     </div>
 
     <div id="api-key-form" style="display: none;">
-      <p style="margin-bottom: 15px; font-weight: bold;">Enter e-mail to receive API Key</p>
-      <input type="email" id="recovery-email" placeholder="Sample (jamandreprince@gmail.com)" class="form-input md black">
+       <p style="margin-bottom: 15px; font-weight: bold;">Enter e-mail to receive API Key</p>
+       <input type="email" id="recovery-email" placeholder="Sample (jamandreprince@gmail.com)" class="form-input md black">
 
-      <div id="reset-pass-fields" style="display:none;">
+      <div id="reset-pass-fields" style="display:none; margin-bottom: 10px;">
         <input type="password" id="reset-new-pass" placeholder="New Password" class="form-input md black">
+        <input type="password" id="reset-conf-pass" placeholder="Confirm New Password" class="form-input md black">
       </div>
 
-      <input type="text" id="api-key-input" placeholder="Enter API Key" class="form-input md black" style="display:none;">
-      <button class="btn thin blue-gradient" id="resend-api-btn" onclick="resendApiKey()" style="display:none; margin-bottom: 10px; width: 100%;">Resend API Key</button>
-      <button class="btn medium blue-gradient" id="api-key-btn" onclick="handleForgotApiKey()">Send API Key</button>
-      <span class="forgot-link" onclick="toggleForgotMode(false)">Back to Login</span>
+        <input type="text" id="api-key-input" placeholder="Enter API Key" class="form-input md black" style="display:none;">
+  
+        <p id="timer-display" style="color: #58005D; font-weight: bold; margin-bottom: 10px; display: none;">Expires in: 02:00</p>
+
+        <button class="btn medium blue-gradient" id="resend-api-btn" onclick="resendApiKey()" style="display:none; margin-bottom: 10px; width: 100%;">Resend API Key</button>
+        <button class="btn medium blue-gradient" id="api-key-btn" onclick="handleForgotApiKey()">Send API Key</button>
+        <span class="forgot-link" onclick="toggleForgotMode(false)">Back to Login</span>
     </div>
 
   </div>
@@ -1105,11 +1109,38 @@ function toggleForgotMode(isForgot) {
 
 // FORGOT PASSWORD API KEY
 let generatedApiKey = null;
+let apiTimer = null;
+
+// --- TIMER UTILITY ---
+function startTimer(durationSeconds) {
+  clearInterval(apiTimer); // Reset any existing timer
+  let timer = durationSeconds;
+  const display = document.getElementById('timer-display');
+  display.style.display = 'block';
+
+  apiTimer = setInterval(() => {
+    let minutes = Math.floor(timer / 60);
+    let seconds = timer % 60;
+    
+    minutes = minutes < 10 ? "0" + minutes : minutes;
+    seconds = seconds < 10 ? "0" + seconds : seconds;
+
+    display.innerText = "Expires in: " + minutes + ":" + seconds;
+
+    if (--timer < 0) {
+      clearInterval(apiTimer);
+      display.innerText = "API Key Expired!";
+      generatedApiKey = null; // Invalidate the key
+    }
+  }, 1000);
+}
+
+// --- FORGOT PASSWORD (LOGIN SCREEN) ---
 function handleForgotApiKey() {
   const email = document.getElementById('recovery-email').value;
   const btn = document.getElementById('api-key-btn');
-  const resendBtn = document.getElementById('resend-api-btn');
   const apiKeyInput = document.getElementById('api-key-input');
+  const resetFields = document.getElementById('reset-pass-fields');
 
   if (btn.innerText === "Send API Key") {
     if (!email) { alert("Please enter an email"); return; }
@@ -1119,43 +1150,46 @@ function handleForgotApiKey() {
     google.script.run.withSuccessHandler(() => {
       alert("API Key sent to " + email);
       apiKeyInput.style.display = 'block';
-      resendBtn.style.display = 'block'; // Show the resend button
-      btn.innerText = "Verify & Login";
+      resetFields.style.display = 'block';
+      document.getElementById('resend-api-btn').style.display = 'block';
+      btn.innerText = "Verify & Change Password";
+      startTimer(120); // Start 2-minute timer
     }).sendEmailApiKey(email, generatedApiKey); 
     
   } else {
-    // Verification Logic
-    if (apiKeyInput.value == generatedApiKey) {
-      alert("Verified! Since this is a reset, use '1234' as temp password to login.");
-      localStorage.setItem('adminPass', '1234');
-      toggleForgotMode(false);
-    } else { 
-      alert("Wrong API Key!"); 
+    // Verification & Reset Logic
+    const newP = document.getElementById('reset-new-pass').value;
+    const confP = document.getElementById('reset-conf-pass').value;
+
+    if (apiKeyInput.value != generatedApiKey || generatedApiKey === null) {
+      alert("Invalid or Expired API Key!");
+      return;
     }
+
+    if (newP === "" || newP !== confP) {
+      alert("Passwords do not match or are empty!");
+      return;
+    }
+
+    // Success: Update Password
+    localStorage.setItem('adminPass', newP);
+    alert("Password changed successfully! You can now login.");
+    clearInterval(apiTimer);
+    toggleForgotMode(false);
   }
 }
 
-// NEW: Function to Resend the Key
 function resendApiKey() {
   const email = document.getElementById('recovery-email').value;
-  const resendBtn = document.getElementById('resend-api-btn');
-  
-  if (!email) { alert("Email is missing!"); return; }
-  
-  // Generate a new key for security
   generatedApiKey = Math.floor(1000 + Math.random() * 9000);
   
-  resendBtn.innerText = "Sending...";
-  resendBtn.disabled = true;
-
   google.script.run.withSuccessHandler(() => {
-    alert("A new API Key has been sent to " + email);
-    resendBtn.innerText = "Resend API Key";
-    resendBtn.disabled = false;
+    alert("New API Key sent!");
+    startTimer(120); // Reset timer to 2 minutes
   }).sendEmailApiKey(email, generatedApiKey);
 }
 
-// ACCOUNT SETTINGS API KEY
+// --- ACCOUNT SETTINGS SECURITY ---
 function sendSettingsApiKey() {
   const email = "jamandreprince@gmail.com";
   const code = Math.floor(1000 + Math.random() * 9000);
@@ -1167,28 +1201,47 @@ function sendSettingsApiKey() {
 }
 
 function updateSecurity() {
-  const enteredApiKey = document.getElementById('settings-api-key').value;
+  const enteredApiKey = document.getElementById('settings-otp').value;
   const storedApiKey = localStorage.getItem('tempApiKey');
 
   if (enteredApiKey !== storedApiKey || !storedApiKey) {
-    alert("Invalid API Key! Check your email."); return;
+    alert("Invalid API Key!"); return;
   }
 
   const newU = document.getElementById('new-username').value;
   const newP = document.getElementById('new-password').value;
   const confP = document.getElementById('confirm-password').value;
 
-  if (newU) localStorage.setItem('adminUser', newU);
-  if (newP && newP === confP) {
-    localStorage.setItem('adminPass', newP);
-    alert("Security Updated! Username/Password changed.");
-  } else if (newP !== confP) {
-    alert("Passwords do not match!"); return;
+  // 1. Update Username
+  if (newU) {
+    localStorage.setItem('adminUser', newU);
   }
 
+  // 2. Update Password (if provided)
+  if (newP) {
+    if (newP === confP) {
+      localStorage.setItem('adminPass', newP);
+    } else {
+      alert("New passwords do not match!");
+      return;
+    }
+  }
+
+  alert("Security Updated!");
   localStorage.removeItem('tempApiKey');
-  location.reload();
+  location.reload(); // This will trigger the UI update on reload
 }
+
+// --- ON LOAD: SYNC UI LABELS ---
+window.addEventListener('DOMContentLoaded', () => {
+  const savedUser = localStorage.getItem('adminUser') || "Aquawash";
+  
+  // Update the "Aquawash" label in Account Settings to match current user
+  const userLabels = document.querySelectorAll('.preview-value-box');
+  if (userLabels.length > 0) {
+      userLabels[0].innerText = savedUser; // Changes the "Aquawash" box
+  }
+});
 
 /* ============================================================
    6. INITIALIZATION (Runs once when page is ready)
