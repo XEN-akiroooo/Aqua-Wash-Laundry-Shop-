@@ -501,29 +501,30 @@ background: linear-gradient(to right, #d32f2f, #f44336) !important;
   <div id="login-screen">
   <div class="login-box">
     <h2 class="header" style="margin-bottom: 2rem; justify-content: center;">LOGIN</h2>
-    
+
     <div id="login-form">
-       <input type="text" id="user-input" placeholder="Username" class="form-input md black">
-       <input type="password" id="pass-input" placeholder="Password" class="form-input md black">
-       <button class="btn large blue-gradient" onclick="handleLogin()">Login to Dashboard</button>
-       <span class="forgot-link" onclick="toggleForgotMode(true)">Forgot Password?</span>
+      <input type="text" id="user-input" placeholder="Username" class="form-input md black">
+      <input type="password" id="pass-input" placeholder="Password" class="form-input md black">
+      <button class="btn large blue-gradient" onclick="handleLogin()">Login to Dashboard</button>
+      <span class="forgot-link" onclick="toggleForgotMode(true)">Forgot Password?</span>
     </div>
 
-    <div id="otp-form" style="display: none;">
-  <p style="margin-bottom: 15px; font-weight: bold;">Enter e-mail to receive OTP</p>
-  <input type="email" id="recovery-email" placeholder="jamandreprince@gmail.com" class="form-input md black">
-  
-  <div id="reset-pass-fields" style="display:none;">
-     <input type="password" id="reset-new-pass" placeholder="New Password" class="form-input md black">
+    <div id="api-key-form" style="display: none;">
+      <p style="margin-bottom: 15px; font-weight: bold;">Enter e-mail to receive API Key</p>
+      <input type="email" id="recovery-email" placeholder="jamandreprince@gmail.com" class="form-input md black">
+
+      <div id="reset-pass-fields" style="display:none;">
+        <input type="password" id="reset-new-pass" placeholder="New Password" class="form-input md black">
+      </div>
+
+      <input type="text" id="api-key-input" placeholder="Enter API Key" class="form-input md black" style="display:none;">
+      <button class="btn small gray" id="resend-api-btn" onclick="resendApiKey()" style="display:none; margin-bottom: 10px; width: 100%;">Resend API Key</button>
+      <button class="btn medium blue-gradient" id="api-key-btn" onclick="handleForgotApiKey()">Send API Key</button>
+      <span class="forgot-link" onclick="toggleForgotMode(false)">Back to Login</span>
+    </div>
+
   </div>
-  
-  <input type="text" id="otp-input" placeholder="Enter OTP" class="form-input md black" style="display:none;">
-  <button class="btn medium blue-gradient" id="otp-btn" onclick="handleForgotOtp()">Send OTP</button>
-  <span class="forgot-link" onclick="toggleForgotMode(false)">Back to Login</span>
 </div>
-    
-  </div>
-  </div>
 
   
   <div class="sidebar" id="sidebar">  
@@ -1068,7 +1069,7 @@ function saveNewCustomer() {
 
 /* ============================================================
    5. LOGIN, LOGOUT & SECURITY (THE CORE)
-   ============================================================ */
+============================================================ */
 function handleLogin() {
   const user = document.getElementById('user-input').value;
   const pass = document.getElementById('pass-input').value;
@@ -1092,55 +1093,83 @@ function closeModal() { document.getElementById('modal').classList.remove('show'
 
 function confirmLogout() {
   localStorage.setItem('isLoggedIn', 'false');
-  location.reload(); 
+  location.reload();
 }
 
 function toggleForgotMode(isForgot) {
   document.getElementById('login-form').style.display = isForgot ? 'none' : 'block';
-  document.getElementById('otp-form').style.display = isForgot ? 'block' : 'none';
+  document.getElementById('api-key-form').style.display = isForgot ? 'block' : 'none';
 }
 
-// FORGOT PASSWORD OTP
-let generatedOtp = null;
-function handleForgotOtp() {
+// FORGOT PASSWORD API KEY
+let generatedApiKey = null;
+function handleForgotApiKey() {
   const email = document.getElementById('recovery-email').value;
-  const btn = document.getElementById('otp-btn');
-  const otpInput = document.getElementById('otp-input');
+  const btn = document.getElementById('api-key-btn');
+  const resendBtn = document.getElementById('resend-api-btn');
+  const apiKeyInput = document.getElementById('api-key-input');
 
-  if (btn.innerText === "Send OTP") {
-    generatedOtp = Math.floor(1000 + Math.random() * 9000);
-    // Real Backend Email Call
+  if (btn.innerText === "Send API Key") {
+    if (!email) { alert("Please enter an email"); return; }
+    
+    generatedApiKey = Math.floor(1000 + Math.random() * 9000);
+    
     google.script.run.withSuccessHandler(() => {
-      alert("OTP sent to " + email);
-      otpInput.style.display = 'block';
+      alert("API Key sent to " + email);
+      apiKeyInput.style.display = 'block';
+      resendBtn.style.display = 'block'; // Show the resend button
       btn.innerText = "Verify & Login";
-    }).sendEmailOTP(email, generatedOtp);
+    }).sendEmailApiKey(email, generatedApiKey); 
+    
   } else {
-    if (otpInput.value == generatedOtp) {
+    // Verification Logic
+    if (apiKeyInput.value == generatedApiKey) {
       alert("Verified! Since this is a reset, use '1234' as temp password to login.");
       localStorage.setItem('adminPass', '1234');
       toggleForgotMode(false);
-    } else { alert("Wrong OTP!"); }
+    } else { 
+      alert("Wrong API Key!"); 
+    }
   }
 }
 
-// ACCOUNT SETTINGS OTP
-function sendSettingsOtp() {
-  const email = "jamandreprince@gmail.com"; 
+// NEW: Function to Resend the Key
+function resendApiKey() {
+  const email = document.getElementById('recovery-email').value;
+  const resendBtn = document.getElementById('resend-api-btn');
+  
+  if (!email) { alert("Email is missing!"); return; }
+  
+  // Generate a new key for security
+  generatedApiKey = Math.floor(1000 + Math.random() * 9000);
+  
+  resendBtn.innerText = "Sending...";
+  resendBtn.disabled = true;
+
+  google.script.run.withSuccessHandler(() => {
+    alert("A new API Key has been sent to " + email);
+    resendBtn.innerText = "Resend API Key";
+    resendBtn.disabled = false;
+  }).sendEmailApiKey(email, generatedApiKey);
+}
+
+// ACCOUNT SETTINGS API KEY
+function sendSettingsApiKey() {
+  const email = "jamandreprince@gmail.com";
   const code = Math.floor(1000 + Math.random() * 9000);
-  localStorage.setItem('tempOtp', code);
+  localStorage.setItem('tempApiKey', code);
 
   google.script.run.withSuccessHandler(() => {
     alert("A security code has been sent to " + email);
-  }).sendEmailOTP(email, code);
+  }).sendEmailApiKey(email, code); 
 }
 
 function updateSecurity() {
-  const enteredOtp = document.getElementById('settings-otp').value;
-  const storedOtp = localStorage.getItem('tempOtp');
-  
-  if (enteredOtp !== storedOtp || !storedOtp) {
-    alert("Invalid OTP! Check your email."); return;
+  const enteredApiKey = document.getElementById('settings-api-key').value;
+  const storedApiKey = localStorage.getItem('tempApiKey');
+
+  if (enteredApiKey !== storedApiKey || !storedApiKey) {
+    alert("Invalid API Key! Check your email."); return;
   }
 
   const newU = document.getElementById('new-username').value;
@@ -1154,9 +1183,9 @@ function updateSecurity() {
   } else if (newP !== confP) {
     alert("Passwords do not match!"); return;
   }
-  
-  localStorage.removeItem('tempOtp');
-  location.reload(); 
+
+  localStorage.removeItem('tempApiKey');
+  location.reload();
 }
 
 /* ============================================================
