@@ -1719,31 +1719,65 @@ function updateSecurity() {
   location.reload(); // This will trigger the UI update on reload
 }
 
-// --- ON LOAD: SYNC UI LABELS ---
-window.addEventListener('DOMContentLoaded', () => {
-  const savedUser = localStorage.getItem('adminUser') || "Aquawash";
-  
-  // Update the "Aquawash" label in Account Settings to match current user
-  const userLabels = document.querySelectorAll('.preview-value-box');
-  if (userLabels.length > 0) {
-      userLabels[0].innerText = savedUser; // Changes the "Aquawash" box
-  }
-});
-
 /* ============================================================
-   10. INITIALIZATION (Runs once when page is ready)
+   10. INITIALIZATION & SYNC
    ============================================================ */
 window.addEventListener('DOMContentLoaded', () => {
-  // Standard UI setup
-  const dailyOpsBtn = document.querySelector('.sidebar .btn'); 
-  if (dailyOpsBtn) setActive(dailyOpsBtn, 'daily-ops');
-
-  // FETCH DATA FROM GOOGLE SHEETS ON LOAD
-  refreshAllGrids();
-
-  // Handle Login persistence
+  // --- 1. LOGIN & USER SESSION ---
   if (localStorage.getItem('isLoggedIn') === 'true') {
      document.getElementById('login-screen').style.display = 'none';
+  }
+  
+  const savedUser = localStorage.getItem('adminUser') || "Aquawash";
+  const userLabels = document.querySelectorAll('.preview-value-box');
+  if (userLabels.length > 0) {
+      userLabels[0].innerText = savedUser; 
+  }
+
+  // --- 2. UI & GRID SETUP ---
+  const dailyOpsBtn = document.querySelector('.sidebar .btn'); 
+  if (dailyOpsBtn) setActive(dailyOpsBtn, 'daily-ops');
+  
+  refreshAllGrids(); // Fetches your data from Sheets
+
+  // --- 3. FINANCIAL STATEMENT SYNC (NEW CODE) ---
+  const updateFinBtn = document.getElementById('btnUpdateFin');
+  if (updateFinBtn) {
+    updateFinBtn.addEventListener('click', function() {
+      const month = document.getElementById('finMonth').value;
+      const year = document.getElementById('finYear').value;
+      const status = document.getElementById('finStatus');
+      const btn = this;
+
+      status.textContent = "Updating Trial Balance...";
+      btn.disabled = true;
+
+      google.script.run
+        .withSuccessHandler(function(data) {
+          if (data.error) {
+            alert("Error: " + data.error);
+            btn.disabled = false;
+            return;
+          }
+
+          const fmt = (val) => "₱" + (parseFloat(val) || 0).toLocaleString(undefined, {
+            minimumFractionDigits: 2, 
+            maximumFractionDigits: 2
+          });
+
+          document.getElementById('dispPeriod').textContent = data.period;
+          document.getElementById('dispRevenue').textContent = fmt(data.revenue);
+          document.getElementById('dispExpenses').textContent = fmt(data.expenses);
+          document.getElementById('dispNetIncome').textContent = fmt(data.netIncome);
+          document.getElementById('dispAssets').textContent = fmt(data.assets);
+          document.getElementById('dispLiabilities').textContent = fmt(data.liabilities);
+          document.getElementById('dispEquity').textContent = fmt(data.equity);
+
+          status.textContent = "Last sync: " + new Date().toLocaleTimeString();
+          btn.disabled = false;
+        })
+        .updateAndFetchFinancials(month, year);
+    });
   }
 });
 
