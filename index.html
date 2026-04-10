@@ -1103,16 +1103,45 @@ function confirmDelete(button, sheetName) {
   targetSheet = sheetName;
   const itemName = targetToDelete.querySelector('input').value;
   
+  const confirmBtn = document.getElementById('confirm-delete-btn');
   document.getElementById('modal-message').innerText = `Delete "${itemName}" from ${sheetName} sheet?`;
   document.getElementById('delete-modal').classList.add('show');
   
-  document.getElementById('confirm-delete-btn').onclick = () => {
+  confirmBtn.onclick = () => {
+    // 1. IMPROVE FEEL: Disable button so user knows it's working
+    confirmBtn.innerText = "DELETING...";
+    confirmBtn.style.opacity = "0.5";
+    confirmBtn.disabled = true;
+
+    // 2. OPTIMISTIC UI: Remove the row from the screen immediately
+    // This makes the app feel "instant"
+    targetToDelete.style.opacity = "0.3"; 
+    
     google.script.run.withSuccessHandler(() => {
+      // 3. FINAL CLEANUP: Remove from HTML and close modal
       targetToDelete.remove();
+      confirmBtn.innerText = "CONFIRM"; // Reset for next time
+      confirmBtn.disabled = false;
+      confirmBtn.style.opacity = "1";
       closeDeleteModal();
     }).deleteDataFromSheet(targetSheet, itemName);
+    
+    // Optional: If you want the modal to close IMMEDIATELY even before server finishes:
+    // closeDeleteModal(); 
   };
 }
+
+function closeDeleteModal() {
+  const modal = document.getElementById('delete-modal');
+  if (modal) {
+    modal.classList.remove('show');
+  }
+  // Reset global variables for safety
+  targetToDelete = null;
+  targetSheet = '';
+}
+
+
 /* ============================================================
    5. LOGIN, LOGOUT & SECURITY (THE CORE)
 ============================================================ */
