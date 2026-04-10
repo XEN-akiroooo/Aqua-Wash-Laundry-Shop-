@@ -716,53 +716,64 @@ background: linear-gradient(to right, #d32f2f, #f44336) !important;
   <!-- OTHER TRANSACTIONS -->
   <div id="other-trans" class="tab-content" style="display:none;">
     <div class="dual-frame-container">
+      
       <div class="sub-frame first-frame">
-        <h3 class="spartan-text" style="color:#FF8A00;">OTHER TRANSACTIONS</h3>
-        <div class="divider" style="background-color:#FF8A00; height:2px; margin: 10px 0 20px 0;"></div>
+  <h3 class="spartan-text" style="color:#FF8A00;">OTHER TRANSACTIONS</h3>
+  <div class="divider" style="background-color:#FF8A00; height:2px; margin: 10px 0 20px 0;"></div>
 
-        <input type="text" placeholder="Transaction With" class="form-input md orange">
-        <select class="form-input md orange"><option>Transaction Type</option></select>
-        <input type="number" placeholder="Total Amount" class="form-input md black">
-        <button class="btn large orange-gradient">Record Transaction</button>
-        <button class="btn large grey">Generate ID</button>
-      </div>
-
+  <input type="text" id="otherTransWith" placeholder="Transaction With" class="form-input md orange">
+  <select id="otherTransType" class="form-input md orange">
+    <option value="">Transaction Type</option>
+  </select>
+  <input type="number" id="otherTransAmount" placeholder="Total Amount" class="form-input md black">
+  
+  <button id="btnRecordOtherTrans" class="btn large orange-gradient">Record Transaction</button>
+  <button id="btnGenerateOtherId" class="btn large grey">Generate ID</button>
+</div>
+      
       <div class="sub-frame second-frame" style="border-color:#FF8A00;">
-        <div class="label-header orange-gradient">TRANSACTION ENTRIES</div>
-        <div id="preview-content-area" class="preview-grid">
-          <div class="preview-row">
-            <div class="preview-label orange">Date</div>
-            <div class="preview-value-box">Sample (April 2, 2026)</div>
-          </div>
-          <div style="margin: 10px 0;"></div>
-          <div class="preview-row">
-            <div class="preview-label orange">Transaction Type</div>
-            <div class="preview-value-box">Sample (Purchase Supplies)</div>
-          </div>
-          <div class="preview-row">
-            <div class="preview-label orange">Transaction With</div>
-            <div class="preview-value-box">Sample (puregold)</div>
-          </div>
-          <div class="preview-row">
-            <div class="preview-label orange">Transaction No.</div>
-            <div class="preview-value-box">Sample (T26-324618)</div>
-          </div>
-          <div style="margin: 15px 0;"></div>
-          <div class="preview-row">
-            <div class="preview-label orange">Debit</div>
-            <div class="preview-value-box">Sample (Laundry Supplies)</div>
-          </div>
-          <div class="preview-row">
-            <div class="preview-label orange">Credit</div>
-            <div class="preview-value-box">Sample (Cash)</div>
-          </div>
-          <div style="margin: 5px 0;"></div>
-          <div class="preview-row">
-            <div class="preview-label orange">Amount</div>
-            <div class="preview-value-box">Sample (₱100)</div>
-          </div>
-        </div>
-        </div>
+  <div class="label-header orange-gradient">TRANSACTION ENTRIES</div>
+  <div id="preview-content-area" class="preview-grid">
+    
+    <div class="preview-row">
+      <div class="preview-label orange">Date</div>
+      <div class="preview-value-box" id="prevOtherDate">---</div>
+    </div>
+    <div style="margin: 10px 0;"></div>
+    
+    <div class="preview-row">
+      <div class="preview-label orange">Transaction Type</div>
+      <div class="preview-value-box" id="prevOtherType">---</div>
+    </div>
+    
+    <div class="preview-row">
+      <div class="preview-label orange">Transaction With</div>
+      <div class="preview-value-box" id="prevOtherWith">---</div>
+    </div>
+    
+    <div class="preview-row">
+      <div class="preview-label orange">Transaction No.</div>
+      <div class="preview-value-box" id="prevOtherId">---</div>
+    </div>
+    <div style="margin: 15px 0;"></div>
+    
+    <div class="preview-row">
+      <div class="preview-label orange">Debit</div>
+      <div class="preview-value-box" style="color: gray; font-style: italic;">Auto-calculated</div>
+    </div>
+    <div class="preview-row">
+      <div class="preview-label orange">Credit</div>
+      <div class="preview-value-box" style="color: gray; font-style: italic;">Auto-calculated</div>
+    </div>
+    <div style="margin: 5px 0;"></div>
+    
+    <div class="preview-row">
+      <div class="preview-label orange">Amount</div>
+      <div class="preview-value-box" id="prevOtherAmount">---</div>
+    </div>
+
+  </div>
+</div>
       
     </div>
   </div>
@@ -1300,9 +1311,126 @@ function saveSettlement() {
     resetServicePanel(); // Return to main menu and clear right panel
   }).addServiceOrderToSheet('Service Transaction', orderPayload);
 }
-
+  
 /* ============================================================
-   5. GRID MANAGEMENT (SETTINGS)
+   7. OTHER TRANSACTION FUNCTIONALITY (OTHER THAN SERVICE, SUPPLIES, AND EQPT)
+   ============================================================ */
+
+  // List of items to filter out of the dropdown
+const excludedOtherTypes = [
+  "Supplies Purchased", "Credit Supplies", "Supplies Payment", 
+  "Supplies Expensed", "Eqiupment Acquired", "Depreciation Expense", 
+  "Equipment Sold", "Accumulated Removal"
+];
+
+let currentOtherTransId = "";
+let currentOtherSheetDate = "";
+
+// 1. Load the Dropdown Data
+function loadOtherTransactionTypes() {
+  google.script.run.withSuccessHandler(function(data) {
+    const select = document.getElementById('otherTransType');
+    select.innerHTML = '<option value="">Transaction Type</option>';
+    
+    data.forEach(row => {
+      const type = row[0]; // Category name
+      if (!excludedOtherTypes.includes(type)) {
+        let opt = document.createElement('option');
+        opt.value = type;
+        opt.textContent = type;
+        select.appendChild(opt);
+      }
+    });
+  }).getSheetData("Entries(MasterData)");
+}
+
+// Run this when the page loads
+document.addEventListener("DOMContentLoaded", loadOtherTransactionTypes);
+
+// 2. Generate ID Button Logic
+document.getElementById('btnGenerateOtherId').addEventListener('click', function() {
+  const tWith = document.getElementById('otherTransWith').value.trim();
+  const tType = document.getElementById('otherTransType').value;
+  const tAmt = document.getElementById('otherTransAmount').value.trim();
+
+  // Validate all 3 inputs are filled
+  if (!tWith || !tType || !tAmt) {
+    alert("Please fill up Transaction With, Transaction Type, and Total Amount to generate an ID.");
+    return;
+  }
+
+  // Generate Unique ID (T26-XXXXXX)
+  const randomNum = Math.floor(100000 + Math.random() * 900000);
+  currentOtherTransId = "T26-" + randomNum;
+
+  // Format Dates
+  const d = new Date();
+  const displayDate = d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+  
+  // Format strictly as dd/mm/yyyy for your ledger formulas
+  const dd = String(d.getDate()).padStart(2, '0');
+  const mm = String(d.getMonth() + 1).padStart(2, '0'); 
+  const yyyy = d.getFullYear();
+  currentOtherSheetDate = dd + '/' + mm + '/' + yyyy;
+
+  // Update Right Panel UI
+  document.getElementById('prevOtherDate').textContent = displayDate;
+  document.getElementById('prevOtherType').textContent = tType;
+  document.getElementById('prevOtherWith').textContent = tWith;
+  document.getElementById('prevOtherId').textContent = currentOtherTransId;
+  document.getElementById('prevOtherAmount').textContent = "₱" + parseFloat(tAmt).toLocaleString(undefined, {minimumFractionDigits: 2});
+});
+
+// 3. Record Transaction Button Logic
+document.getElementById('btnRecordOtherTrans').addEventListener('click', function() {
+  if (!currentOtherTransId) {
+    alert("Please click 'Generate ID' first to create a transaction record.");
+    return;
+  }
+
+  const tWith = document.getElementById('otherTransWith').value.trim();
+  const tType = document.getElementById('otherTransType').value;
+  const tAmt = document.getElementById('otherTransAmount').value.trim();
+
+  // Package the array exactly matching Columns B to I
+  const otherTransload = [
+    currentOtherTransId,     // Col B (Manual Plain Text)
+    currentOtherSheetDate,   // Col C (Manual Date dd/mm/yyyy)
+    tWith,                   // Col D
+    tType,                   // Col E
+    "",                      // Col F (Desc Formula)
+    "",                      // Col G (Debit Formula)
+    "",                      // Col H (Credit Formula)
+    parseFloat(tAmt)         // Col I (Amount)
+  ];
+
+  const btn = document.getElementById('btnRecordOtherTrans');
+  btn.textContent = "Recording...";
+  btn.disabled = true;
+
+  google.script.run.withSuccessHandler(function(response) {
+    alert("Transaction Recorded Successfully!");
+    
+    // Reset Left Panel
+    document.getElementById('otherTransWith').value = "";
+    document.getElementById('otherTransType').value = "";
+    document.getElementById('otherTransAmount').value = "";
+    currentOtherTransId = "";
+    
+    // Reset Right Panel
+    document.getElementById('prevOtherDate').textContent = "---";
+    document.getElementById('prevOtherType').textContent = "---";
+    document.getElementById('prevOtherWith').textContent = "---";
+    document.getElementById('prevOtherId').textContent = "---";
+    document.getElementById('prevOtherAmount').textContent = "---";
+
+    btn.textContent = "Record Transaction";
+    btn.disabled = false;
+  }).saveOtherTransaction(otherTransload);
+});
+  
+/* ============================================================
+   8. GRID MANAGEMENT (SETTINGS)
    ============================================================ */
 function refreshAllGrids() {
   // Fix 1: Added missing closing quote after MasterData)
@@ -1433,7 +1561,7 @@ function closeDeleteModal() {
 
 
 /* ============================================================
-   6. LOGIN, LOGOUT & SECURITY (THE CORE)
+   9. LOGIN, LOGOUT & SECURITY (THE CORE)
 ============================================================ */
 function handleLogin() {
   const user = document.getElementById('user-input').value;
@@ -1603,7 +1731,7 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 /* ============================================================
-   7. INITIALIZATION (Runs once when page is ready)
+   10. INITIALIZATION (Runs once when page is ready)
    ============================================================ */
 window.addEventListener('DOMContentLoaded', () => {
   // Standard UI setup
