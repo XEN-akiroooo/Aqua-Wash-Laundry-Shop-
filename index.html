@@ -610,41 +610,40 @@ background: linear-gradient(to right, #d32f2f, #f44336) !important;
 
       <!-- RIGHT PANEL -->
       <div class="sub-frame second-frame" style="border-color:#0BB7BD;">
-        <div class="label-header blue-gradient">AQUA WASH LAUNDRY SHOP</div>
-
-        <div id="preview-content-area" class="preview-grid">
+  <div class="label-header blue-gradient">AQUA WASH LAUNDRY SHOP</div>
+  <div id="preview-content-area" class="preview-grid">
     <div class="preview-row">
       <div class="preview-label blue">Date</div>
-      <div class="preview-value-box">Sample (April 2, 2026)</div>
+      <div id="prev-date" class="preview-value-box">---</div>
     </div>
     <div class="preview-row">
       <div class="preview-label blue">Customers Name</div>
-      <div class="preview-value-box">Sample (John)</div>
+      <div id="prev-customer" class="preview-value-box">---</div>
     </div>
     <div class="preview-row">
       <div class="preview-label blue">Service ID</div>
-      <div class="preview-value-box">Sample (#26-947379)</div>
+      <div id="prev-id" class="preview-value-box">---</div>
     </div>
-    <div style="margin: 15px 0;"></div> <div class="preview-row">
+    <div style="margin: 15px 0;"></div> 
+    <div class="preview-row">
       <div class="preview-label blue">Service Type</div>
-      <div class="preview-value-box">Sample (Full Service)</div>
+      <div id="prev-service" class="preview-value-box">---</div>
     </div>
     <div class="preview-row">
       <div class="preview-label blue">Service Price</div>
-      <div class="preview-value-box">Sample (₱ 190)</div>
+      <div id="prev-price" class="preview-value-box">---</div>
     </div>
     <div class="preview-row">
       <div class="preview-label blue">Payment</div>
-      <div class="preview-value-box">Sample (₱ 150)</div>
+      <div id="prev-payment" class="preview-value-box">---</div>
     </div>
     <div class="preview-row">
       <div class="preview-label blue">Credit Balance</div>
-      <div class="preview-value-box">Sample (₱ 40)</div>
+      <div id="prev-balance" class="preview-value-box">---</div>
     </div>
   </div>
-
   <div id="preview-footer-note" class="preview-footer"></div>
-      </div>
+</div>
 
     </div>
   </div>
@@ -959,12 +958,15 @@ function showForm(formType) {
   } else if (formType === 'add-order') {
     title.innerText = "ADD SERVICE ORDER";
     container.innerHTML = `
-      <select class="form-input md cyan"><option>Pick Customer Name</option></select>
-      <select class="form-input md cyan"><option>Pick Service Type</option></select>
-      <input type="number" placeholder="Cash Payment" class="form-input md black">
-      <button class="btn large blue-gradient">Generate ID for Service Order</button>
-      <button class="btn large blue-gradient">Save and Add Service Order</button>
+      <select id="order-customer" class="form-input md cyan"><option value="">Pick Customer Name</option></select>
+      <select id="order-service" class="form-input md cyan"><option value="">Pick Service Type</option></select>
+      <input id="order-payment" type="number" placeholder="Cash Payment" class="form-input md black">
+      <button id="btn-generate" class="btn large blue-gradient">Generate ID for Service Order</button>
+      <button id="btn-save" class="btn large blue-gradient">Save and Add Service Order</button>
       ${backBtn}`;
+      
+    // Call function to load sheet data immediately after loading the UI
+    loadOrderDropdowns();
   } else if (formType === 'payment') {
     title.innerText = "CUSTOMER CREDIT SETTLEMENT";
     container.innerHTML = `
@@ -1012,7 +1014,145 @@ function changeQty(amount) {
 }
 
 /* ============================================================
-   4. GRID MANAGEMENT (SETTINGS)
+   4. SERVICE INPUT FUNCTIONALITY (ADD, SETTLEMENT, UPDATE DELETE)
+   ============================================================ */
+
+// Global variables to store fetched prices and the final payload
+let servicePrices = []; 
+let orderPayload = null; 
+
+function loadOrderDropdowns() {
+  // Fetch Customers
+  google.script.run.withSuccessHandler(customers => {
+    const custSelect = document.getElementById('order-customer');
+    customers.forEach(row => {
+      let opt = document.createElement('option');
+      opt.value = row[0];
+      opt.textContent = row[0];
+      custSelect.appendChild(opt);
+    });
+  }).getSheetData('Customers List(MasterData)');
+
+  // Fetch Services & Prices
+  google.script.run.withSuccessHandler(services => {
+    servicePrices = services; // Save globally to calculate balance later
+    const servSelect = document.getElementById('order-service');
+    services.forEach(row => {
+      let opt = document.createElement('option');
+      opt.value = row[0];
+      opt.textContent = row[0];
+      servSelect.appendChild(opt);
+    });
+  }).getSheetData('Service Pricing(MasterData)');
+
+  // Attach Event Listeners to Buttons
+  document.getElementById('btn-generate').addEventListener('click', generateOrderPreview);
+  document.getElementById('btn-save').addEventListener('click', saveOrderData);
+}
+
+function generateOrderPreview() {
+  const customer = document.getElementById('order-customer').value;
+  const service = document.getElementById('order-service').value;
+  const paymentInput = document.getElementById('order-payment').value;
+
+  if (!customer || !service || paymentInput === "") {
+    alert("You must fill up everything");
+    return;
+  }
+
+  const payment = parseFloat(paymentInput);
+  const matchedService = servicePrices.find(r => r[0] === service);
+  const price = matchedService ? parseFloat(matchedService[1]) : 0;
+  const balance = price - payment;
+
+  // Determine Status and Description based on Entries(MasterData)
+  let status = "Cash Payment";
+  if (balance > 0) status = "Partial Credit";
+  if (payment === 0) status = "Full Credit";
+
+  // Description for DASHBOARD PRESENTATION ONLY
+  const desc = `To record ${status.toLowerCase()} provided to ${customer}`;
+
+  // Date Formatting
+  const today = new Date();
+  const displayDateStr = today.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+  const sheetDateStr = ("0" + today.getDate()).slice(-2) + "/" + ("0" + (today.getMonth() + 1)).slice(-2) + "/" + today.getFullYear();
+
+  // UNIQUE ID GENERATION
+  google.script.run.withSuccessHandler(existingIds => {
+    let serviceId;
+    let isUnique = false;
+
+    while (!isUnique) {
+      const randomSixDigits = Math.floor(100000 + Math.random() * 900000);
+      serviceId = "#26-" + randomSixDigits;
+      if (!existingIds.includes(serviceId)) {
+        isUnique = true;
+      }
+    }
+
+    // Update Right Panel Preview
+    document.getElementById('prev-date').innerText = displayDateStr;
+    document.getElementById('prev-customer').innerText = customer;
+    document.getElementById('prev-id').innerText = serviceId;
+    document.getElementById('prev-service').innerText = service;
+    document.getElementById('prev-price').innerText = `₱ ${price.toFixed(2)}`;
+    document.getElementById('prev-payment').innerText = `₱ ${payment.toFixed(2)}`;
+    document.getElementById('prev-balance').innerText = `₱ ${balance.toFixed(2)}`;
+    
+
+    // Prepare Payload (Excluding description as the sheet has a formula)
+    // [ID, Date, Customer, Service Type, Price, Status, Payment, Balance]
+    orderPayload = [
+     serviceId,      // Column B (Manual)
+     sheetDateStr,   // Column C (Manual)
+     customer,       // Column D (Manual)
+     service,        // Column E (Manual)
+      "",             // Column F (SKIP - let Formula handle Price)
+      "",             // Column G (SKIP - let Formula handle Status)
+     payment,        // Column H (Manual - Cash Received)
+     ""              // Column I (SKIP - let Formula handle Balance)
+];
+    
+  }).getExistingServiceIds();
+}
+
+function saveOrderData() {
+  // If orderPayload is null, they haven't generated the ID yet
+  if (!orderPayload) {
+    alert("You must fill up everything and generate the ID first.");
+    return;
+  }
+
+  // Send to backend
+  google.script.run.withSuccessHandler(response => {
+    alert("Service Order Saved Successfully!");
+    
+    // Clear the form after saving 
+    document.getElementById('order-customer').value = "";
+    document.getElementById('order-service').value = "";
+    document.getElementById('order-payment').value = "";
+    document.getElementById('btn-generate').click(); // Force an update/clear on the right panel
+    orderPayload = null; 
+    
+    resetPreviewArea();
+  }).addServiceOrderToSheet('Service Transaction', orderPayload);
+}
+
+function resetPreviewArea() {
+  const fields = [
+    'prev-date', 'prev-customer', 'prev-id', 
+    'prev-service', 'prev-price', 'prev-payment', 'prev-balance'
+  ];
+  
+  fields.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.innerText = "---";
+  });
+}
+
+/* ============================================================
+   5. GRID MANAGEMENT (SETTINGS)
    ============================================================ */
 function refreshAllGrids() {
   // Fix 1: Added missing closing quote after MasterData)
@@ -1143,7 +1283,7 @@ function closeDeleteModal() {
 
 
 /* ============================================================
-   5. LOGIN, LOGOUT & SECURITY (THE CORE)
+   6. LOGIN, LOGOUT & SECURITY (THE CORE)
 ============================================================ */
 function handleLogin() {
   const user = document.getElementById('user-input').value;
@@ -1313,7 +1453,7 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 /* ============================================================
-   6. INITIALIZATION (Runs once when page is ready)
+   7. INITIALIZATION (Runs once when page is ready)
    ============================================================ */
 window.addEventListener('DOMContentLoaded', () => {
   // Standard UI setup
