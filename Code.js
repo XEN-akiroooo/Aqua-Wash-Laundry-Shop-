@@ -258,7 +258,7 @@ function sendEmailApiKey(targetEmail, apiKey) {
 
 
 /* ====================================================================================================
-   JOURNALIZING
+   ACCOUNTING MODULES
 ==================================================================================================== */
 
 function onEdit(e) {
@@ -268,7 +268,23 @@ function onEdit(e) {
   if (sheetName === "Service Transaction" || sheetName === "Supplies & Other Transaction") {
     generateJournal();
   }
+
+  if (sheetName === "Service Transaction" || sheetName === "Supplies & Other Transaction") {
+    const today = new Date();
+    
+    // Only attempt to run closing logic during the first 5 days of a new month
+    if (today.getDate() <= 5) {
+      console.log("Start of month detected. Checking for pending closing entries...");
+      runAutoMonthlyClosing();
+    }
+  }
+
 }
+
+/* ====================================================================================================
+   JOURNALIZING 
+==================================================================================================== */
+
 
 function generateJournal() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -373,6 +389,158 @@ function generateJournal() {
     targetRange.setBorder(true, true, true, true, true, true, "#999999", SpreadsheetApp.BorderStyle.SOLID);
   }
 }
+
+/* ====================================================================================================
+   AUTO CLOSING ENTRIES (MONTHLY)
+==================================================================================================== */
+
+function runAutoMonthlyClosing() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const serviceSheet = ss.getSheetByName("Service Transaction");
+  const otherSheet = ss.getSheetByName("Supplies & Other Transaction");
+
+  if (!serviceSheet || !otherSheet) return "Error: Sheets not found.";
+
+  // 1. DETERMINE TARGET MONTH (We close the PREVIOUS month based on today's date)
+  const today = new Date();
+  const currentYear = today.getFullYear();
+  const currentMonth = today.getMonth(); // 0-indexed (0 = Jan, 3 = April, etc.)
+  
+  // The date we are checking for (e.g., If today is April 1, target is March)
+  const targetDate = new Date(currentYear, currentMonth - 1, 1);
+  const targetMonthNum = targetDate.getMonth();
+  const targetYearNum = targetDate.getFullYear();
+  
+  // The official date of the closing entries (1st day of the CURRENT month)
+  const closingDate = new Date(currentYear, currentMonth, 1);
+  
+  // Format a unique Reference Prefix for the closing batch (e.g., XCL-032026)
+  const refPrefix = "XCL-" + (targetMonthNum + 1).toString().padStart(2, '0') + targetYearNum;
+
+  // 2. CHECK IF ALREADY CLOSED TO PREVENT DUPLICATES
+  const otherLastRow = otherSheet.getLastRow();
+  if (otherLastRow >= 4) {
+    const existingRefs = otherSheet.getRange("B4:B" + otherLastRow).getValues();
+    for (let i = 0; i < existingRefs.length; i++) {
+      if (String(existingRefs[i][0]).startsWith(refPrefix)) {
+        return "Process aborted: Closing entries for " + (targetMonthNum + 1) + "/" + targetYearNum + " already exist.";
+      }
+    }
+  }
+
+  // 3. INITIALIZE TEMPORARY ACCOUNT TOTALS
+  let totalLaundryRevenue = 0;
+  let totalOtherIncome = 0;
+  let expenses = {}; 
+  let totalDrawing = 0;
+
+  // 4. FETCH LAUNDRY SERVICE REVENUE (From Service Transaction -> Price Column)
+  const serviceRows = serviceSheet.getLastRow();
+  if (serviceRows >= 4) {
+    // Range B to M. B=0, C=1 (Date), G=5 (Price)
+    const serviceData = serviceSheet.getRange("B4:M" + serviceRows).getValues();
+    
+    serviceData.forEach(row => {
+      let dateVal = row[1];
+      let price = cleanAmount(row[5]); // Col G: Price / Service Availed
+      
+      if (dateVal instanceof Date && dateVal.getMonth() === targetMonthNum && dateVal.getFullYear() === targetYearNum) {
+        totalLaundryRevenue += price;
+      }
+    });
+  }
+
+  // 5. FETCH EXPENSES, OTHER INCOME, AND DRAWINGS (From Supplies & Other Transaction)
+  if (otherLastRow >= 4) {
+    // Range B to I. B=0, C=1 (Date), G=5 (Debit), H=6 (Credit), I=7 (Amount)
+    const otherData = otherSheet.getRange("B4:I" + otherLastRow).getValues();
+    
+    otherData.forEach(row => {
+      let dateVal = row[1];
+      let debitAcc = String(row[5]).trim();
+      let creditAcc = String(row[6]).trim();
+      let amount = cleanAmount(row[7]);
+
+      if (dateVal instanceof Date && dateVal.getMonth() === targetMonthNum && dateVal.getFullYear() === targetYearNum) {
+        
+        // Other Income (Usually a Credit)
+        if (creditAcc === "Other Income") {
+          totalOtherIncome += amount;
+        }
+        
+        // Expenses (Usually a Debit)
+        if (debitAcc.includes("Expense") || debitAcc.includes("Cost") || debitAcc.includes("Fee") || debitAcc.includes("Charge")) {
+          if (!expenses[debitAcc]) expenses[debitAcc] = 0;
+          expenses[debitAcc] += amount;
+        }
+        
+        // Withdrawals (Debit)
+        if (debitAcc === "Owner's Drawing") {
+          totalDrawing += amount;
+        }
+      }
+    });
+  }
+
+  // 6. PREPARE THE CLOSING ENTRY ROWS
+  let newRows = [];
+  let totalRevenues = totalLaundryRevenue + totalOtherIncome;
+  let totalExpenses = 0;
+  
+  const party = "Aqua Wash Laundry Shop";
+  const paymentMode = "N/A"; // Enforcing NO CASH condition
+  let entryCount = 1;
+
+  // A. Close Revenues (Debit Revenue, Credit Income Summary)
+  if (totalLaundryRevenue > 0) {
+    newRows.push([refPrefix + "-" + entryCount++, closingDate, party, "Revenue Closing", "To record closing of revenue account", "Laundry Service Revenue", "Income Summary", totalLaundryRevenue, paymentMode]);
+  }
+  if (totalOtherIncome > 0) {
+    newRows.push([refPrefix + "-" + entryCount++, closingDate, party, "Other Income Closing", "To record closing of other revenue", "Other Income", "Income Summary", totalOtherIncome, paymentMode]);
+  }
+
+  // B. Close Expenses (Debit Income Summary, Credit Expenses)
+  for (const [expName, expAmount] of Object.entries(expenses)) {
+    if (expAmount > 0) {
+      newRows.push([refPrefix + "-" + entryCount++, closingDate, party, "Expense Closing", "To record closing of " + expName.toLowerCase(), "Income Summary", expName, expAmount, paymentMode]);
+      totalExpenses += expAmount;
+    }
+  }
+
+  // C. Close Owner's Drawing Directly to Capital (Debit Capital, Credit Drawing)
+  if (totalDrawing > 0) {
+    newRows.push([refPrefix + "-D", closingDate, party, "Withdrawal Closing", "To record closing of drawing account", "Owner's Capital", "Owner's Drawing", totalDrawing, paymentMode]);
+  }
+
+  // D. Close Income Summary to Capital (Net Income / Loss)
+  let netIncome = totalRevenues - totalExpenses;
+  if (netIncome > 0) {
+    newRows.push([refPrefix + "-NI", closingDate, party, "Increase in Capital", "To record net income closed to capital", "Income Summary", "Owner's Capital", netIncome, paymentMode]);
+  } else if (netIncome < 0) {
+    newRows.push([refPrefix + "-NL", closingDate, party, "Decrease in Capital", "To record net loss closed to capital", "Owner's Capital", "Income Summary", Math.abs(netIncome), paymentMode]);
+  }
+
+  // 7. INJECT INTO SHEET & TRIGGER JOURNAL
+  if (newRows.length > 0) {
+    const destRow = otherSheet.getLastRow() + 1;
+    
+    // Writing to B through J (9 Columns)
+    const targetRange = otherSheet.getRange(destRow, 2, newRows.length, 9);
+    targetRange.setValues(newRows);
+    
+    // Force strict formatting
+    otherSheet.getRange(destRow, 2, newRows.length, 1).setNumberFormat("@"); // Refs to Plain Text
+    otherSheet.getRange(destRow, 3, newRows.length, 1).setNumberFormat("dd/MM/yyyy"); // Format Date
+    
+    // Auto-update the Journal
+    generateJournal();
+    
+    return "Success: " + newRows.length + " closing entries generated for " + (targetMonthNum + 1) + "/" + targetYearNum;
+  } else {
+    return "No records found to close for " + (targetMonthNum + 1) + "/" + targetYearNum;
+  }
+}
+
 
 function cleanAmount(val) {
   if (typeof val === 'number') return val;
