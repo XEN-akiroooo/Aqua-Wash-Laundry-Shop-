@@ -281,46 +281,54 @@ function generateJournal() {
   let journalEntries = [];
 
   // --- 1. PROCESS SERVICE TRANSACTIONS ---
+  // Range B to M (Columns 2 to 13)
   const serviceRows = serviceSheet.getLastRow();
   if (serviceRows >= 4) {
-    const serviceData = serviceSheet.getRange("B4:J" + serviceRows).getValues();
+    const serviceData = serviceSheet.getRange("B4:M" + serviceRows).getValues();
     serviceData.forEach(row => {
-      const idRef = String(row[0]); // Force ID to String (Plain Text)
-      const date = row[1];        
-      const cash = cleanAmount(row[6]); 
-      const ar = cleanAmount(row[7]);
-      const desc = row[8];
+      const idRef = String(row[0]);    // Col B: Ref #
+      const date = row[1];             // Col C: Date
+      const cashAmt = cleanAmount(row[7]); // Col I: Cash Received
+      const paymentMode = row[8];      // Col J: Payment Mode (Cash on Hand/Bank)
+      const arAmt = cleanAmount(row[9]);   // Col K: Credit Balance / AR
+      const desc = row[11];            // Col M: Description
       
       if (!(date instanceof Date) || !idRef) return;
 
-      if (ar < 0) {
-        const amount = Math.abs(ar);
-        journalEntries.push([date, desc, "Cash", idRef, amount, "", 1]);
+      // Handle Collections (Settlement / Negative AR)
+      if (arAmt < 0) {
+        const amount = Math.abs(arAmt);
+        const cashAccount = (paymentMode === "Cash in Bank") ? "Cash in Bank" : "Cash on Hand";
+        journalEntries.push([date, desc, cashAccount, idRef, amount, "", 1]);
         journalEntries.push([date, desc, "Accounts Receivable", idRef, "", amount, 1]);
       } else {
-        if (cash > 0) {
-          journalEntries.push([date, desc, "Cash", idRef, cash, "", 1]);
-          journalEntries.push([date, desc, "Laundry Service Revenue", idRef, "", cash, 1]);
+        // Record Cash Portion
+        if (cashAmt > 0) {
+          const cashAccount = (paymentMode === "Cash in Bank") ? "Cash in Bank" : "Cash on Hand";
+          journalEntries.push([date, desc, cashAccount, idRef, cashAmt, "", 1]);
+          journalEntries.push([date, desc, "Laundry Service Revenue", idRef, "", cashAmt, 1]);
         }
-        if (ar > 0) {
-          journalEntries.push([date, desc, "Accounts Receivable", idRef, ar, "", 1]);
-          journalEntries.push([date, desc, "Laundry Service Revenue", idRef, "", ar, 1]);
+        // Record Credit Portion (AR)
+        if (arAmt > 0) {
+          journalEntries.push([date, desc, "Accounts Receivable", idRef, arAmt, "", 1]);
+          journalEntries.push([date, desc, "Laundry Service Revenue", idRef, "", arAmt, 1]);
         }
       }
     });
   }
 
   // --- 2. PROCESS OTHER TRANSACTIONS ---
+  // Range B to I
   const otherRows = otherSheet.getLastRow();
   if (otherRows >= 4) {
     const otherData = otherSheet.getRange("B4:I" + otherRows).getValues();
     otherData.forEach(row => {
-      const idRef = String(row[0]); // Force ID to String (Plain Text)
-      const date = row[1];
-      const desc = row[4];
-      const debitAcc = row[5];
-      const creditAcc = row[6];
-      const amount = cleanAmount(row[7]);
+      const idRef = String(row[0]);  // Col B: Ref #
+      const date = row[1];           // Col C: Date
+      const desc = row[4];           // Col F: Description
+      const debitAcc = row[5];       // Col G: Account (Debit)
+      const creditAcc = row[6];      // Col H: Source (Credit)
+      const amount = cleanAmount(row[7]); // Col I: Amount
       
       if (!(date instanceof Date) || !amount) return;
 
@@ -329,7 +337,7 @@ function generateJournal() {
     });
   }
 
-  // --- 3. SORTING ---
+  // --- 3. SORTING (By Date, then by Debit/Credit order) ---
   journalEntries.sort((a, b) => {
     if (a[0].getTime() !== b[0].getTime()) return a[0] - b[0];
     return a[6] - b[6];
@@ -341,7 +349,8 @@ function generateJournal() {
 
   journalEntries.forEach(entry => {
     const isDebit = entry[4] !== ""; 
-    const rowColor = isDebit ? "#CFE2F3" : "#A4C2F4";
+    // RESTORED COLORS: Light Blue for Debits, Cornflower Blue for Credits
+    const rowColor = isDebit ? "#CFE2F3" : "#A4C2F4"; 
     finalValues.push([entry[0], entry[1], entry[2], entry[3], entry[4], entry[5]]);
     finalColors.push([rowColor, rowColor, rowColor, rowColor, rowColor, rowColor]);
   });
@@ -354,20 +363,17 @@ function generateJournal() {
   
   if (finalValues.length > 0) {
     const targetRange = journalSheet.getRange(3, 1, finalValues.length, 6);
-    
-    // Set Column D (ID Ref) to Plain Text format specifically
-    journalSheet.getRange(3, 4, finalValues.length, 1).setNumberFormat("@");
-    // Set Column A (Date) to a standard Date format
+    journalSheet.getRange(3, 4, finalValues.length, 1).setNumberFormat("@"); // Ref # as Text
     journalSheet.getRange(3, 1, finalValues.length, 1).setNumberFormat("dd/mm/yyyy");
     
     targetRange.setValues(finalValues);
-    targetRange.setBackgrounds(finalColors);
+    targetRange.setBackgrounds(finalColors); // Applies the restored colors
+    
+    // Applies the borders to match the clean table look
+    targetRange.setBorder(true, true, true, true, true, true, "#999999", SpreadsheetApp.BorderStyle.SOLID);
   }
 }
 
-/**
- * Ensures amounts are pure numbers for math formulas
- */
 function cleanAmount(val) {
   if (typeof val === 'number') return val;
   const cleaned = String(val).replace(/[^\d.-]/g, '');
