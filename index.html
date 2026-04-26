@@ -640,4 +640,1418 @@ background: linear-gradient(to right, #d32f2f, #f44336) !important;
        </div>
 
        <div id="api-key-form" style="display: none;">
-         <p style="margin-bottom: 15px; font-weight: bold;">Ente
+         <p style="margin-bottom: 15px; font-weight: bold;">Enter e-mail to receive API Key</p>
+         <input type="email" id="recovery-email" placeholder="Sample (jamandreprince@gmail.com)" class="form-input md black">
+         
+         <div id="reset-pass-fields" style="display:none; margin-bottom: 10px;">
+           <input type="password" id="reset-new-pass" placeholder="New Password" class="form-input md black">
+           <input type="password" id="reset-conf-pass" placeholder="Confirm New Password" class="form-input md black">
+         </div>
+         
+         <input type="text" id="api-key-input" placeholder="Enter API Key" class="form-input md black" style="display:none;">
+         <p id="timer-display" style="color: #58005D; font-weight: bold; margin-bottom: 10px; display: none;">Expires in: 02:00</p>
+         <button class="btn medium blue-gradient" id="resend-api-btn" onclick="resendApiKey()" style="display:none; margin-bottom: 10px; width: 100%;">Resend API Key</button>
+         <button class="btn medium blue-gradient" id="api-key-btn" onclick="handleForgotApiKey()">Send API Key</button>
+         <span class="forgot-link" onclick="toggleForgotMode(false)">Back to Login</span>
+       </div>
+         
+    </div>
+    </div>
+    
+<button class="btn medium shop" onclick="setActive(this, 'financial')">FINANCIAL STATEMENTS</button>  
+<button class="btn medium shop" onclick="setActive(this, 'metrics')">KEY PERFORMANCE METRICS</button>  
+<button class="btn medium shop" onclick="setActive(this, 'leadboards')">CUSTOMERS LEADBOARDS</button>  
+
+<div class="divider"></div>  
+
+<div class="section-title">CONTROLS</div>  
+<button class="btn medium control" onclick="setActive(this, 'input-console')">INPUT OR CONSOLE</button>  
+<button class="btn medium control" onclick="setActive(this, 'service-settings')">DATA LIST</button>  
+
+<div class="footer">  
+  <button class="btn medium account" onclick="setActive(this, 'account-settings')">ADMIN SETTINGS</button>  
+  <button class="btn medium account" onclick="openModal()">LOG OUT</button>  
+</div>
+
+  </div>    
+  
+  <div class="main" id="main">  
+    <div class="top-title">AQUA WASH LAUNDRY SHOP</div>  <div class="scrolling-frame">  
+      
+  <div id="daily-ops" class="content-section">  
+    <h2>Main Daily Operations View</h2>  
+    <p>Your default dashboard cards go here.</p>  
+  </div>  
+
+   <div id="input-console" class="content-section">
+  <div class="tabs-container">
+    <div class="tab-link active-tab" onclick="switchTab(this, 'service-input')">Service Input</div>
+    <div class="tab-link" onclick="switchTab(this, 'supplies-log')">Supplies Log</div>
+    <div class="tab-link" onclick="switchTab(this, 'other-trans')">Other Transactions</div>
+  </div>
+
+  <!-- SERVICE INPUT -->
+  <div id="service-input" class="tab-content">
+    <div class="dual-frame-container">
+
+      <!-- LEFT PANEL -->
+      <div class="sub-frame first-frame" id="service-side-panel">
+        <h3 class="spartan-text" id="panel-title" style="color:#2093DD;">CUSTOMER ACCOUNT</h3>
+        <div class="divider" style="background-color:#2093DD; height:2px; margin: 10px 0 30px 0;"></div>
+
+        <div id="dynamic-form-container">
+          <div id="selection-menu">
+            <p class="center-lined-text">-- Selections --</p>
+
+            <button class="btn large blue-gradient" onclick="showForm('new-customer')">
+              List Customer Name
+            </button>
+
+            <button class="btn large blue-gradient" onclick="showForm('add-order')">
+              Add New Service Order
+            </button>
+
+            <button class="btn large blue-gradient" onclick="showForm('payment')">
+              Customer Balance Payment
+            </button>
+
+            <button class="btn large dedblue-gradient" onclick="showForm('search-invoice')">
+              Search Service Order
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT PANEL -->
+      <div class="sub-frame second-frame" style="border-color:#0BB7BD;">
+  <div class="label-header blue-gradient">AQUA WASH LAUNDRY SHOP</div>
+  <div id="preview-content-area" class="preview-grid">
+    <div class="preview-row">
+      <div class="preview-label blue">Date</div>
+      <div id="prev-date" class="preview-value-box">---</div>
+    </div>
+    <div class="preview-row">
+      <div class="preview-label blue">Customers Name</div>
+      <div id="prev-customer" class="preview-value-box">---</div>
+    </div>
+    <div class="preview-row">
+      <div class="preview-label blue">Service ID</div>
+      <div id="prev-id" class="preview-value-box">---</div>
+    </div>
+    <div style="margin: 15px 0;"></div> 
+    <div class="preview-row">
+      <div class="preview-label blue">Service Type</div>
+      <div id="prev-service" class="preview-value-box">---</div>
+    </div>
+    <div class="preview-row">
+      <div class="preview-label blue">Service Price</div>
+      <div id="prev-price" class="preview-value-box">---</div>
+    </div>
+    <div class="preview-row">
+      <div class="preview-label blue">Payment</div>
+      <div id="prev-payment" class="preview-value-box">---</div>
+    </div>
+    <div class="preview-row">
+      <div class="preview-label blue">Credit Balance</div>
+      <div id="prev-balance" class="preview-value-box">---</div>
+    </div>
+  </div>
+  <div id="preview-footer-note" class="preview-footer"></div>
+</div>
+
+    </div>
+  </div>
+
+  <!-- SUPPLIES LOG -->
+  <div id="supplies-log" class="tab-content" style="display:none;">
+    <div class="dual-frame-container">
+
+      
+      <div class="sub-frame first-frame">
+        <h3 class="spartan-text" style="color:#FFBD59;">SUPPLIES LOG</h3>
+        <div class="divider" style="background-color:#FFBD59; height:2px; margin: 10px 0 20px 0;"></div>
+
+        <input type="text" placeholder="Transaction With" class="form-input md yellow">
+        <select class="form-input md yellow"><option>Transaction Type</option></select>
+        <select class="form-input sm miniY"><option>Kind of Supplies</option></select>
+        <input type="number" placeholder="Total Amount" class="form-input md black">
+
+        <div class="qty-container">
+    <button type="button" class="qty-btn" onclick="changeQty(-1)">−</button>
+    <input type="number" id="item-qty" class="qty-input" value="1" min="1" readonly>
+    <button type="button" class="qty-btn" onclick="changeQty(1)">+</button>
+        </div>
+        
+        <button class="btn large yellow-gradient">Record Transaction</button>
+        <button class="btn large grey">Generate ID</button>
+      </div>
+
+      <div class="sub-frame second-frame" style="border-color:#FFBD59;">
+        <div class="label-header yellow-gradient">TRANSACTION ENTRIES</div>
+        <div id="preview-content-area" class="preview-grid">
+          <div class="preview-row">
+            <div class="preview-label yellow">Date</div>
+            <div class="preview-value-box">Sample (April 2, 2026)</div>
+          </div>
+          <div style="margin: 10px 0;"></div>
+          <div class="preview-row">
+            <div class="preview-label yellow">Transaction Type</div>
+            <div class="preview-value-box">Sample (Purchase Supplies)</div>
+          </div>
+          <div class="preview-row">
+            <div class="preview-label yellow">Transaction With</div>
+            <div class="preview-value-box">Sample (puregold)</div>
+          </div>
+          <div class="preview-row">
+            <div class="preview-label yellow">Transaction No.</div>
+            <div class="preview-value-box">Sample (T26-324618)</div>
+          </div>
+          <div style="margin: 15px 0;"></div>
+          <div class="preview-row">
+            <div class="preview-label yellow">Debit</div>
+            <div class="preview-value-box">Sample (Laundry Supplies)</div>
+          </div>
+          <div class="preview-row">
+            <div class="preview-label yellow">Credit</div>
+            <div class="preview-value-box">Sample (Cash)</div>
+          </div>
+          <div style="margin: 5px 0;"></div>
+          <div class="preview-row">
+            <div class="preview-label yellow">Amount</div>
+            <div class="preview-value-box">Sample (₱100)</div>
+          </div>
+        </div>
+      </div>
+
+      
+    </div>
+  </div>
+
+  <!-- OTHER TRANSACTIONS -->
+  <div id="other-trans" class="tab-content" style="display:none;">
+    <div class="dual-frame-container">
+      
+      <div class="sub-frame first-frame">
+  <h3 class="spartan-text" style="color:#FF8A00;">OTHER TRANSACTIONS</h3>
+  <div class="divider" style="background-color:#FF8A00; height:2px; margin: 10px 0 20px 0;"></div>
+
+  <input type="text" id="otherTransWith" placeholder="Transaction With" class="form-input md orange">
+  <select id="otherTransType" class="form-input md orange">
+    <option value="">Transaction Type</option>
+  </select>
+  <input type="number" id="otherTransAmount" placeholder="Total Amount" class="form-input md black">
+  
+  <button id="btnRecordOtherTrans" class="btn large orange-gradient">Record Transaction</button>
+  <button id="btnGenerateOtherId" class="btn large grey">Generate ID</button>
+</div>
+      
+      <div class="sub-frame second-frame" style="border-color:#FF8A00;">
+  <div class="label-header orange-gradient">TRANSACTION ENTRIES</div>
+  <div id="preview-content-area" class="preview-grid">
+    
+    <div class="preview-row">
+      <div class="preview-label orange">Date</div>
+      <div class="preview-value-box" id="prevOtherDate">---</div>
+    </div>
+    <div style="margin: 10px 0;"></div>
+    
+    <div class="preview-row">
+      <div class="preview-label orange">Transaction Type</div>
+      <div class="preview-value-box" id="prevOtherType">---</div>
+    </div>
+    
+    <div class="preview-row">
+      <div class="preview-label orange">Transaction With</div>
+      <div class="preview-value-box" id="prevOtherWith">---</div>
+    </div>
+    
+    <div class="preview-row">
+      <div class="preview-label orange">Transaction No.</div>
+      <div class="preview-value-box" id="prevOtherId">---</div>
+    </div>
+    <div style="margin: 15px 0;"></div>
+    
+    <div class="preview-row">
+      <div class="preview-label orange">Debit</div>
+      <div class="preview-value-box" style="color: gray; font-style: italic;">Auto-calculated</div>
+    </div>
+    <div class="preview-row">
+      <div class="preview-label orange">Credit</div>
+      <div class="preview-value-box" style="color: gray; font-style: italic;">Auto-calculated</div>
+    </div>
+    <div style="margin: 5px 0;"></div>
+    
+    <div class="preview-row">
+      <div class="preview-label orange">Amount</div>
+      <div class="preview-value-box" id="prevOtherAmount">---</div>
+    </div>
+
+  </div>
+</div>
+      
+    </div>
+  </div>
+
+</div>
+
+      <div id="financial" class="content-section">
+  <h2 class="top-title">FINANCIAL REPORTS</h2>
+  
+  <div class="report-controls-bar">
+    <div class="control-group">
+      <label>Month</label>
+      <select id="finMonth" class="form-input sm cyan">
+        <option value="January">January</option>
+        <option value="February">February</option>
+        <option value="March">March</option>
+        <option value="April">April</option>
+        <option value="May">May</option>
+        <option value="June">June</option>
+        <option value="July">July</option>
+        <option value="August">August</option>
+        <option value="September">September</option>
+        <option value="October">October</option>
+        <option value="November">November</option>
+        <option value="December">December</option>
+      </select>
+    </div>
+    
+    <div class="control-group">
+      <label>Year</label>
+      <select id="finYear" class="form-input sm cyan">
+        <option value="2025">2025</option>
+        <option value="2026" selected>2026</option>
+        <option value="2027">2027</option>
+        <option value="2027">2028</option>
+        <option value="2027">2029</option>
+        <option value="2027">2030</option>
+      </select>
+    </div>
+
+    <button id="btnUpdateFin" class="btn medium blue-gradient">Generate Report</button>
+    <span id="finStatus" class="status-text"></span>
+  </div>
+
+  <div class="statement-canvas">
+    <div class="statement-header">
+      <h1 class="shop-name-title">Aqua Wash Laundry Shop</h1>
+      <p id="dispStatementType" class="statement-type-subtitle">Official Financial Statements</p>
+      <p class="statement-period">For the Period of <span id="dispPeriod">---</span></p>
+    </div>
+
+    <div class="statement-body">
+      <div class="statement-section">
+        <div class="section-banner cyan-gradient">INCOME STATEMENT</div>
+        <table class="fs-table">
+          <tr class="cat-header"><td>REVENUES</td><td></td></tr>
+          <tr class="line-item"><td>Laundry Service Revenue</td><td id="dispRevenue" class="val-cell">₱0.00</td></tr>
+          
+          <tr class="cat-header"><td>EXPENSES</td><td></td></tr>
+          <tr class="line-item indent"><td>Operating Expenses</td><td id="dispExpenses" class="val-cell">₱0.00</td></tr>
+          
+          <tr class="total-row">
+            <td>NET INCOME (LOSS)</td>
+            <td id="dispNetIncome" class="val-cell highlight-green">₱0.00</td>
+          </tr>
+        </table>
+      </div>
+
+      <div class="statement-section">
+        <div class="section-banner blue-gradient">BALANCE SHEET</div>
+        <table class="fs-table">
+          <tr class="cat-header"><td>ASSETS</td><td></td></tr>
+          <tr class="line-item indent"><td>Total Assets</td><td id="dispAssets" class="val-cell">₱0.00</td></tr>
+          
+          <tr class="cat-header"><td>LIABILITIES</td><td></td></tr>
+          <tr class="line-item indent"><td>Total Liabilities</td><td id="dispLiabilities" class="val-cell">₱0.00</td></tr>
+          
+          <tr class="cat-header"><td>OWNER'S EQUITY</td><td></td></tr>
+          <tr class="line-item indent"><td>Owner's Ending Capital</td><td id="dispEquity" class="val-cell">₱0.00</td></tr>
+          
+          <tr class="total-row footer-total">
+            <td>TOTAL LIABILITIES & EQUITY</td>
+            <td class="val-cell">-- Auto --</td>
+          </tr>
+        </table>
+      </div>
+    </div>
+    
+    <div class="statement-footer">
+      Generated via Aqua Wash Dashboard • Verified Digital Copy
+    </div>
+  </div>
+      </div>
+
+      
+      
+  <div id="metrics" class="content-section"><h2>Performance Data</h2></div>  
+  <div id="leadboards" class="content-section"><h2>Customers Leadboards</h2></div>  
+
+
+  <div id="service-settings" class="content-section">
+  <h3 class="spartan-text" style="color:#2093DD;">SERVICE SETTINGS</h3>
+  <div class="divider" style="background-color:#2093DD; height:2px; margin: 10px 0 30px 0;"></div>
+
+  <p class="center-lined-text">Service Pricing</p>
+  <div class="settings-grid" id="grid-service">
+    <div class="grid-header has-action" style="grid-template-columns: 2fr 1fr;">
+      <span>Service Type</span>
+      <span>Price (₱)</span>
+    </div>
+    <div class="grid-row has-action" style="grid-template-columns: 2fr 1fr;">
+      <input type="text" class="grid-input" value="Full Service (Wash/Dry/Fold)">
+      <input type="number" class="grid-input" value="190">
+      <button class="delete-row-btn" onclick="confirmDelete(this)">✕</button>
+    </div>
+  </div>
+  <button class="add-row-btn" onclick="addNewRow('grid-service', 2, 'Service Pricing(MasterData)')">+</button>
+
+  <p class="center-lined-text">Supplies Costing</p>
+  <div class="settings-grid" id="grid-supplies">
+    <div class="grid-header has-action" style="grid-template-columns: 2fr 1fr;">
+      <span>Supplies Name</span>
+      <span>Cost Per Unit(₱)</span>
+    </div>
+    <div class="grid-row has-action" style="grid-template-columns: 2fr 1fr;">
+      <input type="text" class="grid-input" value="Detergent (Liquid)">
+      <input type="number" class="grid-input" value="550">
+      <button class="delete-row-btn" onclick="confirmDelete(this)">✕</button>
+    </div>
+  </div>
+  <button class="add-row-btn" onclick="addNewRow('grid-supplies', 2, 'Supplies Costing(MasterData)')">+</button>
+
+  <p class="center-lined-text">Customer Records</p>
+<div class="settings-grid" id="grid-customers">
+  <div class="grid-header" style="grid-template-columns: 1fr 50px;">
+    <span>Customer Name</span>
+    <span></span>
+  </div>
+  
+  <div class="grid-row" style="grid-template-columns: 1fr 50px;">
+    <input type="text" class="grid-input" value="John" readonly> <button class="delete-row-btn" onclick="confirmDelete(this)">✕</button>
+  </div>
+</div>
+  
+  <p class="center-lined-text">Other Transaction</p>
+   <p style="margin-top:50px; font-style: italic; color: #888;">*This section is for Accountant ONLY!</p>
+  <div class="settings-grid" id="grid-others">
+    <div class="grid-header has-action-wide" style="grid-template-columns: 1fr 1fr 1fr 2fr;">
+      <span>Type</span>
+      <span>Debit</span>
+      <span>Credit</span>
+      <span>Description</span>
+    </div>
+    <div class="grid-row has-action-wide" style="grid-template-columns: 1fr 1fr 1fr 2fr;">
+      <input type="text" class="grid-input" value="Utilities">
+      <input type="text" class="grid-input" value="Electricity">
+      <input type="text" class="grid-input" value="Cash">
+      <input type="text" class="grid-input" value="Monthly Meralco Bill">
+      <button class="delete-row-btn" onclick="confirmDelete(this)">✕</button>
+    </div>
+  </div>
+  <button class="add-row-btn" onclick="addNewRow('grid-others', 4, 'Entries(MasterData)')">+</button>
+
+  </div>
+
+
+  
+      <div id="account-settings" class="content-section">
+  <h3 class="spartan-text" style="color:#1E6CE2;">ACCOUNT SETTINGS</h3>
+  <div class="divider" style="background-color:#1E6CE2; height:2px; margin: 10px 0 30px 0;"></div>
+        
+<div class="preview-grid">
+  <div class="label-header blue-gradient">AQUA'S USERNAME AND PASSWORD</div>
+        
+  <div class="preview-row">
+      <div class="preview-label" style="color:#1E6CE2;">Username</div>
+      <div class="preview-value-box">Aquawash</div>
+  </div>
+  <div class="preview-row">
+      <div class="preview-label" style="color:#1E6CE2;">Password</div>
+      <div class="preview-value-box">••••••••</div>
+  </div>
+  <div class="preview-row">
+      <div class="preview-label" style="color:#1E6CE2;">e-mail</div>
+      <div class="preview-value-box">jamandreprince@gmail.com</div>
+  </div>
+
+  <div class="divider" style="background-color:#1E6CE2; height:2px; margin: 10px 0 30px 0;"></div>
+  <div class="label-header gray-gradient">CHANGE SECURITY</div>
+        
+  <div class="preview-row">
+      <div class="preview-label" style="color:#1E6CE2;">New Username</div>
+      <input type="text" id="new-username" placeholder="Type here!" class="preview-value-box">  
+  </div>
+
+  <p class="center-lined-text" style="color:#1E6CE2; text-decoration-color:#1E6CE2 !important;">------- OR -------</p>
+        
+  <div class="preview-row">
+      <div class="preview-label" style="color:#1E6CE2;">New Password</div>
+      <input type="text" id="new-password" placeholder="Type here!" class="preview-value-box">  
+  </div>
+  <div class="preview-row">
+      <div class="preview-label" style="color:#1E6CE2;">Confirm Password</div>
+      <input type="text" id="confirm-password" placeholder="Type here!" class="preview-value-box">  
+  </div>
+  <div style="margin: 15px 0;"></div>
+  
+  <div class="preview-row">
+      <div class="preview-label" style="color:#1E6CE2;">Api key from e-mail</div>
+      <input type="text" id="settings-otp" placeholder="Type here!" class="preview-value-box">  
+  </div>
+
+  <div style="margin: 15px 0;"></div>
+</div>
+        
+  <button class="btn large grey" onclick="sendSettingsApiKey()">Send API key</button>
+<button class="btn large grey" onclick="updateSecurity()">Update Security</button>
+</div>
+      
+    </div>
+  </div>    
+  
+<script>
+/* ============================================================
+   1. IMMEDIATE PERSISTENCE CHECK
+   (Runs before the page even draws to prevent flickering)
+   ============================================================ */
+if (localStorage.getItem('isLoggedIn') === 'true') {
+  document.write('<style>#login-screen { display: none !important; }</style>');
+}
+
+/* ============================================================
+   2. NAVIGATION & UI TABS
+   ============================================================ */
+function setActive(btn, sectionId) {
+  const frame = document.querySelector('.scrolling-frame');
+  frame.classList.add('frame-float');
+
+  document.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+
+  document.querySelectorAll('.content-section').forEach(section => {
+    section.style.display = 'none';
+    section.classList.remove('show');
+  });
+
+  const target = document.getElementById(sectionId);
+  if (target) {
+    target.style.display = 'block';
+    setTimeout(() => { target.classList.add('show'); }, 50);
+  }
+  setTimeout(() => { frame.classList.remove('frame-float'); }, 400);
+}
+
+function switchTab(el, tabId) {
+  document.querySelectorAll('.tab-link').forEach(t => t.classList.remove('active-tab'));
+  el.classList.add('active-tab');
+  document.querySelectorAll('.tab-content').forEach(tc => tc.style.display = 'none');
+  document.getElementById(tabId).style.display = 'block';
+}
+
+function toggleSidebar() {
+  const sidebar = document.getElementById('sidebar');
+  sidebar.classList.toggle('collapsed');
+  document.querySelector('.toggle-btn').innerHTML = sidebar.classList.contains('collapsed') ? '&#10095;' : '&#10094;';
+}
+
+/* ============================================================
+   3. SERVICE INPUT & FORMS (SWITCHING)
+   ============================================================ */
+function showForm(formType) {
+  const container = document.getElementById('dynamic-form-container');
+  const title = document.getElementById('panel-title');
+  const backBtn = `<button class="btn medium grey" style="margin-top:20px" onclick="resetServicePanel()">Back to Selection</button>`;
+
+  if (formType === 'new-customer') {
+    title.innerText = "NEW CUSTOMER ACCOUNT";
+    container.innerHTML = `
+      <input type="text" id="new-cust-name" placeholder="Enter Customer Surname..." class="form-input md black">
+      <input type="text" id="new-cust-name" placeholder="Enter Customer Name..." class="form-input md black">
+      <button class="btn medium blue-gradient" onclick="saveNewCustomer()">List New Customer & Save</button>
+      ${backBtn}`;
+  } else if (formType === 'add-order') {
+    title.innerText = "ADD SERVICE ORDER";
+    container.innerHTML = `
+      <input id="order-customer" list="cust-list" placeholder="Search/Pick Customer..." class="form-input md cyan search-input">
+      <datalist id="cust-list"></datalist>
+
+      <input id="order-service" list="serv-list" placeholder="Search/Pick Service Type..." class="form-input md cyan search-input">
+      <datalist id="serv-list"></datalist>
+
+      <input id="order-payment" type="number" placeholder="Cash Payment" class="form-input md black">
+
+      <div class="payment-method-container">
+        <p style="font-size: 14px; color: #555; margin-bottom: 10px;">Select Payment Method:</p>
+        <div class="radio-group">
+          <label class="radio-label"><input type="radio" name="account-choice" value="N/A" checked><span class="custom-radio"></span> N/A</label>
+          <label class="radio-label"><input type="radio" name="account-choice" value="Cash on Hand"><span class="custom-radio"></span> Cash on Hand</label>
+          <label class="radio-label"><input type="radio" name="account-choice" value="Cash in Bank"><span class="custom-radio"></span> Cash in Bank</label>
+        </div>
+      </div>
+
+      <button id="btn-generate" class="btn medium blue-gradient">Generate Service Order</button>
+      <button id="btn-save" class="btn medium blue-gradient">Save and Add Service Order</button>
+      ${backBtn}`;
+      
+    loadOrderDropdowns(); // Updated logic below
+
+  } else if (formType === 'payment') {
+    title.innerText = "CUSTOMER CREDIT SETTLEMENT";
+    container.innerHTML = `
+      <input id="settle-customer" list="settle-cust-list" placeholder="Search Customer..." class="form-input md cyan search-input" oninput="updateSettleIds()">
+      <datalist id="settle-cust-list"></datalist>
+      
+      <input id="settle-id" list="settle-id-list" placeholder="Search Service ID..." class="form-input md cyan search-input" oninput="previewSettlement()">
+      <datalist id="settle-id-list"></datalist>
+
+      <input id="settle-payment-amount" type="number" placeholder="Cash Payment" class="form-input md black">
+
+      <div class="payment-method-container">
+        <p style="font-size: 14px; color: #555; margin-bottom: 10px;">Select Payment Method:</p>
+        <div class="radio-group">
+          <label class="radio-label"><input type="radio" name="account-choice" value="N/A" checked><span class="custom-radio"></span> N/A</label>
+          <label class="radio-label"><input type="radio" name="account-choice" value="Cash on Hand"><span class="custom-radio"></span> Cash on Hand</label>
+          <label class="radio-label"><input type="radio" name="account-choice" value="Cash in Bank"><span class="custom-radio"></span> Cash in Bank</label>
+        </div>
+      </div>
+
+      <button class="btn medium blue-gradient" onclick="saveSettlement()">Record Payment</button>
+      ${backBtn}`;
+      
+    loadSettlementData(); // Call to fetch data
+
+  } else if (formType === 'search-invoice') {
+    title.innerText = "SERVICE INVOICE";
+    container.innerHTML = `
+      <select class="form-input md cyan"><option>Pick Customer Name</option></select>
+      <select class="form-input md cyan"><option>Pick Their Service ID</option></select>
+      <button class="btn medium blue-gradient">Print</button>
+      <button class="btn medium red-gradient" style="background:red">Remove and Delete Order</button>
+      ${backBtn}`;
+  }
+}
+
+function resetServicePanel() {
+  const container = document.getElementById('dynamic-form-container');
+  const title = document.getElementById('panel-title');
+  title.innerText = "CUSTOMER ACCOUNT";
+  container.innerHTML = `
+    <div id="selection-menu">
+      <p class="center-lined-text">-- Selections --</p>
+      <button class="btn large blue-gradient" onclick="showForm('new-customer')">List Customer Name</button>
+      <button class="btn large blue-gradient" onclick="showForm('add-order')">Add New Service Order</button>
+      <button class="btn large blue-gradient" onclick="showForm('payment')">Customer Balance Payment</button>
+      <button class="btn large dedblue-gradient" onclick="showForm('search-invoice')">Search Service Order</button>
+    </div>`;
+
+  const previewFields = [
+    'prev-date', 
+    'prev-customer', 
+    'prev-id', 
+    'prev-service', 
+    'prev-price', 
+    'prev-payment', 
+    'prev-balance'
+  ];
+
+  previewFields.forEach(id => {
+    const element = document.getElementById(id);
+    if (element) {
+      element.innerText = "---"; // Reset to default placeholder
+    }
+  });
+
+  // 3. Clear any internal variables and descriptions
+  orderPayload = null;
+}
+
+function changeQty(amount) {
+  const qtyInput = document.getElementById('item-qty');
+  let currentVal = parseInt(qtyInput.value);
+  if (currentVal + amount >= 1) { qtyInput.value = currentVal + amount; }
+}
+
+/* ============================================================
+   4. SERVICE INPUT FUNCTIONALITY (ADD, SETTLEMENT, UPDATE DELETE)
+   ============================================================ */
+
+
+// ------------ ADDING SERVICE ORDER ------------
+
+// Global variables to store fetched prices and the final payload
+let servicePrices = []; 
+let orderPayload = null; 
+
+function loadOrderDropdowns() {
+  // Fetch Customers
+  google.script.run.withSuccessHandler(customers => {
+    // FIX: Target the <datalist>, NOT the <input>
+    const custDatalist = document.getElementById('cust-list'); 
+    if (!custDatalist) return; // Stop if element isn't on screen
+    
+    // Clear the datalist (Do not put a "Pick Customer Name" option here, use the input placeholder instead)
+    custDatalist.innerHTML = ''; 
+
+    customers.sort((a, b) => a[0].localeCompare(b[0])); //APLHA KA G!
+
+    customers.forEach(row => {
+      let opt = document.createElement('option');
+      opt.value = row[0]; // For datalists, the 'value' is what shows up in the search
+      custDatalist.appendChild(opt);
+    });
+  }).getSheetData('Customers List(MasterData)');
+
+  // Fetch Services & Prices
+  google.script.run.withSuccessHandler(services => {
+    servicePrices = services; 
+    // FIX: Target the <datalist>, NOT the <input>
+    const servDatalist = document.getElementById('serv-list'); 
+    if (!servDatalist) return; // Stop if element isn't on screen
+    
+    servDatalist.innerHTML = '';
+    services.forEach(row => {
+      let opt = document.createElement('option');
+      const price = parseFloat(row[1]).toFixed(2);
+      // Combine name and price in the value so it's fully searchable
+      opt.value = `${row[0]} - ₱ ${price}`; 
+      servDatalist.appendChild(opt);
+    });
+  }).getSheetData('Service Pricing(MasterData)');
+
+  // Safe Event Listeners
+  const genBtn = document.getElementById('btn-generate');
+  const saveBtn = document.getElementById('btn-save');
+  
+  if (genBtn) genBtn.onclick = generateOrderPreview;
+  if (saveBtn) saveBtn.onclick = saveOrderData;
+}
+
+// ----- Generate ID-----
+function generateOrderPreview() {
+  const customer = document.getElementById('order-customer').value;
+  const service = document.getElementById('order-service').value;
+  const paymentInput = document.getElementById('order-payment').value;
+
+  if (!customer || !service || paymentInput === "") {
+    alert("You must fill up everything");
+    return;
+  }
+
+  const payment = parseFloat(paymentInput);
+  const matchedService = servicePrices.find(r => r[0] === service);
+  const price = matchedService ? parseFloat(matchedService[1]) : 0;
+  const balance = price - payment;
+
+  // Determine Status and Description based on Entries(MasterData)
+  let status = "Cash Payment";
+  if (balance > 0) status = "Partial Credit";
+  if (payment === 0) status = "Full Credit";
+
+  // Description for DASHBOARD PRESENTATION ONLY
+  const desc = `To record ${status.toLowerCase()} provided to ${customer}`;
+
+  // Date Formatting
+  const today = new Date();
+  const displayDateStr = today.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+  const sheetDateStr = ("0" + today.getDate()).slice(-2) + "/" + ("0" + (today.getMonth() + 1)).slice(-2) + "/" + today.getFullYear();
+
+  // UNIQUE ID GENERATION
+  google.script.run.withSuccessHandler(existingIds => {
+    let serviceId;
+    let isUnique = false;
+
+    while (!isUnique) {
+      const randomSixDigits = Math.floor(100000 + Math.random() * 900000);
+      serviceId = "#26-" + randomSixDigits;
+      if (!existingIds.includes(serviceId)) {
+        isUnique = true;
+      }
+    }
+
+    // Update Right Panel Preview
+    document.getElementById('prev-date').innerText = displayDateStr;
+    document.getElementById('prev-customer').innerText = customer;
+    document.getElementById('prev-id').innerText = serviceId;
+    document.getElementById('prev-service').innerText = service;
+    document.getElementById('prev-price').innerText = `₱ ${price.toFixed(2)}`;
+    document.getElementById('prev-payment').innerText = `₱ ${payment.toFixed(2)}`;
+    document.getElementById('prev-balance').innerText = `₱ ${balance.toFixed(2)}`;
+    
+
+    // Prepare Payload (Excluding description as the sheet has a formula)
+    // [ID, Date, Customer, Service Type, Price, Status, Payment, Balance]
+    orderPayload = [
+     serviceId,      // Column B (Manual)
+     sheetDateStr,   // Column C (Manual)
+     customer,       // Column D (Manual)
+     service,        // Column E (Manual)
+      "",             // Column F (SKIP - let Formula handle Price)
+      "",             // Column G (SKIP - let Formula handle Status)
+     payment,        // Column H (Manual - Cash Received)
+     ""              // Column I (SKIP - let Formula handle Balance)
+];
+    
+  }).getExistingServiceIds();
+}
+
+function saveOrderData() {
+  // If orderPayload is null, they haven't generated the ID yet
+  if (!orderPayload) {
+    alert("You must fill up everything and generate the ID first.");
+    return;
+  }
+
+  // Send to backend
+  google.script.run.withSuccessHandler(response => {
+    alert("Service Order Saved Successfully!");
+    
+    // Clear the form after saving 
+    document.getElementById('order-customer').value = "";
+    document.getElementById('order-service').value = "";
+    document.getElementById('order-payment').value = "";
+    document.getElementById('btn-generate').click(); // Force an update/clear on the right panel
+    orderPayload = null; 
+    
+    resetPreviewArea();
+  }).addServiceOrderToSheet('Service Transaction', orderPayload);
+}
+
+function resetPreviewArea() {
+  const fields = [
+    'prev-date', 'prev-customer', 'prev-id', 
+    'prev-service', 'prev-price', 'prev-payment', 'prev-balance'
+  ];
+  
+  fields.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.innerText = "---";
+  });
+}
+
+// ------------ SETTLING SERVICE ORDER ------------
+
+let unsettledData = []; 
+
+function loadSettlementData() {
+  console.log("Triggering Searchable Settlement Data Load...");
+  
+  google.script.run
+    .withSuccessHandler(data => {
+      console.log("Backend returned unsettled data:", data);
+      unsettledData = data;
+      
+      // We check if the INPUT exists before trying to fill the DATALIST
+      const custInput = document.getElementById('settle-customer');
+      const custDatalist = document.getElementById('settle-cust-list');
+      
+      // If the element isn't there yet (user hasn't clicked the button), retry
+      if (!custInput || !custDatalist) {
+        console.warn("Searchable elements not found, retrying in 100ms...");
+        setTimeout(loadSettlementData, 100);
+        return;
+      }
+
+      // Clear existing options
+      custDatalist.innerHTML = '';
+      
+      if (data.length === 0) {
+        custInput.placeholder = "No Pending Credits Found";
+        return;
+      }
+
+      // Get unique names from data (Column Index 2)
+      const uniqueNames = [...new Set(data.map(row => row[2]))].filter(n => n);
+      
+      uniqueNames.forEach(name => {
+        let opt = document.createElement('option');
+        opt.value = name; // This is what the user sees/filters when typing
+        custDatalist.appendChild(opt);
+      });
+      
+      custInput.placeholder = "Search Customer Name...";
+    })
+    .withFailureHandler(err => alert("Error loading settlement: " + err))
+    .getUnsettledTransactions();
+}
+
+function updateSettleIds() {
+  const selectedName = document.getElementById('settle-customer').value;
+  const idSelect = document.getElementById('settle-id');
+  if (!idSelect) return;
+
+  idSelect.innerHTML = '<option value="">Pick Their Service ID</option>';
+  
+  // Filter global data for this specific customer
+  const customerRows = unsettledData.filter(row => row[2] === selectedName);
+  
+  customerRows.forEach(row => {
+    let opt = document.createElement('option');
+    opt.value = row[0]; 
+    opt.textContent = `ID: ${row[0]} (Bal: ₱${parseFloat(row[7]).toFixed(2)})`;
+    idSelect.appendChild(opt);
+  });
+  
+  resetPreviewArea(); 
+}
+
+function previewSettlement() {
+  const selectedId = document.getElementById('settle-id').value;
+  if (!selectedId) return;
+
+  const row = unsettledData.find(r => String(r[0]) === selectedId);
+  console.error("Could not find ID in unsettledData:", selectedId);
+  if (!row) return;
+
+  const today = new Date();
+  const displayDateStr = today.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+  const sheetDateStr = ("0" + today.getDate()).slice(-2) + "/" + ("0" + (today.getMonth() + 1)).slice(-2) + "/" + today.getFullYear();
+
+  // Mapping indices based on B:J range (B=0, C=1, D=2, E=3, F=4, G=5, H=6, I=7)
+  const balanceValue = parseFloat(row[7]) || 0;
+
+  document.getElementById('prev-date').innerText = displayDateStr;
+  document.getElementById('prev-customer').innerText = row[2]; // Col D
+  document.getElementById('prev-id').innerText = row[0];       // Col B
+  document.getElementById('prev-service').innerText = "Settlement";
+  document.getElementById('prev-price').innerText = `₱ ${parseFloat(row[4]).toFixed(2)}`; // Col F
+  document.getElementById('prev-payment').innerText = `₱ ${balanceValue.toFixed(2)}`;     // Col I
+  document.getElementById('prev-balance').innerText = `₱ 0.00`;
+
+  // Payload: [B:ID, C:Date, D:Name, E:Type, F:Price(skip), G:Status(skip), H:Cash, I:Balance(skip)]
+  orderPayload = [
+    row[0],       
+    sheetDateStr, 
+    row[2],       
+    "Settlement", 
+    "", "",       
+    balanceValue, // Payment = Full remaining balance
+    ""            
+  ];
+}
+
+function saveSettlement() {
+  if (!orderPayload) {
+    alert("Please select a Customer and Service ID first.");
+    return;
+  }
+
+  google.script.run.withSuccessHandler(response => {
+    alert("Settlement Recorded Successfully!");
+    resetServicePanel(); // Return to main menu and clear right panel
+  }).addServiceOrderToSheet('Service Transaction', orderPayload);
+}
+  
+/* ============================================================
+   7. OTHER TRANSACTION FUNCTIONALITY (OTHER THAN SERVICE, SUPPLIES, AND EQPT)
+   ============================================================ */
+
+  // List of items to filter out of the dropdown
+const excludedOtherTypes = [
+  "Supplies Purchased", "Credit Supplies", "Supplies Payment", 
+  "Supplies Used", "Depreciation Expense", "Accumulated Removal", "Gain on Equipment Sale", "Loss on Equipment Sale", "Revenue Closing", "Other Income Closing", "Gain Closing", "Salaries Expensed Closing", "Electricity Expensed Closing", "Water Expensed Closing", "Internet Expensed Closing", "Supplies Expensed Closing", "Depreciation Expensed Closing", "Loss Closing", "Bank Charge Closing", "Delivery Fee Closing", "Other Expensed Closing", "Withdrawal Closing", "Increase in Capital", "Decreaase in Capital"
+];
+
+let currentOtherTransId = "";
+let currentOtherSheetDate = "";
+
+// 1. Load the Dropdown Data
+function loadOtherTransactionTypes() {
+  google.script.run.withSuccessHandler(function(data) {
+    const select = document.getElementById('otherTransType');
+    select.innerHTML = '<option value="">Transaction Type</option>';
+    
+    data.forEach(row => {
+      const type = row[0]; // Category name
+      if (!excludedOtherTypes.includes(type)) {
+        let opt = document.createElement('option');
+        opt.value = type;
+        opt.textContent = type;
+        select.appendChild(opt);
+      }
+    });
+  }).getSheetData("Entries(MasterData)");
+}
+
+// Run this when the page loads
+document.addEventListener("DOMContentLoaded", loadOtherTransactionTypes);
+
+// 2. Generate ID Button Logic
+document.getElementById('btnGenerateOtherId').addEventListener('click', function() {
+  const tWith = document.getElementById('otherTransWith').value.trim();
+  const tType = document.getElementById('otherTransType').value;
+  const tAmt = document.getElementById('otherTransAmount').value.trim();
+
+  // Validate all 3 inputs are filled
+  if (!tWith || !tType || !tAmt) {
+    alert("Please fill up Transaction With, Transaction Type, and Total Amount to generate an ID.");
+    return;
+  }
+
+  // Generate Unique ID (T26-XXXXXX)
+  const randomNum = Math.floor(100000 + Math.random() * 900000);
+  currentOtherTransId = "T26-" + randomNum;
+
+  // Format Dates
+  const d = new Date();
+  const displayDate = d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+  
+  // Format strictly as dd/mm/yyyy for your ledger formulas
+  const dd = String(d.getDate()).padStart(2, '0');
+  const mm = String(d.getMonth() + 1).padStart(2, '0'); 
+  const yyyy = d.getFullYear();
+  currentOtherSheetDate = dd + '/' + mm + '/' + yyyy;
+
+  // Update Right Panel UI
+  document.getElementById('prevOtherDate').textContent = displayDate;
+  document.getElementById('prevOtherType').textContent = tType;
+  document.getElementById('prevOtherWith').textContent = tWith;
+  document.getElementById('prevOtherId').textContent = currentOtherTransId;
+  document.getElementById('prevOtherAmount').textContent = "₱" + parseFloat(tAmt).toLocaleString(undefined, {minimumFractionDigits: 2});
+});
+
+// 3. Record Transaction Button Logic
+document.getElementById('btnRecordOtherTrans').addEventListener('click', function() {
+  if (!currentOtherTransId) {
+    alert("Please click 'Generate ID' first to create a transaction record.");
+    return;
+  }
+
+  const tWith = document.getElementById('otherTransWith').value.trim();
+  const tType = document.getElementById('otherTransType').value;
+  const tAmt = document.getElementById('otherTransAmount').value.trim();
+
+  // Package the array exactly matching Columns B to I
+  const otherTransload = [
+    currentOtherTransId,     // Col B (Manual Plain Text)
+    currentOtherSheetDate,   // Col C (Manual Date dd/mm/yyyy)
+    tWith,                   // Col D
+    tType,                   // Col E
+    "",                      // Col F (Desc Formula)
+    "",                      // Col G (Debit Formula)
+    "",                      // Col H (Credit Formula)
+    parseFloat(tAmt)         // Col I (Amount)
+  ];
+
+  const btn = document.getElementById('btnRecordOtherTrans');
+  btn.textContent = "Recording...";
+  btn.disabled = true;
+
+  google.script.run.withSuccessHandler(function(response) {
+    alert("Transaction Recorded Successfully!");
+    
+    // Reset Left Panel
+    document.getElementById('otherTransWith').value = "";
+    document.getElementById('otherTransType').value = "";
+    document.getElementById('otherTransAmount').value = "";
+    currentOtherTransId = "";
+    
+    // Reset Right Panel
+    document.getElementById('prevOtherDate').textContent = "---";
+    document.getElementById('prevOtherType').textContent = "---";
+    document.getElementById('prevOtherWith').textContent = "---";
+    document.getElementById('prevOtherId').textContent = "---";
+    document.getElementById('prevOtherAmount').textContent = "---";
+
+    btn.textContent = "Record Transaction";
+    btn.disabled = false;
+  }).saveOtherTransaction(otherTransload);
+});
+  
+/* ============================================================
+   8. GRID MANAGEMENT (SETTINGS)
+   ============================================================ */
+function refreshAllGrids() {
+  // Fix 1: Added missing closing quote after MasterData)
+  google.script.run.withSuccessHandler(data => {
+    renderGrid('grid-service', data, 2, 'Service Pricing(MasterData)'); 
+  }).getSheetData('Service Pricing(MasterData)');
+
+  // Fix 2: Ensure this matches your actual tab name
+  google.script.run.withSuccessHandler(data => {
+    renderGrid('grid-supplies', data, 2, 'Supplies Costing(MasterData)');
+  }).getSheetData('Supplies Costing(MasterData)');
+
+  // Load Customers - Looks Good!
+  google.script.run.withSuccessHandler(data => {
+    renderGrid('grid-customers', data, 1, 'Customers List(MasterData)');
+  }).getSheetData('Customers List(MasterData)');
+
+  // Load Other Transactions - Looks Good!
+  google.script.run.withSuccessHandler(data => {
+    renderGrid('grid-others', data, 4, 'Entries(MasterData)');
+  }).getSheetData('Entries(MasterData)');
+}
+
+function renderGrid(gridId, data, colCount, sheetName) {
+  const grid = document.getElementById(gridId);
+  // Keep the header, remove the rest
+  const header = grid.querySelector('.grid-header');
+  grid.innerHTML = '';
+  grid.appendChild(header);
+
+  data.forEach(row => {
+    const rowDiv = document.createElement('div');
+    rowDiv.className = (colCount > 3) ? 'grid-row has-action-wide' : 'grid-row has-action';
+    
+    // Determine grid columns based on ID (Matches your CSS)
+    if(gridId === 'grid-customers') rowDiv.style.gridTemplateColumns = '1fr 50px';
+    else if(colCount === 2) rowDiv.style.gridTemplateColumns = '2fr 1fr 50px';
+    else rowDiv.style.gridTemplateColumns = '1fr 1fr 1fr 2fr 50px';
+
+    let html = '';
+    row.forEach((cell, idx) => {
+      html += `<input type="${typeof cell === 'number' ? 'number' : 'text'}" 
+                      class="grid-input" value="${cell}" readonly>`;
+    });
+    html += `<button class="delete-row-btn" onclick="confirmDelete(this, '${sheetName}')">✕</button>`;
+    
+    rowDiv.innerHTML = html;
+    grid.appendChild(rowDiv);
+  });
+}
+
+/* ============================================================
+   SAVE & DELETE (Syncing with Sheets) MASTERDATA
+   ============================================================ */
+function saveNewCustomer() {
+  const nameInput = document.getElementById('new-cust-name');
+  const name = nameInput.value.trim();
+  if (!name) return alert("Enter a name!");
+
+  google.script.run.withSuccessHandler(() => {
+    nameInput.value = "";
+    alert(name + " saved to Google Sheets!");
+    refreshAllGrids(); // Refresh the list
+  }).addDataToSheet('Customers List(MasterData)', [name]);
+}
+
+// Updated AddNewRow to handle specific sheets
+function addNewRow(gridId, columnCount, sheetName) {
+  let values = [];
+  
+  // Custom Prompts based on the category
+  if (gridId === 'grid-customers') {
+    let sName = prompt("Enter Customer Surname:");
+    let fName = prompt("Enter Customer First Name:");
+    if (!sName || !fName) return;
+    values = [sName, fName];
+  } 
+  else if (gridId === 'grid-service') {
+    let type = prompt("Enter Service Type:");
+    let price = prompt("Enter Price (₱):");
+    if (!type || !price) return;
+    values = [type, price];
+  }
+  else if (gridId === 'grid-supplies') {
+    let item = prompt("Enter Supply Name/Brand:");
+    let cost = prompt("Enter Cost Per Unit (₱):");
+    if (!item || !cost) return;
+    values = [item, cost];
+  }
+  else {
+    // Default prompt for "Other Transactions" (Entries)
+    for(let i=0; i<columnCount; i++) {
+      let val = prompt("Enter value for column " + (i+1));
+      if (val === null) return;
+      values.push(val);
+    }
+  }
+
+  google.script.run.withSuccessHandler(() => {
+    refreshAllGrids();
+  }).addDataToSheet(sheetName, values);
+}
+
+let targetToDelete = null;
+let targetSheet = '';
+
+function confirmDelete(button, sheetName) {
+  targetToDelete = button.parentElement;
+  targetSheet = sheetName;
+  
+  // Important: Grab the primary identifier
+  // For Customers, this will be the Surname (first input)
+  // For Services, it's the Type
+  const itemName = targetToDelete.querySelector('input').value;
+  
+  const confirmBtn = document.getElementById('confirm-delete-btn');
+  document.getElementById('modal-message').innerText = `Delete "${itemName}" from ${sheetName}?`;
+  document.getElementById('delete-modal').classList.add('show');
+  
+  confirmBtn.onclick = () => {
+    confirmBtn.innerText = "DELETING...";
+    confirmBtn.disabled = true;
+    targetToDelete.style.opacity = "0.3"; 
+    
+    google.script.run.withSuccessHandler((response) => {
+      if(response === "Deleted") {
+        targetToDelete.remove();
+      } else {
+        alert("Error: " + response);
+        targetToDelete.style.opacity = "1";
+      }
+      confirmBtn.innerText = "CONFIRM";
+      confirmBtn.disabled = false;
+      closeDeleteModal();
+    }).deleteDataFromSheet(targetSheet, itemName);
+  };
+}
+
+function closeDeleteModal() {
+  const modal = document.getElementById('delete-modal');
+  if (modal) {
+    modal.classList.remove('show');
+  }
+  // Reset global variables for safety
+  targetToDelete = null;
+  targetSheet = '';
+}
+
+
+/* ============================================================
+   9. LOGIN, LOGOUT & SECURITY (THE CORE)
+============================================================ */
+function handleLogin() {
+  const user = document.getElementById('user-input').value;
+  const pass = document.getElementById('pass-input').value;
+
+  // Checks LocalStorage for custom credentials set in Account Settings
+  const savedUser = localStorage.getItem('adminUser') || "Aquawash";
+  const savedPass = localStorage.getItem('adminPass') || "1234";
+
+  if (user === savedUser && pass === savedPass) {
+    localStorage.setItem('isLoggedIn', 'true');
+    document.getElementById('login-screen').classList.add('fade-out');
+    // Allow animation to finish before removing from display
+    setTimeout(() => { document.getElementById('login-screen').style.display = 'none'; }, 600);
+  } else {
+    alert("Invalid Credentials!");
+  }
+}
+
+function openModal() { document.getElementById('modal').classList.add('show'); }
+function closeModal() { document.getElementById('modal').classList.remove('show'); }
+
+function confirmLogout() {
+  localStorage.setItem('isLoggedIn', 'false');
+  location.reload();
+}
+
+function toggleForgotMode(isForgot) {
+  document.getElementById('login-form').style.display = isForgot ? 'none' : 'block';
+  document.getElementById('api-key-form').style.display = isForgot ? 'block' : 'none';
+}
+
+// FORGOT PASSWORD API KEY
+let generatedApiKey = null;
+let apiTimer = null;
+
+// --- TIMER UTILITY ---
+function startTimer(durationSeconds) {
+  clearInterval(apiTimer); // Reset any existing timer
+  let timer = durationSeconds;
+  const display = document.getElementById('timer-display');
+  display.style.display = 'block';
+
+  apiTimer = setInterval(() => {
+    let minutes = Math.floor(timer / 60);
+    let seconds = timer % 60;
+    
+    minutes = minutes < 10 ? "0" + minutes : minutes;
+    seconds = seconds < 10 ? "0" + seconds : seconds;
+
+    display.innerText = "Expires in: " + minutes + ":" + seconds;
+
+    if (--timer < 0) {
+      clearInterval(apiTimer);
+      display.innerText = "API Key Expired!";
+      generatedApiKey = null; // Invalidate the key
+    }
+  }, 1000);
+}
+
+// --- FORGOT PASSWORD (LOGIN SCREEN) ---
+function handleForgotApiKey() {
+  const email = document.getElementById('recovery-email').value;
+  const btn = document.getElementById('api-key-btn');
+  const apiKeyInput = document.getElementById('api-key-input');
+  const resetFields = document.getElementById('reset-pass-fields');
+
+  if (btn.innerText === "Send API Key") {
+    if (!email) { alert("Please enter an email"); return; }
+    
+    generatedApiKey = Math.floor(1000 + Math.random() * 9000);
+    
+    google.script.run.withSuccessHandler(() => {
+      alert("API Key sent to " + email);
+      apiKeyInput.style.display = 'block';
+      resetFields.style.display = 'block';
+      document.getElementById('resend-api-btn').style.display = 'block';
+      btn.innerText = "Verify & Change Password";
+      startTimer(120); // Start 2-minute timer
+    }).sendEmailApiKey(email, generatedApiKey); 
+    
+  } else {
+    // Verification & Reset Logic
+    const newP = document.getElementById('reset-new-pass').value;
+    const confP = document.getElementById('reset-conf-pass').value;
+
+    if (apiKeyInput.value != generatedApiKey || generatedApiKey === null) {
+      alert("Invalid or Expired API Key!");
+      return;
+    }
+
+    if (newP === "" || newP !== confP) {
+      alert("Passwords do not match or are empty!");
+      return;
+    }
+
+    // Success: Update Password
+    localStorage.setItem('adminPass', newP);
+    alert("Password changed successfully! You can now login.");
+    clearInterval(apiTimer);
+    toggleForgotMode(false);
+  }
+}
+
+function resendApiKey() {
+  const email = document.getElementById('recovery-email').value;
+  generatedApiKey = Math.floor(1000 + Math.random() * 9000);
+  
+  google.script.run.withSuccessHandler(() => {
+    alert("New API Key sent!");
+    startTimer(120); // Reset timer to 2 minutes
+  }).sendEmailApiKey(email, generatedApiKey);
+}
+
+// --- ACCOUNT SETTINGS SECURITY ---
+function sendSettingsApiKey() {
+  const email = "jamandreprince@gmail.com";
+  const code = Math.floor(1000 + Math.random() * 9000);
+  localStorage.setItem('tempApiKey', code);
+
+  google.script.run.withSuccessHandler(() => {
+    alert("A security code has been sent to " + email);
+  }).sendEmailApiKey(email, code); 
+}
+
+function updateSecurity() {
+  const enteredApiKey = document.getElementById('settings-otp').value;
+  const storedApiKey = localStorage.getItem('tempApiKey');
+
+  if (enteredApiKey !== storedApiKey || !storedApiKey) {
+    alert("Invalid API Key!"); return;
+  }
+
+  const newU = document.getElementById('new-username').value;
+  const newP = document.getElementById('new-password').value;
+  const confP = document.getElementById('confirm-password').value;
+
+  // 1. Update Username
+  if (newU) {
+    localStorage.setItem('adminUser', newU);
+  }
+
+  // 2. Update Password (if provided)
+  if (newP) {
+    if (newP === confP) {
+      localStorage.setItem('adminPass', newP);
+    } else {
+      alert("New passwords do not match!");
+      return;
+    }
+  }
+
+  alert("Security Updated!");
+  localStorage.removeItem('tempApiKey');
+  location.reload(); // This will trigger the UI update on reload
+}
+
+/* ============================================================
+   10. INITIALIZATION & SYNC
+   ============================================================ */
+window.addEventListener('DOMContentLoaded', () => {
+  // --- 1. LOGIN & USER SESSION ---
+  if (localStorage.getItem('isLoggedIn') === 'true') {
+     document.getElementById('login-screen').style.display = 'none';
+  }
+  
+  const savedUser = localStorage.getItem('adminUser') || "Aquawash";
+  const userLabels = document.querySelectorAll('.preview-value-box');
+  if (userLabels.length > 0) {
+      userLabels[0].innerText = savedUser; 
+  }
+
+  // --- 2. UI & GRID SETUP ---
+  const dailyOpsBtn = document.querySelector('.sidebar .btn'); 
+  if (dailyOpsBtn) setActive(dailyOpsBtn, 'daily-ops');
+  
+  refreshAllGrids(); // Fetches your data from Sheets
+
+  // --- 3. FINANCIAL STATEMENT SYNC (NEW CODE) ---
+  const updateFinBtn = document.getElementById('btnUpdateFin');
+  if (updateFinBtn) {
+    updateFinBtn.addEventListener('click', function() {
+      const month = document.getElementById('finMonth').value;
+      const year = document.getElementById('finYear').value;
+      const status = document.getElementById('finStatus');
+      const btn = this;
+
+      status.textContent = "Updating Trial Balance...";
+      btn.disabled = true;
+
+      google.script.run
+        .withSuccessHandler(function(data) {
+          if (data.error) {
+            alert("Error: " + data.error);
+            btn.disabled = false;
+            return;
+          }
+
+          const fmt = (val) => "₱" + (parseFloat(val) || 0).toLocaleString(undefined, {
+            minimumFractionDigits: 2, 
+            maximumFractionDigits: 2
+          });
+
+          document.getElementById('dispPeriod').textContent = data.period;
+          document.getElementById('dispRevenue').textContent = fmt(data.revenue);
+          document.getElementById('dispExpenses').textContent = fmt(data.expenses);
+          document.getElementById('dispNetIncome').textContent = fmt(data.netIncome);
+          document.getElementById('dispAssets').textContent = fmt(data.assets);
+          document.getElementById('dispLiabilities').textContent = fmt(data.liabilities);
+          document.getElementById('dispEquity').textContent = fmt(data.equity);
+
+          status.textContent = "Last sync: " + new Date().toLocaleTimeString();
+          btn.disabled = false;
+        })
+        .updateAndFetchFinancials(month, year);
+    });
+  }
+});
+
+</script>
+  
+<div id="delete-modal" class="modal">
+  <div class="modal-box">
+    <h2 class="spartan-text" style="color:#d32f2f; margin-top:0;">CONFIRM DELETE</h2>
+    <p id="modal-message">Are you sure you want to remove this item?😱</p>
+    <div style="display: flex; gap: 10px; margin-top: 20px;">
+      <button class="green" id="confirm-delete-btn">CONFIRM</button>
+      <button class="red" onclick="closeDeleteModal()">CANCEL</button>
+    </div>
+  </div>
+</div>
+  
+  <div class="modal" id="modal">  
+    <div class="modal-box">  
+      <h2 class="spartan-text" style="color:#d32f2f; margin-top:0;">CLOSING DASHBOARD</h2>
+      <p>Do you really want to log out? 🤔</p> 
+      <div style="display: flex; gap: 10px; margin-top: 20px;">
+      <button class="green" onclick="confirmLogout()">Log out anyway</button>  
+      <button class="red" onclick="closeModal()">Cancel</button>  
+    </div>  
+  </div>  
+  
+</body>  
+</html> 
