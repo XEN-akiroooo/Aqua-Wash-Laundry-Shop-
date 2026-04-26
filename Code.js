@@ -9,6 +9,20 @@ function doGet() {
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
 
+const AUTHORIZED_EMAILS = [
+  "jamandreprince@gmail.com",         // Replace with actual allowed emails
+  "princejohnley19@gmail.com" 
+];
+
+function checkAuth() {
+  const userEmail = Session.getActiveUser().getEmail();
+  // Allow if email is in whitelist, or if email is blank (sometimes happens in dev environment)
+  if (userEmail !== "" && !AUTHORIZED_EMAILS.includes(userEmail)) {
+    return false;
+  }
+  return true;
+}
+
 // --- SERVICE ID FETCHING ---
 function getExistingServiceIds() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -102,52 +116,71 @@ function saveOtherTransaction(payload) {
 function getSheetData(sheetName) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   
-  // 1. Matches 'Entries(MasterData)'
+  // 1. Entries(MasterData)'
   if (sheetName === "Entries(MasterData)") {
-  const sheet = ss.getSheetByName(sheetName);
-  if (!sheet) return [];
-  const rawData = sheet.getDataRange().getValues();
-  
-  // Skip the first 7 rows
-  const dataAfterHeader = rawData.slice(7); 
-  
-  // SMARTER FILTER: 
-  // 1. Ignore if Column A is empty
-  // 2. Ignore if Column B is empty (Real transactions always have a description)
-  // 3. Ignore if the row is one of your Category Headers
-  const filteredRows = dataAfterHeader.filter(row => {
-    const colA = String(row[0]).trim();
-    const colB = String(row[1]).trim();
-    
-    // List of category headers to ignore specifically
-    const categories = [
-      "SUPPLIES ON CASH & SUPPLIES ON CREDIT",
-      "EQUIPMENT / MACHINARY OF LAUNDRY",
-      "ACCOUNTS PAYABLE / LIABILITIES",
-      "AQUA WASH LAUNDRY SHOP'S EQUITY",
-      "EXPENSES",
-      "INCOME SUMMARY / CLOSING NOMINAL ACCTS"
-    ];
-
-    return colA !== "" && colB !== "" && !categories.includes(colA);
-  });
-
-  // Return the cleaned data
-  return filteredRows.map(row => [row[0], row[2], row[4], row[1]]);
-}
-
-  // 2. Matches 'Customers List(MasterData)'
-  if (sheetName === "Customers List(MasterData)") {
     const sheet = ss.getSheetByName(sheetName);
     if (!sheet) return [];
     const rawData = sheet.getDataRange().getValues();
-    const dataOnly = rawData.slice(2); 
-    // Returns only Column A (Index 0)
-    return dataOnly.filter(row => row[0] !== "").map(row => [row[0]]);
+    
+    // Skip the first 7 rows
+    const dataAfterHeader = rawData.slice(7); 
+    
+    // Clean data and filter out category headers
+    const filteredRows = dataAfterHeader.filter(row => {
+      const colA = String(row[0]).trim();
+      const colB = String(row[1]).trim();
+      
+      const categories = [
+        "SUPPLIES ON CASH & SUPPLIES ON CREDIT",
+        "EQUIPMENT / MACHINARY OF LAUNDRY",
+        "ACCOUNTS PAYABLE / LIABILITIES",
+        "AQUA WASH LAUNDRY SHOP'S EQUITY",
+        "EXPENSES",
+        "INCOME SUMMARY / CLOSING NOMINAL ACCTS"
+      ];
+
+      return colA !== "" && colB !== "" && !categories.includes(colA);
+    });
+
+    return filteredRows.map(row => [row[0], row[2], row[4], row[1]]);
   }
 
-  // 3. DEFAULT: Service Pricing and Supplies Costing
-  // These only skip 1 row (the header)
+  // 2. 'Records List(MasterData)' SHEET
+  const recordsSheet = ss.getSheetByName("Records List(MasterData)");
+  if (!recordsSheet) return [];
+  
+  const rawData = recordsSheet.getDataRange().getValues();
+  // We slice starting at index 3 (Row 4 in Sheets) to skip the 3 header rows
+  const dataRows = rawData.slice(3); 
+
+  // --- TARGET: CUSTOMERS ---
+  if (sheetName === "Customers List(MasterData)" || sheetName === "Customers") {
+    return dataRows
+      .filter(row => String(row[0]).trim() !== "" || String(row[1]).trim() !== "") // Ensure it's not a blank row
+      .map(row => {
+        const surname = String(row[0]).trim();
+        const firstName = String(row[1]).trim();
+        // Combines First Name and Surname to fit your single frontend input box
+        const fullName = `${firstName} ${surname}`.trim(); 
+        return [fullName];
+      });
+  }
+  
+  // --- TARGET: SERVICES ---
+  if (sheetName === "Service Pricing(MasterData)" || sheetName === "Services") {
+    return dataRows
+      .filter(row => String(row[7]).trim() !== "") // Col H is Index 7 (Type)
+      .map(row => [row[7], row[8]]); // Col H (7) and Col I (8)
+  }
+  
+  // --- TARGET: SUPPLIES ---
+  if (sheetName === "Supplies Costing(MasterData)" || sheetName === "Supplies") {
+    return dataRows
+      .filter(row => String(row[11]).trim() !== "") // Col L is Index 11 (Brandname)
+      .map(row => [row[11], row[12]]); // Col L (11) and Col M (12)
+  }
+
+  // DEFAULT FALLBACK: Just return the raw values if sheet names don't match
   const sheet = ss.getSheetByName(sheetName);
   if (!sheet) return [];
   const values = sheet.getDataRange().getValues();
@@ -183,32 +216,136 @@ function updateAndFetchFinancials(month, year) {
   };
 }
 
-// --- DATA SAVING ---
-function addDataToSheet(sheetName, rowData) {
+// --- DATA SAVING MASTERDATA ---
+function addDataToSheet(targetCategory, rowData) {
+  if (!checkAuth()) return "Unauthorized: Your email is not whitelisted.";
+
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const sheet = ss.getSheetByName(sheetName);
+  
+  // Handle "Other Transactions"
+  if (targetCategory === "Entries(MasterData)") {
+    const sheet = ss.getSheetByName("Entries(MasterData)");
+    if (!sheet) return "Sheet Not Found";
+    sheet.appendRow(rowData);
+    return "Success";
+  }
+
+  // Handle the Merged "Records List" Sheet
+  const sheet = ss.getSheetByName("Records List(MasterData)");
   if (!sheet) return "Sheet Not Found";
-  sheet.appendRow(rowData);
+
+  let startCol;
+  if (targetCategory.includes("Customer")) {
+    startCol = 1;  // Col A
+  } 
+  else if (targetCategory.includes("Service")) {
+    startCol = 8;  // Col H
+  } 
+  else if (targetCategory.includes("Supplies")) {
+    startCol = 11; // Col K (ID Column)
+
+    // --- AUTO ID GENERATION LOGIC ---
+    // Scan Column K from Row 4 downwards to find the highest SUPS number
+    const idData = sheet.getRange(4, 11, sheet.getLastRow()).getValues();
+    let maxNum = 0;
+    
+    for (let i = 0; i < idData.length; i++) {
+      let currentId = String(idData[i][0]).trim();
+      if (currentId.startsWith("SUPS-")) {
+        // Extract the number part (e.g., "0003" -> 3)
+        let num = parseInt(currentId.replace("SUPS-", ""), 10);
+        if (num > maxNum) maxNum = num;
+      }
+    }
+    
+    // Generate new ID (e.g., if max is 3, next is "SUPS-0004")
+    let newId = "SUPS-" + String(maxNum + 1).padStart(4, '0');
+    
+    // Push the new ID to the beginning of the rowData array
+    // rowData goes from [Brandname, Cost] -> [ID, Brandname, Cost]
+    rowData.unshift(newId);
+  } 
+  else {
+    return "Unknown Category";
+  }
+
+  // Find the first empty row in THAT specific column starting from Row 4
+  const data = sheet.getRange(4, startCol, sheet.getLastRow()).getValues();
+  let targetRow = 4;
+  for (let i = 0; i < data.length; i++) {
+    if (data[i][0] === "") {
+      targetRow = i + 4;
+      break;
+    }
+    if (i === data.length - 1) targetRow = sheet.getLastRow() + 1;
+  }
+
+  // Set the values in the specific columns
+  sheet.getRange(targetRow, startCol, 1, rowData.length).setValues([rowData]);
   return "Success";
 }
 
 
-// --- DATA DELETION ---
-function deleteDataFromSheet(sheetName, primaryValue) {
+// --- DATA DELETION MASTERDATA ---
+function deleteDataFromSheet(targetCategory, primaryValue) {
+  if (!checkAuth()) return "Unauthorized: Your email is not whitelisted.";
+
   const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheetName = targetCategory.includes("Entries") ? "Entries(MasterData)" : "Records List(MasterData)";
   const sheet = ss.getSheetByName(sheetName);
+  if (!sheet) return "Sheet Not Found";
+
   const data = sheet.getDataRange().getValues();
+  let searchColIndex = 0; 
   
+  if (targetCategory.includes("Service")) searchColIndex = 7; // Col H
+  else if (targetCategory.includes("Supplies")) searchColIndex = 11; // Col L (Brandname)
+
   for (let i = data.length - 1; i >= 0; i--) {
-    if (data[i][0] == primaryValue) {
-      sheet.deleteRow(i + 1);
+    let isMatch = false;
+
+    // CUSTOMER MATCHING LOGIC
+    if (targetCategory.includes("Customer")) {
+      // Recreate the Firstname + Surname string to match what the frontend sent
+      const surname = String(data[i][0]).trim();    // Col A
+      const firstName = String(data[i][1]).trim();  // Col B
+      const fullNameInSheet = `${firstName} ${surname}`.trim();
+      
+      if (fullNameInSheet === String(primaryValue).trim()) {
+        isMatch = true;
+      }
+    } 
+    // ALL OTHER CATEGORIES MATCHING LOGIC
+    else {
+      if (String(data[i][searchColIndex]).trim() === String(primaryValue).trim()) {
+        isMatch = true;
+      }
+    }
+
+    // IF A MATCH IS FOUND, DELETE IT
+    if (isMatch) {
+      if (sheetName === "Records List(MasterData)") {
+        // Clear specific number of columns based on category
+        let numCols = 2; 
+        if (targetCategory.includes("Supplies")) {
+          // If Supply, clear Col K, L, M (ID, Brand, Cost)
+          searchColIndex = 10; // Shift back to Col K to clear the ID too
+          numCols = 3;
+        }
+        
+        // Clear the specific cells instead of deleting the whole row
+        sheet.getRange(i + 1, searchColIndex + 1, 1, numCols).clearContent();
+      } else {
+        sheet.deleteRow(i + 1);
+      }
       return "Deleted";
     }
   }
-     }
+  return "Not Found";
+}
 
 /* ====================================================================================================
-   DASHBOARD INPUTS (BRIDGE)
+   DASHBOARD INPUTS (BRIDGE) SERVICE CUTEII
 ==================================================================================================== */
 
 function addServiceOrderToSheet(sheetName, payload) {
