@@ -813,46 +813,56 @@ background: linear-gradient(to right, #d32f2f, #f44336) !important;
     </div>
   </div>
 
-  <!-- SUPPLIES LOG -->
-  <div id="supplies-log" class="tab-content" style="display:none;">
-    <div class="dual-frame-container">
+       <!-- SUPPLIES LOG -->
+     <div id="supplies-log" class="tab-content" style="display:none;">
+  <div class="dual-frame-container">
+    
+    <div class="sub-frame first-frame">
+      <h3 class="spartan-text" style="color:#FFBD59;">SUPPLIES LOG</h3>
+      <div class="divider" style="background-color:#FFBD59; height:2px; margin: 10px 0 20px 0;"></div>
 
+      <input type="text" id="sups-party" placeholder="Party Involved" class="form-input md yellow">
       
-      <div class="sub-frame first-frame">
-        <h3 class="spartan-text" style="color:#FFBD59;">SUPPLIES LOG</h3>
-        <div class="divider" style="background-color:#FFBD59; height:2px; margin: 10px 0 20px 0;"></div>
+      <select id="sups-trans-type" class="form-input md yellow" onchange="toggleSupsUI()">
+        <option value="" disabled selected>Select Transaction Type</option>
+      </select>
 
-        <input type="text" placeholder="Party Invloved" class="form-input md yellow">
-        <select class="form-input md yellow"><option>Transaction Type</option></select>
-        <select class="form-input sm miniY"><option>Kind of Supplies</option></select>
+      <select id="sups-kind" class="form-input sm miniY" onchange="calculateSupsTotal()">
+        <option value="" disabled selected>Kind of Supplies</option>
+      </select>
 
-        <div class="qty-container" style="margin-bottom: 15px;">
-          <button type="button" class="qty-btn" onclick="changeQty(-1)">−</button>
-          <input type="number" id="item-qty" class="qty-input" value="1" min="1" readonly>
-          <button type="button" class="qty-btn" onclick="changeQty(1)">+</button>
-        </div>
-
-        <input type="number" placeholder="Total Amount" class="form-input md black">
-
-        <div class="payment-method-container">
-          <p style="font-size: 14px; color: #555; margin-bottom: 10px;">Select Payment Method:</p>
-          <div class="radio-group">
-           <label class="radio-label"><input type="radio" name="sups-account-choice" value="Cash on Hand"><span class="custom-radio"></span> Cash on Hand</label>
-           <label class="radio-label"><input type="radio" name="sups-account-choice" value="Cash in Bank"><span class="custom-radio"></span> Cash in Bank</label>
-          </div>
-        </div>
-        
-        <button class="btn medium yellow-gradient">Record Transaction</button>
+      <div class="qty-container" style="margin-bottom: 15px;">
+        <button type="button" class="qty-btn" onclick="changeQty(-1)">−</button>
+        <input type="number" id="item-qty" class="qty-input" value="1" min="1" onchange="calculateSupsTotal()">
+        <button type="button" class="qty-btn" onclick="changeQty(1)">+</button>
       </div>
 
-      <div class="sub-frame second-frame" style="border-color:#FFBD59;">
-        <div class="label-header yellow-gradient">SUPPLIES INVENTORY</div>
-        
+      <div id="used-mode-container" style="display:none; margin-bottom:10px;">
+         <label style="font-size:12px;"><input type="checkbox" id="is-unused-mode" onchange="calculateSupsTotal()"> This is Unused/Ending Balance</label>
       </div>
 
+      <input type="number" id="sups-amount" placeholder="Total Amount" class="form-input md black">
+
+      <div id="sups-payment-container" class="payment-method-container">
+        <p style="font-size: 14px; color: #555; margin-bottom: 10px;">Select Payment Method:</p>
+        <div class="radio-group">
+          <label class="radio-label"><input type="radio" name="sups-account-choice" value="Cash on Hand" checked><span class="custom-radio"></span> Cash on Hand</label>
+          <label class="radio-label"><input type="radio" name="sups-account-choice" value="Cash in Bank"><span class="custom-radio"></span> Cash in Bank</label>
+        </div>
+      </div>
       
+      <button class="btn medium yellow-gradient" onclick="recordSuppliesTransaction()">Record Transaction</button>
     </div>
+
+    <div class="sub-frame second-frame" style="border-color:#FFBD59;">
+      <div class="label-header yellow-gradient">SUPPLIES INVENTORY</div>
+      <div id="supplies-inventory-list" class="inventory-grid">
+        </div>
+    </div>
+
   </div>
+  </div>v>
+
 
   <!-- EQUIPMENT LOG -->
   <div id="eqpt-log" class="tab-content" style="display:none;">
@@ -1860,6 +1870,124 @@ function printInvoice() {
     printWindow.focus();
     printWindow.print();
   };
+}
+
+  /* ============================================================
+   5. SUPPLIES LOG AND INVENTORY 
+   ============================================================ */
+
+  let suppliesInventory = [];
+
+function loadSuppliesLog() {
+  const whitelist = ["Supplies Purchased", "Credit Supplies", "Supplies Used"];
+  
+  // 1. Load Transaction Types
+  google.script.run.withSuccessHandler(data => {
+    const select = document.getElementById('sups-trans-type');
+    select.innerHTML = '<option value="" disabled selected>Select Transaction Type</option>';
+    data.forEach(row => {
+      if (whitelist.includes(row[0])) {
+        let opt = new Option(row[0], row[0]);
+        select.add(opt);
+      }
+    });
+  }).getSheetData("Entries(MasterData)");
+
+  refreshSuppliesInventory();
+}
+
+function refreshSuppliesInventory() {
+  google.script.run.withSuccessHandler(data => {
+    suppliesInventory = data;
+    const listDiv = document.getElementById('supplies-inventory-list');
+    const kindSelect = document.getElementById('sups-kind');
+    
+    kindSelect.innerHTML = '<option value="" disabled selected>Kind of Supplies</option>';
+    
+    let html = `
+      <div class="inv-grid-header" style="grid-template-columns: 1fr 2fr 1fr 1fr 1fr;">
+        <div>ID</div><div>Brand</div><div>Qty</div><div>Phys.</div><div>Status</div>
+      </div>`;
+
+    data.forEach(item => {
+      // Add to Dropdown
+      let opt = new Option(`${item.id} - ${item.brand}`, item.id);
+      kindSelect.add(opt);
+
+      // Add to Table
+      html += `
+        <div class="inv-grid-row" style="grid-template-columns: 1fr 2fr 1fr 1fr 1fr; font-size:11px;">
+          <div style="font-weight:bold;">${item.id}</div>
+          <div>${item.brand}</div>
+          <div>${item.qty}</div>
+          <div>₱${item.totalPhysical.toLocaleString()}</div>
+          <div style="color:${item.status === 'Stable' ? 'green' : 'red'}">${item.status}</div>
+        </div>`;
+    });
+    listDiv.innerHTML = html;
+  }).getSuppliesInventory();
+}
+
+function toggleSupsUI() {
+  const type = document.getElementById('sups-trans-type').value;
+  const payCont = document.getElementById('sups-payment-container');
+  const usedMode = document.getElementById('used-mode-container');
+  const amountInput = document.getElementById('sups-amount');
+
+  payCont.style.display = (type === "Supplies Purchased") ? "block" : "none";
+  usedMode.style.display = (type === "Supplies Used") ? "block" : "none";
+  
+  // Purchased/Credit are calculated automatically
+  amountInput.readOnly = (type !== "Supplies Used");
+  
+  calculateSupsTotal();
+}
+
+function calculateSupsTotal() {
+  const type = document.getElementById('sups-trans-type').value;
+  const selectedId = document.getElementById('sups-kind').value;
+  const qty = parseInt(document.getElementById('item-qty').value);
+  const amountInput = document.getElementById('sups-amount');
+  
+  if (!selectedId) return;
+  const item = suppliesInventory.find(i => i.id === selectedId);
+
+  if (type === "Supplies Purchased" || type === "Credit Supplies") {
+    amountInput.value = (qty * item.costPerUnit).toFixed(2);
+  }
+}
+
+function changeQty(amt) {
+  const input = document.getElementById('item-qty');
+  let val = parseInt(input.value) + amt;
+  if (val >= 1) {
+    input.value = val;
+    calculateSupsTotal();
+  }
+}
+
+function recordSuppliesTransaction() {
+  const type = document.getElementById('sups-trans-type').value;
+  const selectedId = document.getElementById('sups-kind').value;
+  const amount = parseFloat(document.getElementById('sups-amount').value);
+  
+  const item = suppliesInventory.find(i => i.id === selectedId);
+  
+  const payload = {
+    id: selectedId,
+    party: document.getElementById('sups-party').value || "Aqua Wash Laundry Shop",
+    type: type,
+    qtyChange: parseInt(document.getElementById('item-qty').value),
+    amount: amount,
+    payment: (type === "Supplies Purchased") ? document.querySelector('input[name="sups-account-choice"]:checked').value : "N/A",
+    isUnusedMode: document.getElementById('is-unused-mode').checked,
+    journalBalance: item ? item.totalJournal : 0
+  };
+
+  google.script.run.withSuccessHandler(() => {
+    alert("Supplies recorded!");
+    loadSuppliesLog(); // Refresh both panels
+  }).processSuppliesTransaction(payload);
 }
 
 /* ============================================================
