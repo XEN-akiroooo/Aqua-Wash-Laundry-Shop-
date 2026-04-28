@@ -40,79 +40,367 @@ function getExistingServiceIds() {
   return data.flat().filter(id => id !== "");
 }
 
-// --- CUSTOMER CREDIT FETCHING ---
-function getUnsettledTransactions() {
+// --- CUSTOMER PAID FETCHING ---
+function getInvoiceTransactions() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const sheet = ss.getSheetByName('Service Transaction');
-  if (!sheet) return [];
+  const stSheet = ss.getSheetByName('Service Transaction');
+  if (!stSheet) return [];
 
-  const lastRow = sheet.getLastRow();
-  if (lastRow < 4) return [];
-
-  // Fetch B to J (covering ID through Balance/Description)
-  const data = sheet.getRange("B4:J" + lastRow).getValues();
+  const stLastRow = Math.max(stSheet.getLastRow(), 4);
+  // Using getDisplayValues to keep the exact Date formatting from the sheet
+  const stData = stSheet.getRange("B4:J" + stLastRow).getDisplayValues(); 
   
-  // 1. Find all IDs that already have a "Settlement" row
-  const settledIds = new Set();
-  data.forEach(row => {
-    const serviceType = String(row[3]).trim(); // Column E
-    const serviceId = String(row[0]).trim();  // Column B
-    if (serviceType === "Settlement") {
-      settledIds.add(serviceId);
+  let groupedInvoices = {};
+
+  stData.forEach(row => {
+    const ref = String(row[0]).trim();
+    if (!ref) return;
+
+    const date = String(row[1]).trim();
+    const surname = String(row[2]).trim();
+    const firstName = String(row[3]).trim();
+    const fullName = `${firstName} ${surname}`.trim();
+    
+    const type = String(row[5]).trim();
+    
+    // Clean formatting (removes commas and currency symbols) before calculating
+    const price = parseFloat(row[6].replace(/[^0-9.-]+/g,"")) || 0;
+    const payment = parseFloat(row[7].replace(/[^0-9.-]+/g,"")) || 0;
+
+    // Initialize the group if this Ref# is seen for the first time
+    if (!groupedInvoices[ref]) {
+      groupedInvoices[ref] = {
+        refId: ref,
+        fullName: fullName,
+        date: '',
+        serviceType: '',
+        servicePrice: 0,
+        totalPayment: 0,
+        balance: 0
+      };
+    }
+
+    // Add every cash received (including Settlements) to the Total Payment
+    groupedInvoices[ref].totalPayment += payment;
+
+    // If it's NOT a settlement, grab the original details (Date, Type, Price)
+    if (type !== 'Settlement' && !groupedInvoices[ref].serviceType) {
+      groupedInvoices[ref].date = date;
+      groupedInvoices[ref].serviceType = type;
+      groupedInvoices[ref].servicePrice = price;
     }
   });
 
-  // 2. Filter: Must be a Credit, must have a balance > 0, and must NOT be in settledIds
-  const unsettled = data.filter(row => {
-    const id = String(row[0]).trim();
-    const status = String(row[5]); // Column G
-    const balance = cleanAmount(row[7]); // Column I
-    
-    // Valid credit = has "Credit" in status, has money owed, and hasn't been settled yet
-    const isCredit = status.includes("Credit");
-    const hasOwed = balance > 0;
-    const notYetSettled = !settledIds.has(id);
+  const allTransactions = [];
 
-    return id !== "" && isCredit && hasOwed && notYetSettled;
+  // Calculate balances and push to the final array
+  for (const ref in groupedInvoices) {
+    const inv = groupedInvoices[ref];
+    
+    // Calculate balance and round to 2 decimals to prevent floating-point bugs
+    inv.balance = Math.round((inv.servicePrice - inv.totalPayment) * 100) / 100;
+    
+    // Only include it if it has a valid original service (avoids orphaned settlements)
+    if (inv.serviceType) {
+      allTransactions.push(inv);
+    }
+  }
+
+  return allTransactions;
+}
+
+// --- CUSTOMER CREDIT FETCHING ---
+function getUnsettledTransactions() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  
+  // 1. Pre-fetch original Names from Service Transaction to separate Surname and First Name
+  const stSheet = ss.getSheetByName('Service Transaction');
+  let nameMap = {};
+  if (stSheet) {
+    const stLastRow = stSheet.getLastRow();
+    if (stLastRow >= 4) {
+      // Fetch B4:E (Ref #, Date, Surname, FirstName)
+      const stData = stSheet.getRange("B4:E" + stLastRow).getValues();
+      stData.forEach(row => {
+        const ref = String(row[0]).trim();
+        if (ref) {
+          nameMap[ref] = {
+            surname: String(row[2]).trim(),
+            firstName: String(row[3]).trim()
+          };
+        }
+      });
+    }
+  }
+
+  // 2. Fetch Truth/Balances from Balance Tracker(Checker)
+  const btSheet = ss.getSheetByName('Balance Tracker(Checker)');
+  if (!btSheet) return [];
+  
+  const btLastRow = btSheet.getLastRow();
+  if (btLastRow < 3) return [];
+
+  // CHANGED: Now fetching from A to F
+  // Array Indices map: A (0), B (1), C (2), D (3), E (4), F (5)
+  const btData = btSheet.getRange("A3:F" + btLastRow).getValues();
+  const unsettled = [];
+
+  // Helper function to safely handle "(35.00)" accounting formats as true Math
+  function getCleanNumber(val) {
+    if (typeof val === 'number') return val;
+    let s = String(val).replace(/,/g, '').trim();
+    if (s.startsWith('(') && s.endsWith(')')) s = "-" + s.slice(1, -1);
+    let n = parseFloat(s);
+    return isNaN(n) ? 0 : n;
+  }
+
+  btData.forEach(row => {
+    const ref = String(row[0]).trim();       // Col A: Ref #
+    const status = String(row[5]).trim();    // Col F: Status
+
+    // Only target Outstanding Balances 
+    if (ref && status === "With Outstanding Balance") {
+      const ar = Math.abs(getCleanNumber(row[3]));       // Col D: AR
+      const payment = Math.abs(getCleanNumber(row[4]));  // Col E: Payment
+      const balance = ar - payment; // Ensures precision logic difference
+
+      if (balance > 0) {
+        // Fallback: grab directly from Col B and C in Tracker if needed
+        let surname = String(row[1]).trim();
+        let firstName = String(row[2]).trim();
+
+        // Give priority to the perfectly split names mapped from Service Transaction
+        if (nameMap[ref] && (nameMap[ref].surname || nameMap[ref].firstName)) {
+          surname = nameMap[ref].surname;
+          firstName = nameMap[ref].firstName;
+        } 
+
+        const fullName = `${firstName} ${surname}`.trim();
+
+        unsettled.push({
+          refId: ref,
+          surname: surname,
+          firstName: firstName,
+          fullName: fullName,
+          balance: balance
+        });
+      }
+    }
   });
 
-  console.log("Found unsettled rows: " + unsettled.length);
-  return unsettled; 
+  return unsettled;
 }
+
+// ------- EQUIPMENT BALANCE ------- //
+
+// --- PROCESSING EQUIPMENT 
+function processEquipmentTransaction(data) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const transSheet = ss.getSheetByName("Supplies & Other Transaction");
+  const balSheet = ss.getSheetByName("Balance Tracker(Checker)");
+
+  // 1. Generate Unique ID (EQPT-XXXX)
+  const idRange = transSheet.getRange("B2:B" + Math.max(transSheet.getLastRow(), 2)).getValues();
+  let maxId = 0;
+  for (let i = 0; i < idRange.length; i++) {
+    let val = String(idRange[i][0]).trim();
+    if (val.startsWith("EQPT-")) {
+      let num = parseInt(val.replace("EQPT-", ""), 10);
+      if (num > maxId) maxId = num;
+    }
+  }
+  const newId = "EQPT-" + String(maxId + 1).padStart(4, '0');
+
+  // 2. Format Date as exactly dd/mm/yyyy
+  const dateObj = new Date();
+  const dd = String(dateObj.getDate()).padStart(2, '0');
+  const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
+  const yyyy = dateObj.getFullYear();
+  const formattedDate = `${dd}/${mm}/${yyyy}`; 
+
+  // 3. Prepare rows for Supplies & Other Transaction
+  let rowsToWrite = [];
+
+  if (data.type === "Equipment Sold") {
+    // Row 1: Sale of Equipment
+    rowsToWrite.push([null, newId, formattedDate, `${data.party} (${data.eqptId})`, data.type, null, null, null, data.amount, data.payment]);
+
+    // Row 2: Accumulated Removal (Gets Acc Dep value)
+    rowsToWrite.push([null, newId, formattedDate, `${data.party} (${data.eqptId})`, "Accumulated Removal", null, null, null, data.accDep, "N/A"]);
+
+    // Row 3: Gain or Loss
+    let diff = data.amount - data.carrying;
+    if (diff > 0) { 
+      // Gain: Sold higher than carrying
+      rowsToWrite.push([null, newId, formattedDate, `${data.party} (${data.eqptId})`, "Gain on Equipment Sale", null, null, null, diff, "N/A"]);
+    } else if (diff < 0) { 
+      // Loss: Sold lower than carrying
+      rowsToWrite.push([null, newId, formattedDate, `${data.party} (${data.eqptId})`, "Loss on Equipment Sale", null, null, null, Math.abs(diff), "N/A"]);
+    }
+  } else {
+    // Regular Acquisition
+    rowsToWrite.push([null, newId, formattedDate, data.party, data.type, null, null, null, data.amount, data.payment]);
+  }
+
+  // Write to Supplies & Other Transaction
+  if (rowsToWrite.length > 0) {
+    const nextTransRow = transSheet.getLastRow() + 1;
+    transSheet.getRange(nextTransRow, 1, rowsToWrite.length, rowsToWrite[0].length).setValues(rowsToWrite);
+  }
+
+  // 4. Write to Balance Tracker if it is Acquired
+  if (data.type === "Equipment Acquired" || data.type === "Eqpt. Acquired on Credit") {
+    const lastBalRow = balSheet.getLastRow();
+    const qVals = balSheet.getRange("Q3:Q" + Math.max(lastBalRow, 3)).getValues();
+    
+    let insertRow = 3;
+    for (let i = 0; i < qVals.length; i++) {
+      if (qVals[i][0] === "") {
+        insertRow = i + 3;
+        break;
+      }
+      insertRow = i + 4;
+    }
+
+    // Write to Q(17), R(18), T(20), U(21)
+    // Range Q to U = 5 columns. S(Cost) will be skipped/null so formula can take over if it exists.
+    balSheet.getRange(insertRow, 17, 1, 5).setValues([[newId, formattedDate, null, data.scrapValue, data.usefulLife]]);
+  }
+
+  return newId; // Send ID back to HTML to notify user
+}
+
+// --- EQUIPMENT FETCHING
+
+function getEquipmentInventory() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName("Balance Tracker(Checker)");
+  if (!sheet) return [];
+
+  // Q=17, R=18, S=19, W=23, X=24, AB=28
+  const lastRow = sheet.getLastRow();
+  if (lastRow < 3) return [];
+  
+  const range = sheet.getRange(3, 17, lastRow - 2, 12).getValues(); 
+  
+  return range.map(row => {
+    // Force dates into exact dd/mm/yyyy format
+    let rawDate = row[1];
+    let formattedDate = rawDate;
+    if (rawDate instanceof Date) {
+      let dd = String(rawDate.getDate()).padStart(2, '0');
+      let mm = String(rawDate.getMonth() + 1).padStart(2, '0');
+      let yyyy = rawDate.getFullYear();
+      formattedDate = `${dd}/${mm}/${yyyy}`;
+    }
+
+    return {
+      id: row[0],          // Col Q 
+      date: formattedDate, // Col R (Formatted)
+      cost: row[2],        // Col S 
+      accDep: row[6],      // Col W (Needed for Accumulated Removal)
+      carrying: row[7],    // Col X 
+      status: row[11]      // Col AB 
+    };
+  });
+}
+
 
 // --- OTHER TRANSACTION FETCHING --- //
 function saveOtherTransaction(payload) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sheet = ss.getSheetByName("Supplies & Other Transaction");
+  const tAccountSheet = ss.getSheetByName("T-Accounts(Database2)");
   
-  if (!sheet) return "Error: Sheet Not Found";
+  if (!sheet || !tAccountSheet) return "Error: Required Sheets Not Found";
 
-  // 1. Find the true last row with data in Column B (Transaction No.)
-  const values = sheet.getRange("B:B").getValues();
-  let lastRow = 0;
-  for (let i = values.length - 1; i >= 0; i--) {
-    if (values[i][0] !== "") {
-      lastRow = i + 1;
+  // --- 1. EXTRACT PAYLOAD DATA ---
+  const tId = payload[0];
+  const tWith = payload[2];
+  const tType = payload[3];
+  const tAmt = parseFloat(payload[7]) || 0;
+  const tPayMode = payload[8];
+
+  // --- 2. GET LIVE BALANCES FROM T-ACCOUNTS ---
+  // D3 = Cash on Hand, H3 = Cash in Bank, AB3 = Accounts Payable
+  const cashOnHandBal = parseFloat(tAccountSheet.getRange("D3").getValue()) || 0;
+  const cashInBankBal = parseFloat(tAccountSheet.getRange("H3").getValue()) || 0;
+  const accountsPayableBal = parseFloat(tAccountSheet.getRange("AB3").getValue()) || 0;
+
+  // --- 3. SPECIFIC RESTRICTIONS PER YOUR RULES ---
+
+  // Rule: Debt Payment validation against Accounts Payable (Cell AB3)
+  if (tType === "Debt Payment") {
+    if (tAmt > accountsPayableBal) {
+      return `ERROR: The Debt Payment (₱${tAmt.toFixed(2)}) exceeds the current Accounts Payable balance (₱${accountsPayableBal.toFixed(2)}).`;
+    }
+  }
+
+  // Rule: Transfer validations (Cells D3 and H3)
+  if (tType === "Cash on hand to Cash in bank") {
+    if (tAmt > cashOnHandBal) {
+      return `ERROR: Transfer amount (₱${tAmt.toFixed(2)}) exceeds available Cash on Hand (₱${cashOnHandBal.toFixed(2)}).`;
+    }
+  }
+
+  if (tType === "Cash in bank to Cash on hand") {
+    if (tAmt > cashInBankBal) {
+      return `ERROR: Transfer amount (₱${tAmt.toFixed(2)}) exceeds available Cash in Bank (₱${cashInBankBal.toFixed(2)}).`;
+    }
+  }
+
+  // --- 4. GENERAL CASH OUTFLOW VALIDATION ---
+  // This checks any transaction (like Supplies Payment) that reduces cash
+  const masterSheet = ss.getSheetByName("Entries(MasterData)");
+  let creditAcc = "";
+  
+  if (masterSheet) {
+    const mData = masterSheet.getDataRange().getValues();
+    for (let i = 7; i < mData.length; i++) {
+      if (String(mData[i][0]).trim() === String(tType).trim()) {
+        creditAcc = String(mData[i][4]).trim(); // Column E: Source (Credit)
+        break;
+      }
+    }
+  }
+
+  // Check general outflow based on Payment Mode or Credit Account
+  if (creditAcc === "Cash on Hand" || tPayMode === "Cash on Hand") {
+    // Only check if it's not a transfer already handled above
+    if (tType !== "Cash on hand to Cash in bank" && tAmt > cashOnHandBal) {
+      return `ERROR: Insufficient Cash on Hand. Current Balance: ₱${cashOnHandBal.toFixed(2)}`;
+    }
+  }
+
+  if (creditAcc === "Cash in Bank" || tPayMode === "Cash in Bank") {
+    if (tType !== "Cash in bank to Cash on hand" && tAmt > cashInBankBal) {
+      return `ERROR: Insufficient Cash in Bank. Current Balance: ₱${cashInBankBal.toFixed(2)}`;
+    }
+  }
+
+  // --- 5. EXECUTE SAVE ---
+  const bValues = sheet.getRange("B4:B").getValues();
+  let destRow = -1;
+  
+  for (let i = 0; i < bValues.length; i++) {
+    if (String(bValues[i][0]).trim() === "") {
+      destRow = i + 4;
       break;
     }
   }
-  
-  // 2. Insert row to prevent overwriting existing formulas below the table
-  sheet.insertRowAfter(lastRow);
-  const destRow = lastRow + 1;
-  
-  // 3. Write data starting at Column B (Index 2) spanning 8 columns
-  const targetRange = sheet.getRange(destRow, 2, 1, 8);
-  targetRange.setValues([payload]);
-  
-  // 4. Force strict formatting to ensure ledger formulas don't break
-  sheet.getRange(destRow, 2).setNumberFormat("@"); // Force Column B (ID) to Plain Text
-  sheet.getRange(destRow, 3).setNumberFormat("dd/MM/yyyy"); // Force Column C (Date) to strict format
-  
+
+  if (destRow === -1) {
+    destRow = sheet.getLastRow() + 1;
+  }
+
+  sheet.getRange(destRow, 2, 1, 9).setValues([payload]);
+  sheet.getRange(destRow, 2).setNumberFormat("@"); 
+  sheet.getRange(destRow, 3).setNumberFormat("dd/MM/yyyy"); 
+
   return "Success";
 }
 
-// --- MASTERDATA FETCHING ---
+// --- MASTERDATA FETCHING --->
 function getSheetData(sheetName) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   
@@ -156,13 +444,15 @@ function getSheetData(sheetName) {
   // --- TARGET: CUSTOMERS ---
   if (sheetName === "Customers List(MasterData)" || sheetName === "Customers") {
     return dataRows
-      .filter(row => String(row[0]).trim() !== "" || String(row[1]).trim() !== "") // Ensure it's not a blank row
+      .filter(row => String(row[0]).trim() !== "" || String(row[1]).trim() !== "") 
       .map(row => {
         const surname = String(row[0]).trim();
         const firstName = String(row[1]).trim();
-        // Combines First Name and Surname to fit your single frontend input box
         const fullName = `${firstName} ${surname}`.trim(); 
-        return [fullName];
+        
+        // Return all three items!
+        // [0] = Full Name, [1] = First Name, [2] = Surname
+        return [fullName, firstName, surname]; 
       });
   }
   
@@ -345,7 +635,7 @@ function deleteDataFromSheet(targetCategory, primaryValue) {
 }
 
 /* ====================================================================================================
-   DASHBOARD INPUTS (BRIDGE) SERVICE CUTEII
+   DASHBOARD INPUTS (BRIDGE) SERVICE CUTEII (ADD/DELETE)
 ==================================================================================================== */
 
 function addServiceOrderToSheet(sheetName, payload) {
@@ -354,9 +644,9 @@ function addServiceOrderToSheet(sheetName, payload) {
   
   if (!sheet) return "Sheet Not Found";
 
-  // 1. Find the last row with actual data in Column B (Service ID)
+  // 1. Find the last row with data in Column B
   const values = sheet.getRange("B:B").getValues();
-  let lastRow = 0;
+  let lastRow = 3; 
   for (let i = values.length - 1; i >= 0; i--) {
     if (values[i][0] !== "") {
       lastRow = i + 1;
@@ -364,18 +654,40 @@ function addServiceOrderToSheet(sheetName, payload) {
     }
   }
   
-  // 2. Insert a fresh row after the last data to ensure space exists
+  const destRow = Math.max(lastRow + 1, 4);
+  
+  // 2. Insert the row
   sheet.insertRowAfter(lastRow);
   
-  const destRow = lastRow + 1;
-  
-  // 3. Write payload starting from Column B (Index 2)
-  // Payload: [ID, Date, Name, Service Type, Price, Status, Cash, Balance, Description]
-  sheet.getRange(destRow, 2, 1, payload.length).setValues([payload]);
+  // 3. Write the payload
+  sheet.getRange(destRow, 1, 1, payload.length).setValues([payload]);
+
+  // --- NEW: MERGE E AND F FOR THE NEW ROW ---
+  // Column E is index 5, and we want to merge 2 columns across (E and F)
+  sheet.getRange(destRow, 5, 1, 2).mergeAcross();
+
+  // Optional: Center the text in the merged cell
+  sheet.getRange(destRow, 5).setHorizontalAlignment("left");
   
   return "Success";
 }
 
+function deleteOrderById(refId) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName('Service Transaction');
+  const lastRow = sheet.getLastRow();
+  if (lastRow < 4) return "No data to delete.";
+
+  const data = sheet.getRange("B1:B" + lastRow).getValues();
+  
+  // Backward loop is essential when deleting rows to maintain index accuracy
+  for (let i = data.length - 1; i >= 0; i--) {
+    if (String(data[i][0]).trim() === String(refId).trim()) {
+      sheet.deleteRow(i + 1);
+    }
+  }
+  return "All records for " + refId + " deleted.";
+}
 
 /* ====================================================================================================
    SENDING API KEY (EMAIL)
