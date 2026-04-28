@@ -171,7 +171,57 @@ body {
 .label-header.orange-gradient { background: linear-gradient(to right, #925105, #FF8A00); }  
 .label-header.gray-gradient { background: linear-gradient(to right, #777B7E, #D9DDDC); }  
 
-  
+/* =========================
+   EQUIPMENT DESIGNS
+========================= */
+
+/* Container for the inventory list */
+#eqpt-inventory-list {
+  padding: 0;
+  margin-top: 10px;
+  font-family: 'Spartan', sans-serif;
+  overflow-y: auto;
+  max-height: 450px;
+}
+
+/* Header and Row Grid Definition (5 Columns) */
+.inv-grid-header, .inv-grid-row {
+  display: grid;
+  grid-template-columns: 1.5fr 1.2fr 1fr 1fr 0.8fr; /* Responsive column widths */
+  padding: 12px 10px;
+  align-items: center;
+  text-align: left;
+}
+
+/* Header specific styling */
+.inv-grid-header {
+  background-color: #fdfdfd;
+  font-weight: bold;
+  font-size: 11px;
+  color: #888;
+  text-transform: uppercase;
+  border-bottom: 2px solid #FFBD59; /* Thicker yellow line for header */
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+/* Row specific styling */
+.inv-grid-row {
+  font-size: 12px;
+  color: #333;
+  border-bottom: 1px solid #FFBD59; /* Yellow row separators */
+  transition: background 0.2s;
+}
+
+.inv-grid-row:hover {
+  background-color: #fffef0; /* Subtle hover effect */
+}
+
+/* Status colors */
+.status-operating { color: #28a745; font-weight: bold; }
+.status-sold { color: #dc3545; font-weight: bold; }
+
 /* =========================
    FINANCIAL REPORT STYLING
 ========================= */
@@ -687,6 +737,7 @@ background: linear-gradient(to right, #d32f2f, #f44336) !important;
   <div class="tabs-container">
     <div class="tab-link active-tab" onclick="switchTab(this, 'service-input')">Service Input</div>
     <div class="tab-link" onclick="switchTab(this, 'supplies-log')">Supplies Log</div>
+    <div class="tab-link" onclick="switchTab(this, 'eqpt-log')">Equipment Log</div>
     <div class="tab-link" onclick="switchTab(this, 'other-trans')">Other Transactions</div>
   </div>
 
@@ -735,7 +786,7 @@ background: linear-gradient(to right, #d32f2f, #f44336) !important;
       <div id="prev-customer" class="preview-value-box">---</div>
     </div>
     <div class="preview-row">
-      <div class="preview-label blue">Service ID</div>
+      <div class="preview-label blue">Service Ref #</div>
       <div id="prev-id" class="preview-value-box">---</div>
     </div>
     <div style="margin: 15px 0;"></div> 
@@ -771,61 +822,88 @@ background: linear-gradient(to right, #d32f2f, #f44336) !important;
         <h3 class="spartan-text" style="color:#FFBD59;">SUPPLIES LOG</h3>
         <div class="divider" style="background-color:#FFBD59; height:2px; margin: 10px 0 20px 0;"></div>
 
-        <input type="text" placeholder="Transaction With" class="form-input md yellow">
+        <input type="text" placeholder="Party Invloved" class="form-input md yellow">
         <select class="form-input md yellow"><option>Transaction Type</option></select>
         <select class="form-input sm miniY"><option>Kind of Supplies</option></select>
+
+        <div class="qty-container" style="margin-bottom: 15px;">
+          <button type="button" class="qty-btn" onclick="changeQty(-1)">−</button>
+          <input type="number" id="item-qty" class="qty-input" value="1" min="1" readonly>
+          <button type="button" class="qty-btn" onclick="changeQty(1)">+</button>
+        </div>
+
         <input type="number" placeholder="Total Amount" class="form-input md black">
 
-        <div class="qty-container">
-    <button type="button" class="qty-btn" onclick="changeQty(-1)">−</button>
-    <input type="number" id="item-qty" class="qty-input" value="1" min="1" readonly>
-    <button type="button" class="qty-btn" onclick="changeQty(1)">+</button>
+        <div class="payment-method-container">
+          <p style="font-size: 14px; color: #555; margin-bottom: 10px;">Select Payment Method:</p>
+          <div class="radio-group">
+           <label class="radio-label"><input type="radio" name="sups-account-choice" value="Cash on Hand"><span class="custom-radio"></span> Cash on Hand</label>
+           <label class="radio-label"><input type="radio" name="sups-account-choice" value="Cash in Bank"><span class="custom-radio"></span> Cash in Bank</label>
+          </div>
         </div>
         
-        <button class="btn large yellow-gradient">Record Transaction</button>
-        <button class="btn large grey">Generate ID</button>
+        <button class="btn medium yellow-gradient">Record Transaction</button>
       </div>
 
       <div class="sub-frame second-frame" style="border-color:#FFBD59;">
-        <div class="label-header yellow-gradient">TRANSACTION ENTRIES</div>
-        <div id="preview-content-area" class="preview-grid">
-          <div class="preview-row">
-            <div class="preview-label yellow">Date</div>
-            <div class="preview-value-box">Sample (April 2, 2026)</div>
-          </div>
-          <div style="margin: 10px 0;"></div>
-          <div class="preview-row">
-            <div class="preview-label yellow">Transaction Type</div>
-            <div class="preview-value-box">Sample (Purchase Supplies)</div>
-          </div>
-          <div class="preview-row">
-            <div class="preview-label yellow">Transaction With</div>
-            <div class="preview-value-box">Sample (puregold)</div>
-          </div>
-          <div class="preview-row">
-            <div class="preview-label yellow">Transaction No.</div>
-            <div class="preview-value-box">Sample (T26-324618)</div>
-          </div>
-          <div style="margin: 15px 0;"></div>
-          <div class="preview-row">
-            <div class="preview-label yellow">Debit</div>
-            <div class="preview-value-box">Sample (Laundry Supplies)</div>
-          </div>
-          <div class="preview-row">
-            <div class="preview-label yellow">Credit</div>
-            <div class="preview-value-box">Sample (Cash)</div>
-          </div>
-          <div style="margin: 5px 0;"></div>
-          <div class="preview-row">
-            <div class="preview-label yellow">Amount</div>
-            <div class="preview-value-box">Sample (₱100)</div>
-          </div>
-        </div>
+        <div class="label-header yellow-gradient">SUPPLIES INVENTORY</div>
+        
       </div>
 
       
     </div>
   </div>
+
+  <!-- EQUIPMENT LOG -->
+  <div id="eqpt-log" class="tab-content" style="display:none;">
+  <div class="dual-frame-container">
+    <div class="sub-frame first-frame">
+      <h3 class="spartan-text" style="color:#FFBD59;">EQUIPMENT LOG</h3>
+      <div class="divider" style="background-color:#FFBD59; height:2px; margin: 10px 0 20px 0;"></div>
+
+      <input type="text" id="eqpt-party" placeholder="Party Involved" class="form-input md yellow">
+      
+      <select id="eqpt-trans-type" class="form-input md yellow" onchange="toggleEqptTransactionUI()">
+        <option value="" disabled selected>Select Transaction Type</option>
+      </select>
+
+      <select id="eqpt-id-select" class="form-input md yellow" style="display:none;">
+        <option value="" disabled selected>Select Equipment ID</option>
+      </select>
+
+      <div id="eqpt-advance-container" style="display:none; margin: 10px 0;">
+        <button type="button" class="btn small yellow-gradient" onclick="toggleEqptAdvance()">
+         + Advance Options (Depreciation)
+        </button>
+        
+        <div id="eqpt-advance-inputs" style="display:none; margin-top:10px;">
+          <input type="number" id="eqpt-scrap" placeholder="Scrap Value" class="form-input sm yellow" style="width:48%; display:inline-block;">
+          <input type="number" id="eqpt-life" placeholder="Useful Life (Years)" class="form-input sm yellow" style="width:48%; display:inline-block; margin-left:2%;">
+        </div>
+      </div>
+
+      <input type="number" id="eqpt-amount" placeholder="Total Amount" class="form-input md black">
+
+      <div id="eqpt-payment-container" class="payment-method-container">
+        <p style="font-size: 14px; color: #555; margin-bottom: 10px;">Select Payment Method:</p>
+        <div class="radio-group">
+          <label class="radio-label"><input type="radio" name="eqpt-account-choice" value="Cash on Hand"><span class="custom-radio"></span> Cash on Hand</label>
+          <label class="radio-label"><input type="radio" name="eqpt-account-choice" value="Cash in Bank"><span class="custom-radio"></span> Cash in Bank</label>
+        </div>
+      </div>
+      
+      <p id="eqpt-credit-note" style="display:none; color: #888; font-style: italic;">Payment Method: N/A (on Credit)</p>
+      
+      <button class="btn medium yellow-gradient" onclick="recordEqptTransaction()">Record Transaction</button>
+    </div>
+
+    <div class="sub-frame second-frame" style="border-color:#FFBD59; background: white;">
+     <div class="label-header yellow-gradient">EQUIPMENT INVENTORY</div> 
+     <div id="eqpt-inventory-list">
+      </div>
+    </div>
+  </div>
+</div>
 
   <!-- OTHER TRANSACTIONS -->
   <div id="other-trans" class="tab-content" style="display:none;">
@@ -835,14 +913,22 @@ background: linear-gradient(to right, #d32f2f, #f44336) !important;
   <h3 class="spartan-text" style="color:#FF8A00;">OTHER TRANSACTIONS</h3>
   <div class="divider" style="background-color:#FF8A00; height:2px; margin: 10px 0 20px 0;"></div>
 
-  <input type="text" id="otherTransWith" placeholder="Transaction With" class="form-input md orange">
+  <input type="text" id="otherTransWith" placeholder="Party Invloved" class="form-input md orange">
   <select id="otherTransType" class="form-input md orange">
     <option value="">Transaction Type</option>
   </select>
   <input type="number" id="otherTransAmount" placeholder="Total Amount" class="form-input md black">
+
+     <div class="payment-method-container">
+        <p style="font-size: 14px; color: #555; margin-bottom: 10px;">Select Payment Method:</p>
+        <div class="radio-group">
+          <label class="radio-label"><input type="radio" name="other-account-choice" value="Cash on Hand"><span class="custom-radio"></span> Cash on Hand</label>
+          <label class="radio-label"><input type="radio" name="other-account-choice" value="Cash in Bank"><span class="custom-radio"></span> Cash in Bank</label>
+        </div>
+      </div>
   
-  <button id="btnRecordOtherTrans" class="btn large orange-gradient">Record Transaction</button>
-  <button id="btnGenerateOtherId" class="btn large grey">Generate ID</button>
+  <button id="btnRecordOtherTrans" class="btn medium orange-gradient">Record Transaction</button>
+  <button id="btnGenerateOtherId" class="btn medium grey">Generate Transaction</button>
 </div>
       
       <div class="sub-frame second-frame" style="border-color:#FF8A00;">
@@ -861,7 +947,7 @@ background: linear-gradient(to right, #d32f2f, #f44336) !important;
     </div>
     
     <div class="preview-row">
-      <div class="preview-label orange">Transaction With</div>
+      <div class="preview-label orange">Party Invloved</div>
       <div class="preview-value-box" id="prevOtherWith">---</div>
     </div>
     
@@ -873,11 +959,11 @@ background: linear-gradient(to right, #d32f2f, #f44336) !important;
     
     <div class="preview-row">
       <div class="preview-label orange">Debit</div>
-      <div class="preview-value-box" style="color: gray; font-style: italic;">Auto-calculated</div>
+      <div class="preview-value-box" id="prevOtherDebit" style="color: gray; font-style: italic;">Auto-calculated</div>
     </div>
     <div class="preview-row">
       <div class="preview-label orange">Credit</div>
-      <div class="preview-value-box" style="color: gray; font-style: italic;">Auto-calculated</div>
+      <div class="preview-value-box" id="prevOtherCredit" style="color: gray; font-style: italic;">Auto-calculated</div>
     </div>
     <div style="margin: 5px 0;"></div>
     
@@ -891,6 +977,7 @@ background: linear-gradient(to right, #d32f2f, #f44336) !important;
       
     </div>
   </div>
+
 
 </div>
 
@@ -1143,10 +1230,21 @@ function setActive(btn, sectionId) {
 }
 
 function switchTab(el, tabId) {
+  // 1. Handle Tab Styling
   document.querySelectorAll('.tab-link').forEach(t => t.classList.remove('active-tab'));
   el.classList.add('active-tab');
+  
+  // 2. Handle Content Visibility
   document.querySelectorAll('.tab-content').forEach(tc => tc.style.display = 'none');
-  document.getElementById(tabId).style.display = 'block';
+  const target = document.getElementById(tabId);
+  if (target) {
+    target.style.display = 'block';
+  }
+
+  // 3. NEW: Trigger Data Loads
+  if (tabId === 'eqpt-log') {
+    loadEquipmentLog();
+  }
 }
 
 function toggleSidebar() {
@@ -1166,10 +1264,11 @@ function showForm(formType) {
   if (formType === 'new-customer') {
     title.innerText = "NEW CUSTOMER ACCOUNT";
     container.innerHTML = `
-      <input type="text" id="new-cust-name" placeholder="Enter Customer Surname..." class="form-input md black">
-      <input type="text" id="new-cust-name" placeholder="Enter Customer Name..." class="form-input md black">
+      <input type="text" id="new-cust-surname" placeholder="Enter Customer Surname..." class="form-input md black">
+      <input type="text" id="new-cust-firstname" placeholder="Enter Customer Name..." class="form-input md black">
       <button class="btn medium blue-gradient" onclick="saveNewCustomer()">List New Customer & Save</button>
       ${backBtn}`;
+
   } else if (formType === 'add-order') {
     title.innerText = "ADD SERVICE ORDER";
     container.innerHTML = `
@@ -1184,7 +1283,6 @@ function showForm(formType) {
       <div class="payment-method-container">
         <p style="font-size: 14px; color: #555; margin-bottom: 10px;">Select Payment Method:</p>
         <div class="radio-group">
-          <label class="radio-label"><input type="radio" name="account-choice" value="N/A" checked><span class="custom-radio"></span> N/A</label>
           <label class="radio-label"><input type="radio" name="account-choice" value="Cash on Hand"><span class="custom-radio"></span> Cash on Hand</label>
           <label class="radio-label"><input type="radio" name="account-choice" value="Cash in Bank"><span class="custom-radio"></span> Cash in Bank</label>
         </div>
@@ -1199,18 +1297,17 @@ function showForm(formType) {
   } else if (formType === 'payment') {
     title.innerText = "CUSTOMER CREDIT SETTLEMENT";
     container.innerHTML = `
-      <input id="settle-customer" list="settle-cust-list" placeholder="Search Customer..." class="form-input md cyan search-input" oninput="updateSettleIds()">
+      <input id="settle-customer" list="settle-cust-list" placeholder="Search Customer Name..." class="form-input md cyan search-input" oninput="updateSettleIds()">
       <datalist id="settle-cust-list"></datalist>
       
-      <input id="settle-id" list="settle-id-list" placeholder="Search Service ID..." class="form-input md cyan search-input" oninput="previewSettlement()">
+      <input id="settle-id" list="settle-id-list" placeholder="Search Service Ref#..." class="form-input md cyan search-input" oninput="previewSettlement()">
       <datalist id="settle-id-list"></datalist>
 
-      <input id="settle-payment-amount" type="number" placeholder="Cash Payment" class="form-input md black">
+      <input id="settle-payment-amount" type="number" min="0" placeholder="Cash Payment" class="form-input md black" oninput="validatePaymentLimit()">
 
       <div class="payment-method-container">
         <p style="font-size: 14px; color: #555; margin-bottom: 10px;">Select Payment Method:</p>
         <div class="radio-group">
-          <label class="radio-label"><input type="radio" name="account-choice" value="N/A" checked><span class="custom-radio"></span> N/A</label>
           <label class="radio-label"><input type="radio" name="account-choice" value="Cash on Hand"><span class="custom-radio"></span> Cash on Hand</label>
           <label class="radio-label"><input type="radio" name="account-choice" value="Cash in Bank"><span class="custom-radio"></span> Cash in Bank</label>
         </div>
@@ -1224,12 +1321,19 @@ function showForm(formType) {
   } else if (formType === 'search-invoice') {
     title.innerText = "SERVICE INVOICE";
     container.innerHTML = `
-      <select class="form-input md cyan"><option>Pick Customer Name</option></select>
-      <select class="form-input md cyan"><option>Pick Their Service ID</option></select>
-      <button class="btn medium blue-gradient">Print</button>
-      <button class="btn medium red-gradient" style="background:red">Remove and Delete Order</button>
+      <input id="inv-customer" list="inv-cust-list" placeholder="Search Customer Name First..." class="form-input md cyan search-input" oninput="updateInvoiceIds()">
+      <datalist id="inv-cust-list"></datalist>
+      
+      <input id="inv-id" list="inv-id-list" placeholder="Select Customer to unlock Ref#..." class="form-input md cyan search-input" oninput="previewInvoice()" disabled>
+      <datalist id="inv-id-list"></datalist>
+
+      <button class="btn medium blue-gradient" onclick="printInvoice()">Print Invoice</button>
+      <button class="btn medium" style="background: #ff4d4d; color: white;" onclick="confirmDeleteOrder()">Remove and Delete Order</button>
+      
       ${backBtn}`;
-  }
+          
+    loadInvoiceData(); 
+}
 }
 
 function resetServicePanel() {
@@ -1273,31 +1377,30 @@ function changeQty(amount) {
 }
 
 /* ============================================================
-   4. SERVICE INPUT FUNCTIONALITY (ADD, SETTLEMENT, UPDATE DELETE)
+   4. SERVICE INPUT FUNCTIONALITY (ADD, SETTLEMENT, PRINT, DELETE)
    ============================================================ */
 
 
 // ------------ ADDING SERVICE ORDER ------------
 
 // Global variables to store fetched prices and the final payload
+let customerDatabase = [];
 let servicePrices = []; 
-let orderPayload = null; 
+let orderPayload = null;
 
 function loadOrderDropdowns() {
   // Fetch Customers
   google.script.run.withSuccessHandler(customers => {
-    // FIX: Target the <datalist>, NOT the <input>
+    customerDatabase = customers; 
     const custDatalist = document.getElementById('cust-list'); 
-    if (!custDatalist) return; // Stop if element isn't on screen
+    if (!custDatalist) return; 
     
-    // Clear the datalist (Do not put a "Pick Customer Name" option here, use the input placeholder instead)
     custDatalist.innerHTML = ''; 
-
-    customers.sort((a, b) => a[0].localeCompare(b[0])); //APLHA KA G!
+    customers.sort((a, b) => a[0].localeCompare(b[0])); 
 
     customers.forEach(row => {
       let opt = document.createElement('option');
-      opt.value = row[0]; // For datalists, the 'value' is what shows up in the search
+      opt.value = row[0]; 
       custDatalist.appendChild(opt);
     });
   }).getSheetData('Customers List(MasterData)');
@@ -1305,16 +1408,17 @@ function loadOrderDropdowns() {
   // Fetch Services & Prices
   google.script.run.withSuccessHandler(services => {
     servicePrices = services; 
-    // FIX: Target the <datalist>, NOT the <input>
     const servDatalist = document.getElementById('serv-list'); 
-    if (!servDatalist) return; // Stop if element isn't on screen
+    if (!servDatalist) return; 
     
     servDatalist.innerHTML = '';
     services.forEach(row => {
       let opt = document.createElement('option');
       const price = parseFloat(row[1]).toFixed(2);
-      // Combine name and price in the value so it's fully searchable
-      opt.value = `${row[0]} - ₱ ${price}`; 
+      
+      opt.value = row[0]; // FIX: Keep value clean for the backend lookup
+      opt.textContent = `${row[0]} - ₱ ${price}`; // User still sees the price in the dropdown
+      
       servDatalist.appendChild(opt);
     });
   }).getSheetData('Service Pricing(MasterData)');
@@ -1332,24 +1436,24 @@ function generateOrderPreview() {
   const customer = document.getElementById('order-customer').value;
   const service = document.getElementById('order-service').value;
   const paymentInput = document.getElementById('order-payment').value;
+  
+  const selectedRadio = document.querySelector('input[name="account-choice"]:checked');
+  const paymentMode = selectedRadio ? selectedRadio.value : "Cash on Hand";
 
   if (!customer || !service || paymentInput === "") {
     alert("You must fill up everything");
     return;
   }
 
+  // Find separated names from our database
+  const matchedCustomer = customerDatabase.find(c => c[0] === customer);
+  const firstName = matchedCustomer ? matchedCustomer[1] : "";
+  const surname = matchedCustomer ? matchedCustomer[2] : customer; 
+
   const payment = parseFloat(paymentInput);
   const matchedService = servicePrices.find(r => r[0] === service);
   const price = matchedService ? parseFloat(matchedService[1]) : 0;
   const balance = price - payment;
-
-  // Determine Status and Description based on Entries(MasterData)
-  let status = "Cash Payment";
-  if (balance > 0) status = "Partial Credit";
-  if (payment === 0) status = "Full Credit";
-
-  // Description for DASHBOARD PRESENTATION ONLY
-  const desc = `To record ${status.toLowerCase()} provided to ${customer}`;
 
   // Date Formatting
   const today = new Date();
@@ -1378,41 +1482,42 @@ function generateOrderPreview() {
     document.getElementById('prev-payment').innerText = `₱ ${payment.toFixed(2)}`;
     document.getElementById('prev-balance').innerText = `₱ ${balance.toFixed(2)}`;
     
-
-    // Prepare Payload (Excluding description as the sheet has a formula)
-    // [ID, Date, Customer, Service Type, Price, Status, Payment, Balance]
+    // --- UPDATED PAYLOAD FOR AQUA WASH ---
     orderPayload = [
-     serviceId,      // Column B (Manual)
-     sheetDateStr,   // Column C (Manual)
-     customer,       // Column D (Manual)
-     service,        // Column E (Manual)
-      "",             // Column F (SKIP - let Formula handle Price)
-      "",             // Column G (SKIP - let Formula handle Status)
-     payment,        // Column H (Manual - Cash Received)
-     ""              // Column I (SKIP - let Formula handle Balance)
-];
+      "",             // Column A: Blank
+      serviceId,      // Column B: Ref #
+      sheetDateStr,   // Column C: Date (dd/mm/yyyy)
+      surname,        // Column D: Surname
+      firstName,      // Column E: First Name
+      "",             // Column F: Total Services (Skipped for merged cell) 
+      service,        // Column G: Type
+      "",             // Column H: Price (Skipped because formula is here)
+      payment,        // Column I: Cash Received
+      paymentMode     // Column J: Payment Mode
+    ];
     
   }).getExistingServiceIds();
 }
 
 function saveOrderData() {
-  // If orderPayload is null, they haven't generated the ID yet
   if (!orderPayload) {
     alert("You must fill up everything and generate the ID first.");
     return;
   }
 
-  // Send to backend
   google.script.run.withSuccessHandler(response => {
     alert("Service Order Saved Successfully!");
     
-    // Clear the form after saving 
+    // Clear the form
     document.getElementById('order-customer').value = "";
     document.getElementById('order-service').value = "";
     document.getElementById('order-payment').value = "";
-    document.getElementById('btn-generate').click(); // Force an update/clear on the right panel
-    orderPayload = null; 
+    // Reset payment mode if it exists
+    const radios = document.getElementsByName('account-choice');
+    radios.forEach(radio => radio.checked = false);
     
+    document.getElementById('btn-generate').click(); 
+    orderPayload = null; 
     resetPreviewArea();
   }).addServiceOrderToSheet('Service Transaction', orderPayload);
 }
@@ -1422,7 +1527,6 @@ function resetPreviewArea() {
     'prev-date', 'prev-customer', 'prev-id', 
     'prev-service', 'prev-price', 'prev-payment', 'prev-balance'
   ];
-  
   fields.forEach(id => {
     const el = document.getElementById(id);
     if (el) el.innerText = "---";
@@ -1432,6 +1536,7 @@ function resetPreviewArea() {
 // ------------ SETTLING SERVICE ORDER ------------
 
 let unsettledData = []; 
+let currentSelectedBalance = 0; // Tracks max limit to prevent overpayment
 
 function loadSettlementData() {
   console.log("Triggering Searchable Settlement Data Load...");
@@ -1441,18 +1546,14 @@ function loadSettlementData() {
       console.log("Backend returned unsettled data:", data);
       unsettledData = data;
       
-      // We check if the INPUT exists before trying to fill the DATALIST
       const custInput = document.getElementById('settle-customer');
       const custDatalist = document.getElementById('settle-cust-list');
       
-      // If the element isn't there yet (user hasn't clicked the button), retry
       if (!custInput || !custDatalist) {
-        console.warn("Searchable elements not found, retrying in 100ms...");
         setTimeout(loadSettlementData, 100);
         return;
       }
 
-      // Clear existing options
       custDatalist.innerHTML = '';
       
       if (data.length === 0) {
@@ -1460,12 +1561,12 @@ function loadSettlementData() {
         return;
       }
 
-      // Get unique names from data (Column Index 2)
-      const uniqueNames = [...new Set(data.map(row => row[2]))].filter(n => n);
+      // Extract unique full names and sort alphabetically
+      const uniqueNames = [...new Set(data.map(row => row.fullName))].sort();
       
       uniqueNames.forEach(name => {
         let opt = document.createElement('option');
-        opt.value = name; // This is what the user sees/filters when typing
+        opt.value = name;
         custDatalist.appendChild(opt);
       });
       
@@ -1478,68 +1579,472 @@ function loadSettlementData() {
 function updateSettleIds() {
   const selectedName = document.getElementById('settle-customer').value;
   const idSelect = document.getElementById('settle-id');
-  if (!idSelect) return;
-
-  idSelect.innerHTML = '<option value="">Pick Their Service ID</option>';
+  const idDatalist = document.getElementById('settle-id-list');
   
-  // Filter global data for this specific customer
-  const customerRows = unsettledData.filter(row => row[2] === selectedName);
+  if (!idSelect || !idDatalist) return;
+
+  // Clear sub-selections
+  idSelect.value = ''; 
+  idDatalist.innerHTML = '';
+  document.getElementById('settle-payment-amount').value = '';
+  currentSelectedBalance = 0;
+  
+  // Filter for IDs belonging to the chosen customer
+  const customerRows = unsettledData.filter(row => row.fullName === selectedName);
   
   customerRows.forEach(row => {
     let opt = document.createElement('option');
-    opt.value = row[0]; 
-    opt.textContent = `ID: ${row[0]} (Bal: ₱${parseFloat(row[7]).toFixed(2)})`;
-    idSelect.appendChild(opt);
+    opt.value = row.refId;
+    idDatalist.appendChild(opt);
   });
   
-  resetPreviewArea(); 
+  previewSettlement(); 
 }
 
 function previewSettlement() {
   const selectedId = document.getElementById('settle-id').value;
-  if (!selectedId) return;
+  const paymentInput = document.getElementById('settle-payment-amount');
 
-  const row = unsettledData.find(r => String(r[0]) === selectedId);
-  console.error("Could not find ID in unsettledData:", selectedId);
+  if (!selectedId) {
+    paymentInput.value = '';
+    currentSelectedBalance = 0;
+    return;
+  }
+
+  const row = unsettledData.find(r => r.refId === selectedId);
   if (!row) return;
+
+  // Auto-fill and lock the limit to the outstanding balance
+  currentSelectedBalance = row.balance;
+  paymentInput.value = row.balance; 
 
   const today = new Date();
   const displayDateStr = today.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-  const sheetDateStr = ("0" + today.getDate()).slice(-2) + "/" + ("0" + (today.getMonth() + 1)).slice(-2) + "/" + today.getFullYear();
 
-  // Mapping indices based on B:J range (B=0, C=1, D=2, E=3, F=4, G=5, H=6, I=7)
-  const balanceValue = parseFloat(row[7]) || 0;
+  // Dynamically update the Right Panel Preview
+  if(document.getElementById('prev-date')) document.getElementById('prev-date').innerText = displayDateStr;
+  if(document.getElementById('prev-customer')) document.getElementById('prev-customer').innerText = row.fullName;
+  if(document.getElementById('prev-id')) document.getElementById('prev-id').innerText = row.refId;
+  if(document.getElementById('prev-service')) document.getElementById('prev-service').innerText = "Settlement";
+  if(document.getElementById('prev-price')) document.getElementById('prev-price').innerText = `₱ 0.00`;
+  if(document.getElementById('prev-payment')) document.getElementById('prev-payment').innerText = `₱ ${row.balance.toFixed(2)}`;
+  if(document.getElementById('prev-balance')) document.getElementById('prev-balance').innerText = `₱ 0.00`;
+}
 
-  document.getElementById('prev-date').innerText = displayDateStr;
-  document.getElementById('prev-customer').innerText = row[2]; // Col D
-  document.getElementById('prev-id').innerText = row[0];       // Col B
-  document.getElementById('prev-service').innerText = "Settlement";
-  document.getElementById('prev-price').innerText = `₱ ${parseFloat(row[4]).toFixed(2)}`; // Col F
-  document.getElementById('prev-payment').innerText = `₱ ${balanceValue.toFixed(2)}`;     // Col I
-  document.getElementById('prev-balance').innerText = `₱ 0.00`;
+// Function to strictly prevent overpayment 
+function validatePaymentLimit() {
+  const paymentInput = document.getElementById('settle-payment-amount');
+  let val = parseFloat(paymentInput.value);
 
-  // Payload: [B:ID, C:Date, D:Name, E:Type, F:Price(skip), G:Status(skip), H:Cash, I:Balance(skip)]
-  orderPayload = [
-    row[0],       
-    sheetDateStr, 
-    row[2],       
-    "Settlement", 
-    "", "",       
-    balanceValue, // Payment = Full remaining balance
-    ""            
-  ];
+  if (val < 0) {
+    paymentInput.value = 0;
+    val = 0;
+  } else if (val > currentSelectedBalance) {
+    paymentInput.value = currentSelectedBalance; // Force limit constraint
+    val = currentSelectedBalance;
+    alert("Amount Error: Payment cannot exceed the outstanding balance of ₱" + currentSelectedBalance.toFixed(2));
+  }
+
+  // Update Right Panel live-preview dynamically
+  if(document.getElementById('prev-payment') && !isNaN(val)) {
+    document.getElementById('prev-payment').innerText = `₱ ${val.toFixed(2)}`;
+    let remBal = currentSelectedBalance - val;
+    if(document.getElementById('prev-balance')) document.getElementById('prev-balance').innerText = `₱ ${remBal.toFixed(2)}`;
+  }
 }
 
 function saveSettlement() {
-  if (!orderPayload) {
+  const selectedId = document.getElementById('settle-id').value;
+  const item = unsettledData.find(r => r.refId === selectedId);
+
+  if (!item) {
     alert("Please select a Customer and Service ID first.");
     return;
   }
 
+  const paymentInput = document.getElementById('settle-payment-amount');
+  const payment = parseFloat(paymentInput.value);
+
+  if (!payment || payment <= 0) {
+    alert("Please enter a valid payment amount.");
+    return;
+  }
+
+  if (payment > item.balance) {
+    alert("Error: Payment exceeds outstanding balance limit.");
+    return;
+  }
+
+  // Retrieve selected Payment Method
+  let paymentMode = "N/A";
+  const modeRadios = document.getElementsByName('account-choice');
+  for (let i = 0; i < modeRadios.length; i++) {
+    if (modeRadios[i].checked) {
+      paymentMode = modeRadios[i].value;
+      break;
+    }
+  }
+
+  const today = new Date();
+  const sheetDateStr = ("0" + today.getDate()).slice(-2) + "/" + ("0" + (today.getMonth() + 1)).slice(-2) + "/" + today.getFullYear();
+
+  // Mapped Exactly to your specified array requirements
+  const orderPayload = [
+    "",              // Column A: Blank
+    item.refId,      // Column B: Ref #
+    sheetDateStr,    // Column C: Date
+    item.surname,    // Column D: Surname (Split Successfully)
+    item.firstName,  // Column E: First Name (Split Successfully)
+    "",              // Column F: Merged / Blank
+    "Settlement",    // Column G: Type
+    "",              // Column H: Price Skipped
+    payment,         // Column I: Cash Received (Validated Limit)
+    paymentMode      // Column J: Payment Mode
+  ];
+
   google.script.run.withSuccessHandler(response => {
     alert("Settlement Recorded Successfully!");
-    resetServicePanel(); // Return to main menu and clear right panel
+    if (typeof resetServicePanel === 'function') resetServicePanel();
   }).addServiceOrderToSheet('Service Transaction', orderPayload);
+}
+
+
+// ------------ PRINT/DELETE SERVICE ORDER ------------
+
+let invoiceDataList = [];
+
+function loadInvoiceData() {
+  const idInput = document.getElementById('inv-id');
+  if (idInput) idInput.disabled = true;
+
+  google.script.run
+    .withSuccessHandler(data => {
+      invoiceDataList = data; // Now holds ALL transactions, aggregated
+      const custDatalist = document.getElementById('inv-cust-list');
+      if (!custDatalist) return;
+
+      custDatalist.innerHTML = '';
+      const uniqueNames = [...new Set(data.map(row => row.fullName))].sort();
+      uniqueNames.forEach(name => {
+        let opt = document.createElement('option');
+        opt.value = name;
+        custDatalist.appendChild(opt);
+      });
+    })
+    .getInvoiceTransactions(); 
+}
+
+function updateInvoiceIds() {
+  const selectedName = document.getElementById('inv-customer').value;
+  const idDatalist = document.getElementById('inv-id-list');
+  const idInput = document.getElementById('inv-id');
+  
+  idInput.value = '';
+  idDatalist.innerHTML = '';
+  
+  const filtered = invoiceDataList.filter(row => row.fullName === selectedName);
+  
+  if (filtered.length > 0) {
+    idInput.disabled = false;
+    idInput.placeholder = "Search Service Ref#...";
+    filtered.forEach(row => {
+      let opt = document.createElement('option');
+      opt.value = row.refId;
+      idDatalist.appendChild(opt);
+    });
+  } else {
+    idInput.disabled = true;
+    idInput.placeholder = "Select Customer to unlock Ref#...";
+  }
+  
+  previewInvoice(); 
+}
+
+// Shows data in your existing Right Panel preview
+function previewInvoice() {
+  const selectedId = document.getElementById('inv-id').value;
+  const item = invoiceDataList.find(r => r.refId === selectedId);
+  
+  if (!item) {
+    if(document.getElementById('prev-date')) document.getElementById('prev-date').innerText = "---";
+    if(document.getElementById('prev-customer')) document.getElementById('prev-customer').innerText = "---";
+    if(document.getElementById('prev-id')) document.getElementById('prev-id').innerText = "---";
+    if(document.getElementById('prev-service')) document.getElementById('prev-service').innerText = "---";
+    if(document.getElementById('prev-price')) document.getElementById('prev-price').innerText = "---";
+    if(document.getElementById('prev-payment')) document.getElementById('prev-payment').innerText = "---";
+    if(document.getElementById('prev-balance')) {
+        document.getElementById('prev-balance').innerText = "---";
+        document.getElementById('prev-balance').style.color = "#333";
+    }
+    return;
+  }
+
+  // Populate actual merged data
+  if(document.getElementById('prev-date')) document.getElementById('prev-date').innerText = item.date;
+  if(document.getElementById('prev-customer')) document.getElementById('prev-customer').innerText = item.fullName;
+  if(document.getElementById('prev-id')) document.getElementById('prev-id').innerText = item.refId;
+  if(document.getElementById('prev-service')) document.getElementById('prev-service').innerText = item.serviceType;
+  
+  if(document.getElementById('prev-price')) document.getElementById('prev-price').innerText = `₱ ${item.servicePrice.toFixed(2)}`;
+  if(document.getElementById('prev-payment')) document.getElementById('prev-payment').innerText = `₱ ${item.totalPayment.toFixed(2)}`;
+  
+  // Balance calculation display
+  const balElem = document.getElementById('prev-balance');
+  if(balElem) {
+    balElem.innerText = `₱ ${item.balance.toFixed(2)}`;
+    // Color code the balance
+    balElem.style.color = item.balance > 0 ? "red" : "green";
+    balElem.style.fontWeight = "bold";
+  }
+}
+
+function confirmDeleteOrder() {
+  const refId = document.getElementById('inv-id').value;
+  if (!refId) return alert("Select an order first.");
+
+  if (confirm(`Are you sure you want to PERMANENTLY delete all records for ${refId}?`)) {
+    google.script.run.withSuccessHandler((res) => {
+       alert(res);
+       // Assuming resetServicePanel() reloads the view
+       if (typeof resetServicePanel === "function") resetServicePanel();
+    }).deleteOrderById(refId);
+  }
+}
+
+function printInvoice() {
+  const selectedId = document.getElementById('inv-id').value;
+  const item = invoiceDataList.find(r => r.refId === selectedId);
+  if (!item) return alert("Please select a valid order.");
+
+  // CONDITION: Block printing if not fully paid
+  if (item.balance > 0) {
+    return alert(`Cannot print invoice. Customer has an outstanding balance of ₱${item.balance.toFixed(2)}.`);
+  }
+
+  const printWindow = window.open('', '_blank', 'height=600,width=800');
+  
+  // Pure HTML String (No script tags to prevent the freeze bug)
+  const htmlContent = `
+    <html>
+      <head>
+        <title>Invoice - ${item.refId}</title>
+        <style>
+          body { font-family: 'Segoe UI', sans-serif; padding: 40px; background-color: #fff; color: #333;}
+          .invoice-box { border: 2px solid #00c2cb; padding: 30px; border-radius: 15px; max-width: 500px; margin: auto; }
+          .header { text-align: center; color: #00c2cb; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+          .row { display: flex; justify-content: space-between; margin: 15px 0; }
+          .label { font-weight: bold; color: #555; }
+          .total { font-size: 20px; color: #00c2cb; margin-top: 20px; border-top: 2px solid #eee; padding-top: 10px; }
+          .paid-stamp { text-align:center; margin-top:20px; font-weight:bold; color:green; text-transform: uppercase; border: 2px solid green; padding: 5px; display: block; }
+        </style>
+      </head>
+      <body>
+        <div class="invoice-box">
+          <div class="header"><h2>AQUA WASH LAUNDRY SHOP</h2><p>Official Receipt</p></div>
+          <div class="row"><span class="label">Date:</span><span>${item.date}</span></div>
+          <div class="row"><span class="label">Ref #:</span><span>${item.refId}</span></div>
+          <div class="row"><span class="label">Customer:</span><span>${item.fullName}</span></div>
+          <div class="row"><span class="label">Service:</span><span>${item.serviceType}</span></div>
+          <div class="row total"><span class="label">Total Paid:</span><span>₱ ${item.totalPayment.toFixed(2)}</span></div>
+          <div class="paid-stamp">PAID IN FULL</div>
+        </div>
+      </body>
+    </html>
+  `;
+
+  printWindow.document.write(htmlContent);
+  printWindow.document.close();
+
+  // Print triggered cleanly from parent to prevent locking Google Apps Script
+  printWindow.onload = function() {
+    printWindow.focus();
+    printWindow.print();
+  };
+}
+
+/* ============================================================
+   6. EQUIPMENT LOG AND INVENTORY
+   ============================================================ */
+
+let currentInventory = [];
+
+// 1. Initialize the Log
+function loadEquipmentLog() {
+  const whitelist = ["Equipment Acquired", "Eqpt. Acquired on Credit", "Equipment Sold"];
+  
+  // Fill Transaction Dropdown
+  google.script.run.withSuccessHandler(data => {
+    const select = document.getElementById('eqpt-trans-type');
+    select.innerHTML = '<option value="" disabled selected>Select Transaction Type</option>';
+    
+    data.forEach(row => {
+      const cleanValue = String(row[0]).trim(); // Fixes the space issue!
+      if (whitelist.includes(cleanValue)) {
+        let opt = document.createElement('option');
+        opt.value = cleanValue;
+        opt.textContent = cleanValue;
+        select.appendChild(opt);
+      }
+    });
+  }).getSheetData("Entries(MasterData)");
+
+  // Load Inventory for Right Panel and ID Dropdown
+  refreshEqptInventory();
+}
+
+function refreshEqptInventory() {
+  google.script.run.withSuccessHandler(data => {
+    currentInventory = data;
+    const listDiv = document.getElementById('eqpt-inventory-list');
+    const idSelect = document.getElementById('eqpt-id-select');
+    
+    // Create Header Row
+    let htmlContent = `
+      <div class="inv-grid-header">
+        <div>ID</div>
+        <div>Acquired</div>
+        <div>Cost</div>
+        <div>Carrying</div>
+        <div>Status</div>
+      </div>
+    `;
+
+    idSelect.innerHTML = '<option value="" disabled selected>Select Equipment ID</option>';
+
+    data.forEach(item => {
+      const statusClass = item.status === 'Operating' ? 'status-operating' : 'status-sold';
+      
+      // Add Row to HTML
+      htmlContent += `
+        <div class="inv-grid-row">
+          <div style="font-weight:600;">${item.id || '---'}</div>
+          <div>${item.date || '---'}</div>
+          <div>₱${Number(item.cost).toLocaleString()}</div>
+          <div>₱${Number(item.carrying).toLocaleString()}</div>
+          <div class="${statusClass}">${item.status || '---'}</div>
+        </div>
+      `;
+
+      // Update ID Dropdown (only for equipment not yet sold)
+      if (item.status !== "Sold" && item.id) {
+        let opt = document.createElement('option');
+        opt.value = item.id;
+        opt.textContent = item.id;
+        idSelect.appendChild(opt);
+      }
+    });
+
+    listDiv.innerHTML = htmlContent;
+  }).getEquipmentInventory();
+}
+
+// 2. Dynamic UI Toggles
+function toggleEqptTransactionUI() {
+  const type = document.getElementById('eqpt-trans-type').value;
+  const paymentGroup = document.getElementById('eqpt-payment-container');
+  const creditNote = document.getElementById('eqpt-credit-note');
+  const advanceCont = document.getElementById('eqpt-advance-container');
+  const idSelect = document.getElementById('eqpt-id-select');
+
+  // Reset defaults
+  paymentGroup.style.display = 'block';
+  creditNote.style.display = 'none';
+  advanceCont.style.display = 'none';
+  idSelect.style.display = 'none';
+
+  if (type === "Equipment Acquired") {
+    advanceCont.style.display = 'block';
+  } 
+  else if (type === "Eqpt. Acquired on Credit") {
+    paymentGroup.style.display = 'none';
+    creditNote.style.display = 'block';
+    advanceCont.style.display = 'block';
+  } 
+  else if (type === "Equipment Sold") {
+    idSelect.style.display = 'block';
+  }
+}
+
+function toggleEqptAdvance() {
+  const div = document.getElementById('eqpt-advance-inputs');
+  div.style.display = div.style.display === 'none' ? 'block' : 'none';
+}
+
+// --- RECORD EQUIPMENT --- 
+
+function recordEqptTransaction() {
+  const party = document.getElementById('eqpt-party').value.trim();
+  const type = document.getElementById('eqpt-trans-type').value;
+  const amountStr = document.getElementById('eqpt-amount').value;
+  const selectedId = document.getElementById('eqpt-id-select').value;
+  
+  // Validation: Check for unfilled inputs
+  if (!party || !type || !amountStr) {
+    alert("Please fill in all required fields (Party, Transaction Type, and Amount).");
+    return;
+  }
+  const amount = parseFloat(amountStr);
+
+  if (type === "Equipment Sold" && !selectedId) {
+    alert("Please select the Equipment ID you are selling.");
+    return;
+  }
+
+  // Handle Payment Method
+  let payment = "Cash on Hand"; // Auto default
+  if (type === "Eqpt. Acquired on Credit") {
+    payment = "N/A";
+  } else {
+    const selectedRadio = document.querySelector('input[name="eqpt-account-choice"]:checked');
+    if (selectedRadio) {
+      payment = selectedRadio.value;
+    }
+  }
+
+  // Handle Advance Options (Scrap and Useful Life defaults)
+  let scrapPct = parseFloat(document.getElementById('eqpt-scrap').value);
+  let usefulLife = parseFloat(document.getElementById('eqpt-life').value);
+  
+  if (isNaN(scrapPct)) scrapPct = 10; // Default 10%
+  if (isNaN(usefulLife)) usefulLife = 5; // Default 5 years
+
+  const scrapValue = amount * (scrapPct / 100);
+
+  // If selling, find the specific equipment data to get Acc Dep and Carrying Amount
+  let eqptData = null;
+  if (type === "Equipment Sold") {
+    eqptData = currentInventory.find(item => item.id === selectedId);
+    if (!eqptData) {
+      alert("Equipment data not found in inventory!");
+      return;
+    }
+  }
+
+  // Prepare Payload
+  const payload = {
+    party: party,
+    type: type,
+    amount: amount,
+    payment: payment,
+    scrapValue: scrapValue,
+    usefulLife: usefulLife,
+    eqptId: type === "Equipment Sold" ? selectedId : null,
+    accDep: eqptData ? eqptData.accDep : 0,
+    carrying: eqptData ? eqptData.carrying : 0
+  };
+
+  // Send to backend
+  google.script.run.withSuccessHandler(response => {
+    alert("Transaction Recorded Successfully! ID: " + response);
+    // Reset form
+    document.getElementById('eqpt-party').value = '';
+    document.getElementById('eqpt-amount').value = '';
+    document.getElementById('eqpt-scrap').value = '';
+    document.getElementById('eqpt-life').value = '';
+    document.getElementById('eqpt-trans-type').selectedIndex = 0;
+    toggleEqptTransactionUI(); 
+    refreshEqptInventory(); // Refresh right panel
+  }).processEquipmentTransaction(payload);
 }
   
 /* ============================================================
@@ -1549,20 +2054,24 @@ function saveSettlement() {
   // List of items to filter out of the dropdown
 const excludedOtherTypes = [
   "Supplies Purchased", "Credit Supplies", "Supplies Payment", 
-  "Supplies Used", "Depreciation Expense", "Accumulated Removal", "Gain on Equipment Sale", "Loss on Equipment Sale", "Revenue Closing", "Other Income Closing", "Gain Closing", "Salaries Expensed Closing", "Electricity Expensed Closing", "Water Expensed Closing", "Internet Expensed Closing", "Supplies Expensed Closing", "Depreciation Expensed Closing", "Loss Closing", "Bank Charge Closing", "Delivery Fee Closing", "Other Expensed Closing", "Withdrawal Closing", "Increase in Capital", "Decreaase in Capital"
+  "Supplies Used", "Equipment Acquired", "Eqpt. Acquired on Credit", "Equipment Sold", "Depreciation Expense", "Accumulated Removal", "Gain on Equipment Sale", "Loss on Equipment Sale", "Revenue Closing", "Other Income Closing", "Gain Closing", "Salaries Expensed Closing", "Electricity Expensed Closing", "Water Expensed Closing", "Internet Expensed Closing", "Supplies Expensed Closing", "Depreciation Expensed Closing", "Loss Closing", "Bank Charge Closing", "Delivery Fee Closing", "Other Expensed Closing", "Withdrawal Closing", "Increase in Capital", "Decreaase in Capital"
 ];
 
 let currentOtherTransId = "";
 let currentOtherSheetDate = "";
+let transactionMasterData = {}; // Stores Debit/Credit corresponding to Types
 
-// 1. Load the Dropdown Data
+// 1. Load the Dropdown Data & Setup Real-time Listeners
 function loadOtherTransactionTypes() {
   google.script.run.withSuccessHandler(function(data) {
     const select = document.getElementById('otherTransType');
     select.innerHTML = '<option value="">Transaction Type</option>';
     
     data.forEach(row => {
-      const type = row[0]; // Category name
+      const type = row[0]; 
+      // Save Debit (row[1]) and Credit (row[2]) from getSheetData mappings
+      transactionMasterData[type] = { debit: row[1], credit: row[2] };
+      
       if (!excludedOtherTypes.includes(type)) {
         let opt = document.createElement('option');
         opt.value = type;
@@ -1573,8 +2082,30 @@ function loadOtherTransactionTypes() {
   }).getSheetData("Entries(MasterData)");
 }
 
-// Run this when the page loads
-document.addEventListener("DOMContentLoaded", loadOtherTransactionTypes);
+document.addEventListener("DOMContentLoaded", () => {
+  loadOtherTransactionTypes();
+
+  // Watch for dropdown changes to update Debit & Credit visually
+  document.getElementById('otherTransType').addEventListener('change', function() {
+    const type = this.value;
+    const prevDebit = document.getElementById('prevOtherDebit');
+    const prevCredit = document.getElementById('prevOtherCredit');
+
+    if (type && transactionMasterData[type]) {
+      prevDebit.textContent = transactionMasterData[type].debit || "N/A";
+      prevDebit.style.color = "#333"; prevDebit.style.fontStyle = "normal";
+
+      prevCredit.textContent = transactionMasterData[type].credit || "N/A";
+      prevCredit.style.color = "#333"; prevCredit.style.fontStyle = "normal";
+    } else {
+      prevDebit.textContent = "Auto-calculated";
+      prevDebit.style.color = "gray"; prevDebit.style.fontStyle = "italic";
+
+      prevCredit.textContent = "Auto-calculated";
+      prevCredit.style.color = "gray"; prevCredit.style.fontStyle = "italic";
+    }
+  });
+});
 
 // 2. Generate ID Button Logic
 document.getElementById('btnGenerateOtherId').addEventListener('click', function() {
@@ -1582,27 +2113,21 @@ document.getElementById('btnGenerateOtherId').addEventListener('click', function
   const tType = document.getElementById('otherTransType').value;
   const tAmt = document.getElementById('otherTransAmount').value.trim();
 
-  // Validate all 3 inputs are filled
   if (!tWith || !tType || !tAmt) {
     alert("Please fill up Transaction With, Transaction Type, and Total Amount to generate an ID.");
     return;
   }
 
-  // Generate Unique ID (T26-XXXXXX)
   const randomNum = Math.floor(100000 + Math.random() * 900000);
   currentOtherTransId = "T26-" + randomNum;
 
-  // Format Dates
   const d = new Date();
   const displayDate = d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-  
-  // Format strictly as dd/mm/yyyy for your ledger formulas
   const dd = String(d.getDate()).padStart(2, '0');
   const mm = String(d.getMonth() + 1).padStart(2, '0'); 
   const yyyy = d.getFullYear();
   currentOtherSheetDate = dd + '/' + mm + '/' + yyyy;
 
-  // Update Right Panel UI
   document.getElementById('prevOtherDate').textContent = displayDate;
   document.getElementById('prevOtherType').textContent = tType;
   document.getElementById('prevOtherWith').textContent = tWith;
@@ -1621,37 +2146,64 @@ document.getElementById('btnRecordOtherTrans').addEventListener('click', functio
   const tType = document.getElementById('otherTransType').value;
   const tAmt = document.getElementById('otherTransAmount').value.trim();
 
-  // Package the array exactly matching Columns B to I
+  // Payment Method logic handling
+  const paymentRadio = document.querySelector('input[name="other-account-choice"]:checked');
+  let paymentMode = paymentRadio ? paymentRadio.value : "Cash on Hand"; 
+
+  // Check if this is an internal cash transfer (e.g., Deposit to Bank / Cash Withdrawal)
+  if (tType && transactionMasterData[tType]) {
+    const dAcc = transactionMasterData[tType].debit;
+    const cAcc = transactionMasterData[tType].credit;
+    if ((dAcc === "Cash on Hand" && cAcc === "Cash in Bank") || (dAcc === "Cash in Bank" && cAcc === "Cash on Hand")) {
+        paymentMode = "N/A";
+    }
+  }
+
+  // Exact 9 columns array mapping: B to J
   const otherTransload = [
-    currentOtherTransId,     // Col B (Manual Plain Text)
-    currentOtherSheetDate,   // Col C (Manual Date dd/mm/yyyy)
-    tWith,                   // Col D
-    tType,                   // Col E
-    "",                      // Col F (Desc Formula)
-    "",                      // Col G (Debit Formula)
-    "",                      // Col H (Credit Formula)
-    parseFloat(tAmt)         // Col I (Amount)
+    currentOtherTransId,     // Col B (Index 0)
+    currentOtherSheetDate,   // Col C (Index 1)
+    tWith,                   // Col D (Index 2)
+    tType,                   // Col E (Index 3)
+    "",                      // Col F (Formula gap)
+    "",                      // Col G (Formula gap)
+    "",                      // Col H (Formula gap)
+    parseFloat(tAmt),        // Col I (Index 7)
+    paymentMode              // Col J (Index 8)
   ];
 
   const btn = document.getElementById('btnRecordOtherTrans');
-  btn.textContent = "Recording...";
+  btn.textContent = "Checking Balances...";
   btn.disabled = true;
 
   google.script.run.withSuccessHandler(function(response) {
+    // Alert triggers if the GAS function catches a restriction Error
+    if (response.startsWith("ERROR")) {
+        alert(response);
+        btn.textContent = "Record Transaction";
+        btn.disabled = false;
+        return; 
+    }
+
     alert("Transaction Recorded Successfully!");
     
-    // Reset Left Panel
+    // UI Reset
     document.getElementById('otherTransWith').value = "";
     document.getElementById('otherTransType').value = "";
     document.getElementById('otherTransAmount').value = "";
+    document.querySelectorAll('input[name="other-account-choice"]').forEach(r => r.checked = false);
     currentOtherTransId = "";
     
-    // Reset Right Panel
     document.getElementById('prevOtherDate').textContent = "---";
     document.getElementById('prevOtherType').textContent = "---";
     document.getElementById('prevOtherWith').textContent = "---";
     document.getElementById('prevOtherId').textContent = "---";
     document.getElementById('prevOtherAmount').textContent = "---";
+
+    const prevDebit = document.getElementById('prevOtherDebit');
+    const prevCredit = document.getElementById('prevOtherCredit');
+    prevDebit.textContent = "Auto-calculated"; prevDebit.style.color = "gray"; prevDebit.style.fontStyle = "italic";
+    prevCredit.textContent = "Auto-calculated"; prevCredit.style.color = "gray"; prevCredit.style.fontStyle = "italic";
 
     btn.textContent = "Record Transaction";
     btn.disabled = false;
@@ -1715,15 +2267,25 @@ function renderGrid(gridId, data, colCount, sheetName) {
    SAVE & DELETE (Syncing with Sheets) MASTERDATA
    ============================================================ */
 function saveNewCustomer() {
-  const nameInput = document.getElementById('new-cust-name');
-  const name = nameInput.value.trim();
-  if (!name) return alert("Enter a name!");
+  const surnameInput = document.getElementById('new-cust-surname');
+  const firstnameInput = document.getElementById('new-cust-firstname');
+  
+  const surname = surnameInput.value.trim();
+  const firstname = firstnameInput.value.trim();
+
+  if (!surname || !firstname) {
+    return alert("Please enter both Surname and First Name!");
+  }
+
+  // rowData is now an array: [Surname, First Name]
+  const rowData = [surname, firstname];
 
   google.script.run.withSuccessHandler(() => {
-    nameInput.value = "";
-    alert(name + " saved to Google Sheets!");
-    refreshAllGrids(); // Refresh the list
-  }).addDataToSheet('Customers List(MasterData)', [name]);
+    surnameInput.value = "";
+    firstnameInput.value = "";
+    alert(`${firstname} ${surname} saved to Google Sheets!`);
+    refreshAllGrids(); 
+  }).addDataToSheet('Customers List(MasterData)', rowData);
 }
 
 // Updated AddNewRow to handle specific sheets
