@@ -2044,6 +2044,7 @@ function recordEqptTransaction() {
     document.getElementById('eqpt-trans-type').selectedIndex = 0;
     toggleEqptTransactionUI(); 
     refreshEqptInventory(); // Refresh right panel
+    loadEquipmentLog(); // Load left panel
   }).processEquipmentTransaction(payload);
 }
   
