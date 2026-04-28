@@ -191,8 +191,98 @@ function getUnsettledTransactions() {
   return unsettled;
 }
 
-// ------- EQUIPMENT BALANCE ------- //
+/* ====================================================================================================
+   SUPPLIES FETCHING AND PROCESSING 
+==================================================================================================== */
+function getSuppliesInventory() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName("Balance Tracker(Checker)");
+  if (!sheet) return [];
 
+  const lastRow = sheet.getLastRow();
+  if (lastRow < 3) return [];
+  
+  // Range: Start row 3, Col 8 (H), 13 rows down, 8 columns wide (H to O)
+  const data = sheet.getRange(3, 8, lastRow - 2, 8).getValues();
+  
+  return data.map(row => ({
+    id: row[0],
+    brand: row[1],
+    costPerUnit: row[2],
+    qty: row[3],
+    totalPhysical: row[4], // Col L
+    totalJournal: row[5],  // Col M
+    status: row[6],        // Col N
+    adjustment: row[7]     // Col O
+  })).filter(item => item.id !== "");
+}
+
+/**
+ * PROCESS: Main Entry Point for Supplies
+ */
+function processSuppliesTransaction(payload) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const transSheet = ss.getSheetByName("Supplies & Other Transaction");
+  const today = Utilities.formatDate(new Date(), ss.getSpreadsheetTimeZone(), "dd/MM/yyyy");
+
+  // 1. Calculate final amount based on "Supplies Used" logic
+  let finalAmount = payload.amount;
+  if (payload.type === "Supplies Used" && payload.isUnusedMode) {
+    // Logic: Beginning (Journal) Balance - Ending (Unused) Input
+    finalAmount = payload.journalBalance - payload.amount;
+  }
+
+  // 2. RECORD TO: Supplies & Other Transaction (Segmented Write)
+  recordToSuppliesLogSheet(transSheet, payload.id, today, payload.party, payload.type, finalAmount, payload.payment);
+
+  // 3. UPDATE: Balance Tracker (Checker) - Update the Quantity
+  updateSuppliesInventoryQty(payload.id, payload.type, payload.qtyChange, finalAmount);
+
+  return payload.id;
+}
+
+/**
+ * LOGIC: Segmented Write to skip Columns F, G, H
+ */
+function recordToSuppliesLogSheet(sheet, id, date, party, type, amount, payment) {
+  const leftSide = [[id, date, party, type]]; // B to E
+  const rightSide = [[amount, payment]];     // I to J
+
+  const colB = sheet.getRange("B:B").getValues();
+  let targetRow = 0;
+  for (let i = 3; i < colB.length; i++) {
+    if (colB[i][0] === "" || colB[i][0] === null) { targetRow = i + 1; break; }
+  }
+  if (targetRow === 0) targetRow = colB.length + 1;
+
+  // Segmented Write
+  sheet.getRange(targetRow, 2, 1, 4).setValues(leftSide);
+  sheet.getRange(targetRow, 9, 1, 2).setValues(rightSide);
+}
+
+/**
+ * UPDATE: Adjust Quantity in Balance Tracker
+ */
+function updateSuppliesInventoryQty(id, type, qtyChange, amount) {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Balance Tracker(Checker)");
+  const data = sheet.getRange("H3:H" + sheet.getLastRow()).getValues();
+  
+  for (let i = 0; i < data.length; i++) {
+    if (data[i][0] === id) {
+      let targetRow = i + 3;
+      let currentQty = sheet.getRange(targetRow, 11).getValue() || 0; // Col K
+      
+      // If used, subtract. If purchased, add.
+      let newQty = (type === "Supplies Used") ? currentQty - qtyChange : currentQty + qtyChange;
+      sheet.getRange(targetRow, 11).setValue(newQty); 
+      break;
+    }
+  }
+}
+
+/* ====================================================================================================
+   EQUIPMENT PROCESSING AND FETCHING 
+==================================================================================================== */
 // --- PROCESSING EQUIPMENT 
 function processEquipmentTransaction(data) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -346,7 +436,9 @@ function getEquipmentInventory() {
 }
 
 
-// --- OTHER TRANSACTION FETCHING --- //
+/* ====================================================================================================
+   OTHER TRANSACTIONS FETCHING
+==================================================================================================== */
 function saveOtherTransaction(payload) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sheet = ss.getSheetByName("Supplies & Other Transaction");
@@ -440,7 +532,9 @@ function saveOtherTransaction(payload) {
   return "Success";
 }
 
-// --- MASTERDATA FETCHING --->
+/* ====================================================================================================
+   MASTERDATA FETCHING
+==================================================================================================== */
 function getSheetData(sheetName) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   
@@ -518,7 +612,9 @@ function getSheetData(sheetName) {
   return values;
 }
 
-// --- FINANCIAL STATEMENT FETCHING ---
+/* ====================================================================================================
+   FINANCIAL STATEMENT FETCHING
+==================================================================================================== */
 function updateAndFetchFinancials(month, year) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const trialSheet = ss.getSheetByName("Auto Adjusted Trial Balance");
