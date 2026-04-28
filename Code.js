@@ -198,76 +198,115 @@ function processEquipmentTransaction(data) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const transSheet = ss.getSheetByName("Supplies & Other Transaction");
   const balSheet = ss.getSheetByName("Balance Tracker(Checker)");
+  
+  // 1. Generate the unique ID or use existing for sales
+  let transactionId = generateEqptId(transSheet, data);
 
-  // 1. Generate Unique ID (EQPT-XXXX)
-  const idRange = transSheet.getRange("B2:B" + Math.max(transSheet.getLastRow(), 2)).getValues();
+  // 2. Standardize Date (dd/mm/yyyy)
+  const today = new Date();
+  const formattedDate = Utilities.formatDate(today, ss.getSpreadsheetTimeZone(), "dd/MM/yyyy");
+
+  // 3. RECORD TO: Supplies & Other Transaction
+  recordToSuppliesSheet(transSheet, transactionId, formattedDate, data);
+
+  // 4. RECORD TO: Balance Tracker (Acquisitions Only)
+  if (data.type === "Equipment Acquired" || data.type === "Eqpt. Acquired on Credit") {
+    recordToBalanceSheet(balSheet, transactionId, formattedDate, data);
+  }
+
+  return transactionId;
+}
+
+/**
+ * LOGIC FOR: Supplies & Other Transaction
+ * Handles multi-row (compound) entries for sales.
+ */
+function recordToSuppliesSheet(sheet, id, date, data) {
+  let leftSideRows = [];  // Columns B, C, D, E
+  let rightSideRows = []; // Columns I, J
+
+  // Prepare Data Rows
+  if (data.type === "Equipment Sold") {
+    leftSideRows.push([id, date, data.party, data.type]);
+    rightSideRows.push([data.amount, data.payment]);
+    leftSideRows.push([id, date, "System", "Accumulated Removal"]);
+    rightSideRows.push([data.accDep, "N/A"]);
+    
+    let diff = data.amount - data.carrying;
+    let glType = diff >= 0 ? "Gain on Equipment Sale" : "Loss on Equipment Sale";
+    leftSideRows.push([id, date, "System", glType]);
+    rightSideRows.push([Math.abs(diff), "N/A"]);
+  } else {
+    leftSideRows.push([id, date, data.party, data.type]);
+    rightSideRows.push([data.amount, data.payment]);
+  }
+
+  // 1. FIND TARGET ROW (Gap filling or Append)
+  const colB = sheet.getRange("B:B").getValues();
+  let targetRow = 0; 
+  for (let i = 3; i < colB.length; i++) {
+    if (colB[i][0] === "" || colB[i][0] === null) {
+      targetRow = i + 1;
+      break;
+    }
+  }
+  // If no empty row was found in the entire existing sheet
+  if (targetRow === 0) targetRow = colB.length + 1;
+
+  // 2. SAFETY CHECK: Insert rows if we are going beyond the sheet limit
+  const maxRows = sheet.getMaxRows();
+  const neededRows = targetRow + leftSideRows.length - 1;
+  if (neededRows > maxRows) {
+    sheet.insertRowsAfter(maxRows, neededRows - maxRows);
+  }
+
+  // 3. SEGMENTED WRITE: Preserves formulas in F, G, H
+  sheet.getRange(targetRow, 2, leftSideRows.length, 4).setValues(leftSideRows); // B to E
+  sheet.getRange(targetRow, 9, rightSideRows.length, 2).setValues(rightSideRows); // I to J
+}
+
+/**
+ * LOGIC FOR: Balance Tracker(Checker)
+ * Only records the initial acquisition data.
+ */
+function recordToBalanceSheet(sheet, id, date, data) {
+  const colQ = sheet.getRange("Q:Q").getValues();
+  let targetRow = 0;
+  for (let i = 2; i < colQ.length; i++) {
+    if (colQ[i][0] === "" || colQ[i][0] === null) {
+      targetRow = i + 1;
+      break;
+    }
+  }
+  if (targetRow === 0) targetRow = colQ.length + 1;
+
+  const maxRows = sheet.getMaxRows();
+  if (targetRow > maxRows) {
+    sheet.insertRowsAfter(maxRows, 1);
+  }
+
+  // Write: ID(Q), Date(R), Cost(S-null), Scrap(T), Life(U)
+  sheet.getRange(targetRow, 17, 1, 5).setValues([[id, date, null, data.scrapValue, data.usefulLife]]);
+}
+
+/**
+ * HELPER: Generate EQPT ID
+ */
+function generateEqptId(sheet, data) {
+  if (data.type === "Equipment Sold") return data.eqptId;
+
+  const lastRow = sheet.getLastRow();
+  if (lastRow < 4) return "EQPT-0001"; // Default if sheet is empty
+
+  const ids = sheet.getRange("B4:B" + lastRow).getValues().flat();
   let maxId = 0;
-  for (let i = 0; i < idRange.length; i++) {
-    let val = String(idRange[i][0]).trim();
-    if (val.startsWith("EQPT-")) {
+  ids.forEach(val => {
+    if (String(val).startsWith("EQPT-")) {
       let num = parseInt(val.replace("EQPT-", ""), 10);
       if (num > maxId) maxId = num;
     }
-  }
-  const newId = "EQPT-" + String(maxId + 1).padStart(4, '0');
-
-  // 2. Format Date as exactly dd/mm/yyyy
-  const dateObj = new Date();
-  const dd = String(dateObj.getDate()).padStart(2, '0');
-  const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
-  const yyyy = dateObj.getFullYear();
-  const formattedDate = `${dd}/${mm}/${yyyy}`; 
-
-  // 3. Prepare rows for Supplies & Other Transaction
-  let rowsToWrite = [];
-
-  if (data.type === "Equipment Sold") {
-    // Row 1: Sale of Equipment
-    rowsToWrite.push([null, newId, formattedDate, `${data.party} (${data.eqptId})`, data.type, null, null, null, data.amount, data.payment]);
-
-    // Row 2: Accumulated Removal (Gets Acc Dep value)
-    rowsToWrite.push([null, newId, formattedDate, `${data.party} (${data.eqptId})`, "Accumulated Removal", null, null, null, data.accDep, "N/A"]);
-
-    // Row 3: Gain or Loss
-    let diff = data.amount - data.carrying;
-    if (diff > 0) { 
-      // Gain: Sold higher than carrying
-      rowsToWrite.push([null, newId, formattedDate, `${data.party} (${data.eqptId})`, "Gain on Equipment Sale", null, null, null, diff, "N/A"]);
-    } else if (diff < 0) { 
-      // Loss: Sold lower than carrying
-      rowsToWrite.push([null, newId, formattedDate, `${data.party} (${data.eqptId})`, "Loss on Equipment Sale", null, null, null, Math.abs(diff), "N/A"]);
-    }
-  } else {
-    // Regular Acquisition
-    rowsToWrite.push([null, newId, formattedDate, data.party, data.type, null, null, null, data.amount, data.payment]);
-  }
-
-  // Write to Supplies & Other Transaction
-  if (rowsToWrite.length > 0) {
-    const nextTransRow = transSheet.getLastRow() + 1;
-    transSheet.getRange(nextTransRow, 1, rowsToWrite.length, rowsToWrite[0].length).setValues(rowsToWrite);
-  }
-
-  // 4. Write to Balance Tracker if it is Acquired
-  if (data.type === "Equipment Acquired" || data.type === "Eqpt. Acquired on Credit") {
-    const lastBalRow = balSheet.getLastRow();
-    const qVals = balSheet.getRange("Q3:Q" + Math.max(lastBalRow, 3)).getValues();
-    
-    let insertRow = 3;
-    for (let i = 0; i < qVals.length; i++) {
-      if (qVals[i][0] === "") {
-        insertRow = i + 3;
-        break;
-      }
-      insertRow = i + 4;
-    }
-
-    // Write to Q(17), R(18), T(20), U(21)
-    // Range Q to U = 5 columns. S(Cost) will be skipped/null so formula can take over if it exists.
-    balSheet.getRange(insertRow, 17, 1, 5).setValues([[newId, formattedDate, null, data.scrapValue, data.usefulLife]]);
-  }
-
-  return newId; // Send ID back to HTML to notify user
+  });
+  return "EQPT-" + String(maxId + 1).padStart(4, '0');
 }
 
 // --- EQUIPMENT FETCHING
