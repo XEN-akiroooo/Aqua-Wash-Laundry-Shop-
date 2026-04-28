@@ -207,7 +207,7 @@ function processEquipmentTransaction(data) {
   const formattedDate = Utilities.formatDate(today, ss.getSpreadsheetTimeZone(), "dd/MM/yyyy");
 
   // 3. RECORD TO: Supplies & Other Transaction
-  recordToSuppliesSheet(transSheet, transactionId, formattedDate, data);
+  recordToEqptOtherSheet(transSheet, transactionId, formattedDate, data);
 
   // 4. RECORD TO: Balance Tracker (Acquisitions Only)
   if (data.type === "Equipment Acquired" || data.type === "Eqpt. Acquired on Credit") {
@@ -221,21 +221,22 @@ function processEquipmentTransaction(data) {
  * LOGIC FOR: Supplies & Other Transaction
  * Handles multi-row (compound) entries for sales.
  */
-function recordToSuppliesSheet(sheet, id, date, data) {
+function recordToEqptOtherSheet(transSheet, id, date, data) {
   let leftSideRows = [];  // Columns B, C, D, E
   let rightSideRows = []; // Columns I, J
+   const internalParty = "Aqua Wash Laundry Shop";
 
   // Prepare Data Rows
   if (data.type === "Equipment Sold") {
     leftSideRows.push([id, date, data.party, data.type]);
     rightSideRows.push([data.amount, data.payment]);
-    leftSideRows.push([id, date, "System", "Accumulated Removal"]);
+    leftSideRows.push([id, date, internalParty, "Accumulated Removal"]);
     rightSideRows.push([data.accDep, "N/A"]);
     
     let diff = data.amount - data.carrying;
     let glType = diff >= 0 ? "Gain on Equipment Sale" : "Loss on Equipment Sale";
-    leftSideRows.push([id, date, "System", glType]);
-    rightSideRows.push([Math.abs(diff), "N/A"]);
+    leftSideRows.push([id, date, internalParty, glType]);
+    rightSideRows.push([Math.abs(diff), data.payment]);
   } else {
     leftSideRows.push([id, date, data.party, data.type]);
     rightSideRows.push([data.amount, data.payment]);
