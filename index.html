@@ -2679,6 +2679,8 @@ window.addEventListener('DOMContentLoaded', () => {
   if (dailyOpsBtn) setActive(dailyOpsBtn, 'daily-ops');
   
   refreshAllGrids(); // Fetches your data from Sheets
+  loadEquipmentLog(); // Populates Equipment dropdowns and right panel
+  loadSuppliesLog();  // Populates Supplies dropdowns and right panel
 
   // --- 3. FINANCIAL STATEMENT SYNC (NEW CODE) ---
   const updateFinBtn = document.getElementById('btnUpdateFin');
