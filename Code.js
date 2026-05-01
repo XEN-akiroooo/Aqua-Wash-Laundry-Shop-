@@ -23,6 +23,50 @@ function checkAuth() {
   return true;
 }
 
+function initializeUserDatabase() {
+  const props = PropertiesService.getScriptProperties();
+  const initialUsers = {
+    "jamandreprince@gmail.com": "admin123",  // Default password
+    "princejohnley19@gmail.com": "admin123" // Default password
+  };
+  props.setProperty('userCredentials', JSON.stringify(initialUsers));
+  Logger.log("User database initialized!");
+}
+
+// Verifies login against the backend
+function verifyUserLogin(email, password) {
+  const props = PropertiesService.getScriptProperties();
+  const usersStr = props.getProperty('userCredentials');
+  if (!usersStr) return false; 
+  
+  const users = JSON.parse(usersStr);
+  
+  // Convert email to lowercase to prevent case-sensitive errors
+  const cleanEmail = email.toLowerCase().trim();
+  
+  if (users[cleanEmail] && users[cleanEmail] === password) {
+    return true;
+  }
+  return false;
+}
+
+// Updates the password in the backend
+function updateBackendPassword(email, newPassword) {
+  const props = PropertiesService.getScriptProperties();
+  const usersStr = props.getProperty('userCredentials');
+  if (!usersStr) return false;
+  
+  let users = JSON.parse(usersStr);
+  const cleanEmail = email.toLowerCase().trim();
+  
+  if (users[cleanEmail]) {
+    users[cleanEmail] = newPassword;
+    props.setProperty('userCredentials', JSON.stringify(users));
+    return true;
+  }
+  return false;
+}
+
 // --- SERVICE ID FETCHING ---
 function getExistingServiceIds() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -222,22 +266,60 @@ function getSuppliesInventory() {
  */
 function processSuppliesTransaction(payload) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const inventory = getSuppliesInventory(); 
+  const item = inventory.find(i => i.id === payload.id);
+  
+  if (!item) return "ERROR: Item ID not found in inventory.";
+
+  // --- 1. CASH RESTRICTION (For Purchases) ---
+  if (payload.type === "Supplies Purchased") {
+    const tAccountSheet = ss.getSheetByName("T-Accounts(Database2)");
+    const tAmt = parseFloat(payload.amount) || 0;
+    const cashOnHand = parseFloat(tAccountSheet.getRange("D3").getValue()) || 0;
+    const cashInBank = parseFloat(tAccountSheet.getRange("H3").getValue()) || 0;
+
+    if (payload.payment === "Cash on Hand" && tAmt > cashOnHand) {
+      return `ERROR: Insufficient Cash on Hand (₱${cashOnHand.toFixed(2)}).`;
+    }
+    if (payload.payment === "Cash in Bank" && tAmt > cashInBank) {
+      return `ERROR: Insufficient Cash in Bank (₱${cashInBank.toFixed(2)}).`;
+    }
+  }
+
+  // --- 2. QUANTITY & UNUSED RESTRICTION ---
+  let finalAmount = payload.amount;
+  let finalQtyChange = payload.qtyChange;
+
+  if (payload.type === "Supplies Used") {
+    if (payload.isUnusedMode) {
+      // UPDATED RESTRICTION: Error if Ending Value >= Current System Balance
+      // This prevents recording a transaction with 0 usage or negative usage.
+      if (payload.amount >= payload.journalBalance) {
+        return `ERROR: The reported unused amount (₱${payload.amount.toFixed(2)}) is equal to or greater than the system balance (₱${payload.journalBalance.toFixed(2)}). No usage detected to record.`;
+      }
+
+      // Logic: Beginning Balance (₱) - Ending Balance Input (₱) = Usage Expense
+      finalAmount = payload.journalBalance - payload.amount;
+      
+      if (item.costPerUnit > 0) {
+        finalQtyChange = finalAmount / item.costPerUnit;
+      }
+    }
+
+    // GENERAL RESTRICTION: Cannot use more than what is available
+    if (finalQtyChange > item.qty) {
+      return `ERROR: Insufficient Stock. Usage (${finalQtyChange.toFixed(2)}) exceeds available inventory (${item.qty}).`;
+    }
+  }
+
+  // --- 3. RECORD AND UPDATE ---
   const transSheet = ss.getSheetByName("Supplies & Other Transaction");
   const today = Utilities.formatDate(new Date(), ss.getSpreadsheetTimeZone(), "dd/MM/yyyy");
 
-  // 1. Calculate final amount based on "Supplies Used" logic
-  let finalAmount = payload.amount;
-  if (payload.type === "Supplies Used" && payload.isUnusedMode) {
-    // Logic: Beginning (Journal) Balance - Ending (Unused) Input
-    finalAmount = payload.journalBalance - payload.amount;
-  }
-
-  // 2. RECORD TO: Supplies & Other Transaction (Segmented Write)
   recordToSuppliesLogSheet(transSheet, payload.id, today, payload.party, payload.type, finalAmount, payload.payment);
+  updateSuppliesInventoryQty(payload.id, payload.type, finalQtyChange);
 
-  // 3. UPDATE: Balance Tracker (Checker) - Update the Quantity
-  updateSuppliesInventoryQty(payload.id, payload.type, payload.qtyChange, finalAmount);
-
+  generateJournal();
   return payload.id;
 }
 
@@ -263,7 +345,7 @@ function recordToSuppliesLogSheet(sheet, id, date, party, type, amount, payment)
 /**
  * UPDATE: Adjust Quantity in Balance Tracker
  */
-function updateSuppliesInventoryQty(id, type, qtyChange, amount) {
+function updateSuppliesInventoryQty(id, type, qtyChange) {
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Balance Tracker(Checker)");
   const data = sheet.getRange("H3:H" + sheet.getLastRow()).getValues();
   
@@ -272,12 +354,94 @@ function updateSuppliesInventoryQty(id, type, qtyChange, amount) {
       let targetRow = i + 3;
       let currentQty = sheet.getRange(targetRow, 11).getValue() || 0; // Col K
       
-      // If used, subtract. If purchased, add.
+      // Subtract for usage, add for purchase
       let newQty = (type === "Supplies Used") ? currentQty - qtyChange : currentQty + qtyChange;
+      
       sheet.getRange(targetRow, 11).setValue(newQty); 
       break;
     }
   }
+}
+
+// Specialized function to add supply to BOTH sheets
+function addSupplyWithSync(values) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const masterSheet = ss.getSheetByName('Records List(MasterData)');
+  const checkerSheet = ss.getSheetByName('Balance Tracker(Checker)');
+  
+  // --- 1. GENERATE UNIQUE CHRONOLOGICAL ID ---
+  const lastRowMaster = masterSheet.getLastRow();
+  const masterIds = lastRowMaster >= 4 ? masterSheet.getRange("K4:K" + lastRowMaster).getValues().flat() : [];
+  let maxNum = 0;
+  
+  masterIds.forEach(id => {
+    if (typeof id === 'string' && id.includes('-')) {
+      const num = parseInt(id.split('-')[1]);
+      if (!isNaN(num) && num > maxNum) maxNum = num;
+    }
+  });
+  
+  const nextId = "SUPS-" + Utilities.formatString("%04d", maxNum + 1);
+
+  // --- 2. UPDATE MASTER DATA (Col K=ID, L=Brand, M=Cost) ---
+  const masterRow = findFirstEmptyRow(masterSheet, "K", 4);
+  masterSheet.getRange(masterRow, 11, 1, 3).setValues([[nextId, values[0], values[1]]]);
+
+  // --- 3. UPDATE BALANCE TRACKER (Col H=ID, Col K=Qty) ---
+  const checkerRow = findFirstEmptyRow(checkerSheet, "H", 3);
+  checkerSheet.getRange(checkerRow, 8).setValue(nextId); // Column H
+  checkerSheet.getRange(checkerRow, 11).setValue(0);    // Column K (Starting Qty)
+  
+  return "Success";
+}
+
+// Specialized function to delete supply from BOTH sheets
+function deleteSupplyWithSync(brandName) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const masterSheet = ss.getSheetByName('Records List(MasterData)');
+  const checkerSheet = ss.getSheetByName('Balance Tracker(Checker)');
+  
+  let targetId = null;
+
+  // 1. Find ID and Delete from Master (Column L is Brandname)
+  const masterData = masterSheet.getRange("K4:M" + masterSheet.getLastRow()).getValues();
+  for (let i = masterData.length - 1; i >= 0; i--) {
+    if (masterData[i][1] === brandName) { // Index 1 is Column L
+      targetId = masterData[i][0];        // Capture the ID (Column K)
+      masterSheet.getRange(i + 4, 11, 1, 3).clearContent(); 
+      break; 
+    }
+  }
+  
+  // 2. Delete from Checker using the ID we just found (Column H is ID)
+  if (targetId) {
+    const checkerData = checkerSheet.getRange("H3:H" + checkerSheet.getLastRow()).getValues();
+    for (let i = checkerData.length - 1; i >= 0; i--) {
+      if (checkerData[i][0] === targetId) {
+        // Clear Column H (ID) and Column K (Qty)
+        checkerSheet.getRange(i + 3, 8).clearContent();  // Col H
+        checkerSheet.getRange(i + 3, 11).clearContent(); // Col K
+      }
+    }
+  }
+  
+  return "Deleted";
+}
+
+/**
+ * Helper to find the first truly empty row in a specific column
+ */
+function findFirstEmptyRow(sheet, colChar, startRow) {
+  const lastRow = sheet.getLastRow();
+  if (lastRow < startRow) return startRow;
+  
+  const values = sheet.getRange(colChar + startRow + ":" + colChar + lastRow).getValues();
+  for (let i = 0; i < values.length; i++) {
+    if (values[i][0] === "" || values[i][0] === null) {
+      return i + startRow;
+    }
+  }
+  return lastRow + 1;
 }
 
 /* ====================================================================================================
@@ -286,24 +450,38 @@ function updateSuppliesInventoryQty(id, type, qtyChange, amount) {
 // --- PROCESSING EQUIPMENT 
 function processEquipmentTransaction(data) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
+
+  // --- NEW: CASH RESTRICTION CHECK ---
+  if (data.type === "Equipment Acquired") {
+    const tAccountSheet = ss.getSheetByName("T-Accounts(Database2)");
+    if (tAccountSheet) {
+      const tAmt = parseFloat(data.amount) || 0;
+      const cashOnHandBal = parseFloat(tAccountSheet.getRange("D3").getValue()) || 0;
+      const cashInBankBal = parseFloat(tAccountSheet.getRange("H3").getValue()) || 0;
+
+      if (data.payment === "Cash on Hand" && tAmt > cashOnHandBal) {
+        return `ERROR: Insufficient Cash on Hand for this acquisition. Balance: ₱${cashOnHandBal.toFixed(2)}`;
+      }
+      if (data.payment === "Cash in Bank" && tAmt > cashInBankBal) {
+        return `ERROR: Insufficient Cash in Bank for this acquisition. Balance: ₱${cashInBankBal.toFixed(2)}`;
+      }
+    }
+  }
+
   const transSheet = ss.getSheetByName("Supplies & Other Transaction");
   const balSheet = ss.getSheetByName("Balance Tracker(Checker)");
   
-  // 1. Generate the unique ID or use existing for sales
   let transactionId = generateEqptId(transSheet, data);
-
-  // 2. Standardize Date (dd/mm/yyyy)
   const today = new Date();
   const formattedDate = Utilities.formatDate(today, ss.getSpreadsheetTimeZone(), "dd/MM/yyyy");
 
-  // 3. RECORD TO: Supplies & Other Transaction
   recordToEqptOtherSheet(transSheet, transactionId, formattedDate, data);
 
-  // 4. RECORD TO: Balance Tracker (Acquisitions Only)
   if (data.type === "Equipment Acquired" || data.type === "Eqpt. Acquired on Credit") {
     recordToBalanceSheet(balSheet, transactionId, formattedDate, data);
   }
 
+  generateJournal();
   return transactionId;
 }
 
@@ -314,7 +492,7 @@ function processEquipmentTransaction(data) {
 function recordToEqptOtherSheet(transSheet, id, date, data) {
   let leftSideRows = [];  // Columns B, C, D, E
   let rightSideRows = []; // Columns I, J
-   const internalParty = "Aqua Wash Laundry Shop";
+  const internalParty = "Aqua Wash Laundry Shop";
 
   // Prepare Data Rows
   if (data.type === "Equipment Sold") {
@@ -333,7 +511,8 @@ function recordToEqptOtherSheet(transSheet, id, date, data) {
   }
 
   // 1. FIND TARGET ROW (Gap filling or Append)
-  const colB = sheet.getRange("B:B").getValues();
+  // FIXED: Changed 'sheet' to 'transSheet'
+  const colB = transSheet.getRange("B:B").getValues(); 
   let targetRow = 0; 
   for (let i = 3; i < colB.length; i++) {
     if (colB[i][0] === "" || colB[i][0] === null) {
@@ -345,15 +524,17 @@ function recordToEqptOtherSheet(transSheet, id, date, data) {
   if (targetRow === 0) targetRow = colB.length + 1;
 
   // 2. SAFETY CHECK: Insert rows if we are going beyond the sheet limit
-  const maxRows = sheet.getMaxRows();
+  // FIXED: Changed 'sheet' to 'transSheet'
+  const maxRows = transSheet.getMaxRows();
   const neededRows = targetRow + leftSideRows.length - 1;
   if (neededRows > maxRows) {
-    sheet.insertRowsAfter(maxRows, neededRows - maxRows);
+    transSheet.insertRowsAfter(maxRows, neededRows - maxRows);
   }
 
   // 3. SEGMENTED WRITE: Preserves formulas in F, G, H
-  sheet.getRange(targetRow, 2, leftSideRows.length, 4).setValues(leftSideRows); // B to E
-  sheet.getRange(targetRow, 9, rightSideRows.length, 2).setValues(rightSideRows); // I to J
+  // FIXED: Changed 'sheet' to 'transSheet'
+  transSheet.getRange(targetRow, 2, leftSideRows.length, 4).setValues(leftSideRows); // B to E
+  transSheet.getRange(targetRow, 9, rightSideRows.length, 2).setValues(rightSideRows); // I to J
 }
 
 /**
@@ -451,66 +632,45 @@ function saveOtherTransaction(payload) {
   const tWith = payload[2];
   const tType = payload[3];
   const tAmt = parseFloat(payload[7]) || 0;
-  const tPayMode = payload[8];
+  const tPayMode = payload[8]; // This is "Cash on Hand" or "Cash in Bank"
 
-  // --- 2. GET LIVE BALANCES FROM T-ACCOUNTS ---
-  // D3 = Cash on Hand, H3 = Cash in Bank, AB3 = Accounts Payable
+  // --- 2. GET LIVE BALANCES ---
   const cashOnHandBal = parseFloat(tAccountSheet.getRange("D3").getValue()) || 0;
   const cashInBankBal = parseFloat(tAccountSheet.getRange("H3").getValue()) || 0;
   const accountsPayableBal = parseFloat(tAccountSheet.getRange("AB3").getValue()) || 0;
 
-  // --- 3. SPECIFIC RESTRICTIONS PER YOUR RULES ---
+  // --- 3. RESTRICTION LOGIC ---
 
-  // Rule: Debt Payment validation against Accounts Payable (Cell AB3)
-  if (tType === "Debt Payment") {
-    if (tAmt > accountsPayableBal) {
-      return `ERROR: The Debt Payment (₱${tAmt.toFixed(2)}) exceeds the current Accounts Payable balance (₱${accountsPayableBal.toFixed(2)}).`;
+  // A. Debt Payment Check
+  if (tType === "Debt Payment" && tAmt > accountsPayableBal) {
+    return `ERROR: Debt Payment (₱${tAmt.toFixed(2)}) exceeds Accounts Payable (₱${accountsPayableBal.toFixed(2)}).`;
+  }
+
+  // B. Internal Transfers Check
+  if (tType === "Cash on Hand to Cash in Bank" && tAmt > cashOnHandBal) {
+    return `ERROR: Insufficient Cash on Hand for transfer. Balance: ₱${cashOnHandBal.toFixed(2)}`;
+  }
+  if (tType === "Cash in Bank to Cash on Hand" && tAmt > cashInBankBal) {
+    return `ERROR: Insufficient Cash in Bank for transfer. Balance: ₱${cashInBankBal.toFixed(2)}`;
+  }
+
+  // C. General Expenses & Withdrawals Check
+  // This covers: Owner's Withdrawal, Salaries, Electricity, Water, Internet, etc.
+  if (tPayMode === "Cash on Hand") {
+    // Exclude the transfer type because it's already handled in "B"
+    if (tType !== "Cash on Hand to Cash in Bank" && tAmt > cashOnHandBal) {
+      return `ERROR: Insufficient Cash on Hand for this ${tType}. Balance: ₱${cashOnHandBal.toFixed(2)}`;
     }
   }
 
-  // Rule: Transfer validations (Cells D3 and H3)
-  if (tType === "Cash on hand to Cash in bank") {
-    if (tAmt > cashOnHandBal) {
-      return `ERROR: Transfer amount (₱${tAmt.toFixed(2)}) exceeds available Cash on Hand (₱${cashOnHandBal.toFixed(2)}).`;
+  if (tPayMode === "Cash in Bank") {
+    // Exclude the transfer type because it's already handled in "B"
+    if (tType !== "Cash in Bank to Cash on Hand" && tAmt > cashInBankBal) {
+      return `ERROR: Insufficient Cash in Bank for this ${tType}. Balance: ₱${cashInBankBal.toFixed(2)}`;
     }
   }
 
-  if (tType === "Cash in bank to Cash on hand") {
-    if (tAmt > cashInBankBal) {
-      return `ERROR: Transfer amount (₱${tAmt.toFixed(2)}) exceeds available Cash in Bank (₱${cashInBankBal.toFixed(2)}).`;
-    }
-  }
-
-  // --- 4. GENERAL CASH OUTFLOW VALIDATION ---
-  // This checks any transaction (like Supplies Payment) that reduces cash
-  const masterSheet = ss.getSheetByName("Entries(MasterData)");
-  let creditAcc = "";
-  
-  if (masterSheet) {
-    const mData = masterSheet.getDataRange().getValues();
-    for (let i = 7; i < mData.length; i++) {
-      if (String(mData[i][0]).trim() === String(tType).trim()) {
-        creditAcc = String(mData[i][4]).trim(); // Column E: Source (Credit)
-        break;
-      }
-    }
-  }
-
-  // Check general outflow based on Payment Mode or Credit Account
-  if (creditAcc === "Cash on Hand" || tPayMode === "Cash on Hand") {
-    // Only check if it's not a transfer already handled above
-    if (tType !== "Cash on hand to Cash in bank" && tAmt > cashOnHandBal) {
-      return `ERROR: Insufficient Cash on Hand. Current Balance: ₱${cashOnHandBal.toFixed(2)}`;
-    }
-  }
-
-  if (creditAcc === "Cash in Bank" || tPayMode === "Cash in Bank") {
-    if (tType !== "Cash in bank to Cash on hand" && tAmt > cashInBankBal) {
-      return `ERROR: Insufficient Cash in Bank. Current Balance: ₱${cashInBankBal.toFixed(2)}`;
-    }
-  }
-
-  // --- 5. EXECUTE SAVE ---
+  // --- 4. EXECUTE SAVE ---
   const bValues = sheet.getRange("B4:B").getValues();
   let destRow = -1;
   
@@ -521,19 +681,22 @@ function saveOtherTransaction(payload) {
     }
   }
 
-  if (destRow === -1) {
-    destRow = sheet.getLastRow() + 1;
-  }
+  if (destRow === -1) destRow = sheet.getLastRow() + 1;
 
   sheet.getRange(destRow, 2, 1, 9).setValues([payload]);
   sheet.getRange(destRow, 2).setNumberFormat("@"); 
   sheet.getRange(destRow, 3).setNumberFormat("dd/MM/yyyy"); 
 
+  // Make sure this function exists in your script
+  if (typeof generateJournal === "function") {
+    generateJournal();
+  }
+  
   return "Success";
 }
 
 /* ====================================================================================================
-   MASTERDATA FETCHING
+   MASTERDATA FETCHING AND ADD/DELETE
 ==================================================================================================== */
 function getSheetData(sheetName) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -599,9 +762,22 @@ function getSheetData(sheetName) {
   
   // --- TARGET: SUPPLIES ---
   if (sheetName === "Supplies Costing(MasterData)" || sheetName === "Supplies") {
+    const isForDropdown = (sheetName === "Supplies"); // Use "Supplies" for Dropdown, full name for Grid
+
     return dataRows
-      .filter(row => String(row[11]).trim() !== "") // Col L is Index 11 (Brandname)
-      .map(row => [row[11], row[12]]); // Col L (11) and Col M (12)
+      .filter(row => String(row[10]).trim() !== "") 
+      .map(row => {
+        if (isForDropdown) {
+          return {
+            id: String(row[10]),
+            brand: String(row[11]),
+            price: parseFloat(row[12]) || 0
+          };
+        } else {
+          // Return ONLY Brand and Price for the Data List grid (Index 11 and 12)
+          return [String(row[11]), row[12]]; 
+        }
+      });
   }
 
   // DEFAULT FALLBACK: Just return the raw values if sheet names don't match
@@ -610,36 +786,6 @@ function getSheetData(sheetName) {
   const values = sheet.getDataRange().getValues();
   values.shift(); 
   return values;
-}
-
-/* ====================================================================================================
-   FINANCIAL STATEMENT FETCHING
-==================================================================================================== */
-function updateAndFetchFinancials(month, year) {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const trialSheet = ss.getSheetByName("Auto Adjusted Trial Balance");
-  const finSheet = ss.getSheetByName("Financial Statements");
-
-  if (!trialSheet || !finSheet) return { error: "Sheets not found" };
-
-  // 1. Set the Date in Trial Balance (Triggers your sheet formulas)
-  trialSheet.getRange("B3").setValue(month);
-  trialSheet.getRange("D3").setValue(year);
-  
-  // 2. Wait a moment for Google Sheets to recalculate
-  SpreadsheetApp.flush();
-
-  // 3. Fetch data from "Financial Statements" sheet
-  // ADJUST THESE CELL REFERENCES TO MATCH YOUR ACTUAL SHEET LAYOUT
-  return {
-    period: month + " " + year,
-    revenue: finSheet.getRange("C10").getValue(), // Change C10 to your Revenue cell
-    expenses: finSheet.getRange("C20").getValue(), // Change C20 to your Total Expenses cell
-    netIncome: finSheet.getRange("C25").getValue(), // Change C25 to your Net Income cell
-    assets: finSheet.getRange("F10").getValue(),    // Change F10 to your Total Assets cell
-    liabilities: finSheet.getRange("F20").getValue(),// Change F20 to your Total Liabilities cell
-    equity: finSheet.getRange("F25").getValue()     // Change F25 to your Total Equity cell
-  };
 }
 
 // --- DATA SAVING MASTERDATA ---
@@ -771,6 +917,356 @@ function deleteDataFromSheet(targetCategory, primaryValue) {
 }
 
 /* ====================================================================================================
+   DAILY OPERATIONS FETCHING
+==================================================================================================== */
+
+// --- FETCH DASHBOARD TEMPLATE ---
+function getDashboardStats() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const tSheet = ss.getSheetByName("T-Accounts(Database2)");
+  const sSheet = ss.getSheetByName("Service Transaction");
+  const timezone = ss.getSpreadsheetTimeZone();
+  
+  // Set the specific format used in your sheet
+  const dateFormat = "dd/MM/yyyy";
+  const todayStr = Utilities.formatDate(new Date(), timezone, dateFormat);
+  
+  let stats = {
+    revenue: 0,
+    cashReceived: 0,
+    expenses: 0,
+    totalDebt: 0,
+    growthRate: 0,
+    serviceCount: 0
+  };
+
+  if (tSheet) {
+    // 1. Fetch Total Debt (Cell AB3)
+    stats.totalDebt = tSheet.getRange("AB3").getValue() || 0;
+    
+    const lastRow = tSheet.getLastRow();
+    if (lastRow >= 4) {
+      // Fetch up to Column 43 (AQ)
+      const tData = tSheet.getRange(4, 1, lastRow - 3, 43).getValues();
+      let prevDayRevenue = 0;
+      let mostRecentPrevDateObj = null;
+
+      tData.forEach(row => {
+        const dateA = row[0];  // Col A (Date for Cash on Hand)
+        const dateE = row[4];  // Col E (Date for Cash in Bank)
+        const dateAO = row[40]; // Col AO (Date for Laundry Service Revenue)
+        const revAmt = parseFloat(row[42]) || 0; // Col AQ (Laundry Service Revenue)
+
+        // Convert Sheet dates to "dd/mm/yyyy" strings for strict matching
+        // (Also handles if you accidentally typed the date as plain text instead of a date object)
+        const dateAStr = (dateA instanceof Date) ? Utilities.formatDate(dateA, timezone, dateFormat) : (String(dateA).trim() === todayStr ? todayStr : "");
+        const dateEStr = (dateE instanceof Date) ? Utilities.formatDate(dateE, timezone, dateFormat) : (String(dateE).trim() === todayStr ? todayStr : "");
+        const dateAOStr = (dateAO instanceof Date) ? Utilities.formatDate(dateAO, timezone, dateFormat) : (String(dateAO).trim() === todayStr ? todayStr : "");
+
+        // --- 1. Today's Service Revenue ---
+        // Uses Column AO for the date check, adds Column AQ
+        if (dateAOStr === todayStr) {
+          stats.revenue += revAmt;
+        } 
+        // Logic for Most Recent Active Day (for Growth Rate) uses Column AO
+        else if (dateAO instanceof Date && dateAO < new Date().setHours(0,0,0,0)) {
+          if (!mostRecentPrevDateObj || dateAO > mostRecentPrevDateObj) {
+            mostRecentPrevDateObj = dateAO;
+            prevDayRevenue = revAmt;
+          } else if (dateAO.getTime() === mostRecentPrevDateObj.getTime()) {
+            prevDayRevenue += revAmt;
+          }
+        }
+
+        // --- 2. Today's Cash Received & Expenses ---
+        // Cash on Hand: Date in Col A -> Received in Col B, Expenses in Col C
+        if (dateAStr === todayStr) {
+          stats.cashReceived += (parseFloat(row[1]) || 0); // Col B
+          stats.expenses += (parseFloat(row[2]) || 0);     // Col C
+        }
+        
+        // Cash in Bank: Date in Col E -> Received in Col F, Expenses in Col G
+        if (dateEStr === todayStr) {
+          stats.cashReceived += (parseFloat(row[5]) || 0); // Col F
+          stats.expenses += (parseFloat(row[6]) || 0);     // Col G
+        }
+      });
+
+      // Calculate Growth Rate (Capped at 0% for negative results)
+      if (prevDayRevenue > 0) {
+        let rawGrowth = ((stats.revenue - prevDayRevenue) / prevDayRevenue) * 100;
+        stats.growthRate = rawGrowth < 0 ? 0 : rawGrowth;
+      } else {
+        stats.growthRate = stats.revenue > 0 ? 100 : 0;
+      }
+    }
+  }
+
+  // 3. Service Rendered Count (Service Transaction Sheet)
+  if (sSheet) {
+    const sLastRow = sSheet.getLastRow();
+    if (sLastRow >= 4) {
+      const sData = sSheet.getRange(4, 1, sLastRow - 3, 8).getValues();
+      sData.forEach(row => {
+        const sDate = row[2]; // Col C
+        const sDateStr = (sDate instanceof Date) ? Utilities.formatDate(sDate, timezone, dateFormat) : (String(sDate).trim() === todayStr ? todayStr : "");
+        const sType = row[6]; // Col G
+        
+        if (sDateStr === todayStr && sType !== "Settlement" && sType !== "") {
+          stats.serviceCount++;
+        }
+      });
+    }
+  }
+
+  return stats;
+}
+// --- FETCH CUSTOMER CREDIT DATA ---
+function getCustomerCreditData() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName("Balance Tracker(Checker)");
+  if (!sheet) return [];
+  
+  const rawData = sheet.getDataRange().getValues();
+  // Row 3 starts at array index 2
+  const dataRows = rawData.slice(2);
+  
+  return dataRows.map(row => {
+    return {
+      id: String(row[0]).trim(),        // Col A
+      surname: String(row[1]).trim(),   // Col B
+      firstName: String(row[2]).trim(), // Col C
+      ar: parseFloat(row[3]) || 0,      // Col D
+      payment: parseFloat(row[4]) || 0, // Col E
+      status: String(row[5]).trim()     // Col F
+    };
+  }).filter(item => item.id !== ""); // Exclude completely empty rows
+}
+
+// --- FETCH TOP SERVICES DATA (FOR PIE CHART) ---
+function getTopServicesData() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName("Service Transaction");
+  if (!sheet) return [];
+  
+  const rawData = sheet.getDataRange().getValues();
+  // Row 4 starts at array index 3
+  const dataRows = rawData.slice(3);
+  
+  const serviceCounts = {};
+  
+  dataRows.forEach(row => {
+    const serviceType = String(row[6]).trim(); // Col G is index 6
+    
+    // Ignore empty cells and "Settlement" (since Settlement isn't a laundry service)
+    if (serviceType && serviceType !== "Settlement") {
+      serviceCounts[serviceType] = (serviceCounts[serviceType] || 0) + 1;
+    }
+  });
+  
+  // Convert into an array suitable for Chart.js
+  return Object.keys(serviceCounts).map(key => {
+    return { label: key, count: serviceCounts[key] };
+  }).sort((a, b) => b.count - a.count); // Optional: sort by most rendered
+}
+
+/* ====================================================================================================
+   FINANCIAL STATEMENT FETCHING
+==================================================================================================== */
+function updateAndFetchFinancials(month, year) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const trialSheet = ss.getSheetByName("Auto Adjusted Trial Balance");
+  const finSheet = ss.getSheetByName("Financial Statements");
+
+  if (!trialSheet || !finSheet) return { error: "Sheets not found" };
+
+  // 1. Set Date (Triggers auto-calculation)
+  trialSheet.getRange("B3").setValue(month);
+  trialSheet.getRange("D3").setValue(year);
+  SpreadsheetApp.flush(); // Wait for formulas to finish
+
+  // 2. Fetch Income Statement Values
+  const incData = {
+    lsr: finSheet.getRange("D6").getValue(),
+    oi: finSheet.getRange("D7").getValue(),
+    gain: finSheet.getRange("D8").getValue(),
+    totRev: finSheet.getRange("F9").getValue(),
+    sal: finSheet.getRange("D12").getValue(),
+    elec: finSheet.getRange("D13").getValue(),
+    water: finSheet.getRange("D14").getValue(),
+    comm: finSheet.getRange("D15").getValue(),
+    supp: finSheet.getRange("D16").getValue(),
+    dep: finSheet.getRange("D17").getValue(),
+    loss: finSheet.getRange("D18").getValue(),
+    bank: finSheet.getRange("D19").getValue(),
+    trans: finSheet.getRange("D20").getValue(),
+    misc: finSheet.getRange("D21").getValue(),
+    totExp: finSheet.getRange("F22").getValue(),
+    netInc: finSheet.getRange("F23").getValue()
+  };
+
+  // 3. Fetch Balance Sheet Values
+  const balData = {
+    coh: finSheet.getRange("D32").getValue(),
+    cib: finSheet.getRange("D33").getValue(),
+    ar: finSheet.getRange("D34").getValue(),
+    ls: finSheet.getRange("D35").getValue(),
+    tca: finSheet.getRange("F36").getValue(),
+    le: finSheet.getRange("D38").getValue(),
+    ade: finSheet.getRange("D39").getValue(),
+    tnca: finSheet.getRange("F40").getValue(),
+    totAssets: finSheet.getRange("F41").getValue(),
+    ap: finSheet.getRange("D45").getValue(),
+    tcl: finSheet.getRange("F46").getValue(),
+    cap: finSheet.getRange("F49").getValue(),
+    tloe: finSheet.getRange("F50").getValue()
+  };
+
+  return { income: incData, balance: balData };
+}
+
+/* ====================================================================================================
+   METRICS FETCHING
+==================================================================================================== */
+
+function getDashboardData() {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("T-Accounts(Database2)");
+  if (!sheet) return "{}";
+
+  // Get everything to process in one fast read
+  const data = sheet.getDataRange().getValues();
+  const results = {}; 
+
+  // Helper to init a year block
+  const initYear = (y) => {
+    if (!results[y]) {
+      results[y] = {
+        expenses: Array(12).fill(0),
+        revenues: Array(12).fill(0),
+        debt: Array(12).fill(0),
+        credit: Array(12).fill(0),
+        inflow: Array(12).fill(0),
+        outflow: Array(12).fill(0)
+      };
+    }
+  };
+
+  // Helper to safely parse dd/mm/yyyy strings or Date objects
+  const parseDate = (val) => {
+    if (!val) return null;
+    let d = val;
+    if (typeof val === 'string') {
+      let parts = val.split(/[-/]/);
+      if (parts.length === 3) d = new Date(parts[2], parts[1] - 1, parts[0]);
+    }
+    if (d instanceof Date && !isNaN(d.getTime())) {
+      return { month: d.getMonth(), year: d.getFullYear() };
+    }
+    return null;
+  };
+
+  // Maps Column Letters to 0-based array indexes
+  // Exp = Debit(1) - Credit(2)
+  const expCols = [[52,53,54], [56,57,58], [60,61,62], [64,65,66], [68,69,70], [72,73,74], [76,77,78], [80,81,82], [84,85,86], [88,89,90]];
+  // Rev = Credit(2) - Debit(1)
+  const revCols = [[40,41,42], [44,45,46], [48,49,50]];
+  // Debt (Liability) = Credit(2) - Debit(1)
+  const debtCol = [24,25,26];
+  // Credit/AR (Asset) = Debit(1) - Credit(2)
+  const credCol = [8,9,10];
+  // Cash Arrays
+  const cashCols = [[0,1,2], [4,5,6]]; 
+
+  // Loop through rows starting at row 4 (Index 3)
+  for (let i = 3; i < data.length; i++) {
+    const row = data[i];
+
+    // 1. Expenses 
+    expCols.forEach(cols => {
+      let dt = parseDate(row[cols[0]]);
+      if (dt) {
+        initYear(dt.year);
+        results[dt.year].expenses[dt.month] += (Number(row[cols[1]]) || 0) - (Number(row[cols[2]]) || 0);
+      }
+    });
+
+    // 2. Revenues 
+    revCols.forEach(cols => {
+      let dt = parseDate(row[cols[0]]);
+      if (dt) {
+        initYear(dt.year);
+        results[dt.year].revenues[dt.month] += (Number(row[cols[2]]) || 0) - (Number(row[cols[1]]) || 0);
+      }
+    });
+
+    // 3. Owner's Debt 
+    let dDt = parseDate(row[debtCol[0]]);
+    if (dDt) {
+      initYear(dDt.year);
+      results[dDt.year].debt[dDt.month] += (Number(row[debtCol[2]]) || 0) - (Number(row[debtCol[1]]) || 0);
+    }
+
+    // 4. Customer's Credit (AR)
+    let cDt = parseDate(row[credCol[0]]);
+    if (cDt) {
+      initYear(cDt.year);
+      results[cDt.year].credit[cDt.month] += (Number(row[credCol[1]]) || 0) - (Number(row[credCol[2]]) || 0);
+    }
+
+    // 5. Cash Flows
+    cashCols.forEach(cols => {
+      let cashDt = parseDate(row[cols[0]]);
+      if (cashDt) {
+        initYear(cashDt.year);
+        results[cashDt.year].inflow[cashDt.month] += (Number(row[cols[1]]) || 0); // Debit
+        results[cashDt.year].outflow[cashDt.month] += (Number(row[cols[2]]) || 0); // Credit
+      }
+    });
+  }
+
+  return JSON.stringify(results);
+}
+
+/* ====================================================================================================
+   LEADBOARD FETCHING
+==================================================================================================== */
+
+function getLeaderboardData() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName("Records List(MasterData)");
+  
+  const lastRow = sheet.getLastRow();
+  if (lastRow < 4) return []; 
+  
+  const data = sheet.getRange(4, 1, lastRow - 3, 6).getValues();
+  
+  let leaderboard = [];
+  
+  // Loop through the data and filter out empties
+  for (let i = 0; i < data.length; i++) {
+    const row = data[i];
+    const surname = row[0] ? row[0].toString().trim() : "";
+    const firstName = row[1] ? row[1].toString().trim() : "";
+    const cashSpent = parseFloat(row[5]) || 0;
+    
+    // ONLY add to the leaderboard if there is a name AND they spent money
+    if ((surname !== "" || firstName !== "") && cashSpent > 0) {
+      leaderboard.push({
+        surname: surname,
+        firstName: firstName,
+        orderCount: row[4] || 0,
+        cashSpent: cashSpent
+      });
+    }
+  }
+
+  // Sort by Cash Spent (Highest to Lowest)
+  leaderboard.sort((a, b) => b.cashSpent - a.cashSpent);
+  
+  return leaderboard;
+}
+
+/* ====================================================================================================
    DASHBOARD INPUTS (BRIDGE) SERVICE CUTEII (ADD/DELETE)
 ==================================================================================================== */
 
@@ -805,6 +1301,7 @@ function addServiceOrderToSheet(sheetName, payload) {
   // Optional: Center the text in the merged cell
   sheet.getRange(destRow, 5).setHorizontalAlignment("left");
   
+  generateJournal();
   return "Success";
 }
 
@@ -822,6 +1319,8 @@ function deleteOrderById(refId) {
       sheet.deleteRow(i + 1);
     }
   }
+
+  generateJournal();
   return "All records for " + refId + " deleted.";
 }
 
